@@ -1,0 +1,133 @@
+
+import datetime
+import pandas
+_store
+*.log
+*.swp
+*-swp
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/*
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+import pandas
+import numpy
+import dask
+import glob
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
+
+class LocDataPnts(object):
+    """
+    A class to read in data from median filetered TEC files
+    and calculate number of data points at different locations!
+    """
+    def __init__(self, timeRange, inpDir="/sd-data/med_filt_tec/"):
+        """
+        timeRange : start and end time to calc stats
+        inpDir : dir to read TEC data from!
+        """
+        self.timeRange = timeRange
+        self.inpDir = inpDir
+        self.tecTrueDict = {}
+
+    def read_data(self, \
+                refFileDate=datetime.datetime(2015,1,1)):
+        """
+        Read data from the csv files
+        """
+        # depending on the time range and fType get a list
+        # of fileNames that need to be loaded!
+        # Get a list of all the files in the dir!
+        dfList = []
+        currTime = self.timeRange[0]
+        inpColList = [ "dateStr", "timeStr", "Mlat",\
+                   "Mlon", "med_tec", "dlat", "dlon" ]
+        while currTime <= self.timeRange[1]:
+            # get the fName for actual data dir, read the data from
+            # all the files during the day!
+            _cfN = self.inpDir + "tec-medFilt-" +\
+                     currTime.strftime("%Y%m%d") + ".txt" 
+            mfDF = pandas.read_csv(_cfN, delim_whitespace=True,
+                         header=None, names=inpColList)
+	    print mfDF.head()
+            asdsa
+            currTime += datetime.timedelta(days=1)
+    
+
+if __name__ == "__main__":
+    timeRange = [ datetime.datetime(2015,3,5), datetime.datetime(2015,3,10) ]
+    tsObj = LocDataPnts(timeRange)
+import numpy
+import dask
+import glob
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
+
+class LocDataPnts(object):
+    """
+    A class to read in data from median filetered TEC files
+    and calculate number of data points at different locations!
+    """
+    def __init__(self, timeRange, inpDir="/sd-data/med_filt_tec/"):
+        """
+        timeRange : start and end time to calc stats
+        inpDir : dir to read TEC data from!
+        """
+        self.timeRange = timeRange
+        self.inpDir = inpDir
+        self.tecTrueDict = {}
+
+    def read_data(self, \
+                refFileDate=datetime.datetime(2015,1,1)):
+        """
+        Read data from the csv files
+        """
+        # depending on the time range and fType get a list
+        # of fileNames that need to be loaded!
+        # Get a list of all the files in the dir!
+        dfList = []
+        currTime = self.timeRange[0]
+        inpColList = [ "dateStr", "timeStr", "Mlat",\
+                   "Mlon", "med_tec", "dlat", "dlon" ]
+        while currTime <= self.timeRange[1]:
+            # get the fName for actual data dir, read the data from
+            # all the files during the day!
+            _cfN = self.inpDir + "tec-medFilt-" +\
+                     currTime.strftime("%Y%m%d") + ".txt" 
+            mfDF = pandas.read_csv(_cfN, delim_whitespace=True,
+                         header=None, names=inpColList)
+	    print mfDF.head()
+            asdsa
+            currTime += datetime.timedelta(days=1)
+    
+
+if __name__ == "__main__":
+    timeRange = [ datetime.datetime(2015,3,5), datetime.datetime(2015,3,10) ]
+    tsObj = LocDataPnts(timeRange)
