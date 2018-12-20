@@ -47,7 +47,7 @@ class OmnData(object):
         while curr_time <= self.end_date:
             new_omn_index_arr.append( curr_time )
             curr_time += datetime.timedelta(minutes=self.db_time_resolution)
-        omnDF = omnDF[ omn_train_params ]
+        omnDF = omnDF[ self.omn_train_params ]
         omnDF = omnDF.replace(numpy.inf, numpy.nan)
         omnDF = omnDF.set_index("datetime").reindex(new_omn_index_arr).reset_index()
         # Replace nan's with preceding value (forward filling)

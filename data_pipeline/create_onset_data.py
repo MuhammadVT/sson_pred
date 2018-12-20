@@ -8,11 +8,19 @@ class OnsetData(object):
     """
     def __init__(self, northData=True, southData=False, polarData=True,\
                  imageData=True, polarFile="../data/polar_data.feather",\
-                imageFile="../data/image_data.feather"):
+                imageFile="../data/image_data.feather", delTCutoff=2,\
+                 fillTimeRes=1):
         """
         setup some vars and load preliminary data.
-        Most of the variables are self explanatory
+        Most of the variables are self explanatory.
+        self.delTCutoff is the time range between two consecutive onset
+        events that we want to use as cutoff. In other words we'll
+        interpolate between these events if time is < self.delTCutoff,
+        else we jump to the next event.
+        self.fillTimeRes is the interpolation time resolutino
         """
+        self.delTCutoff = delTCutoff
+        self.fillTimeRes = fillTimeRes
         self.polarDF = None
         self.imageDF = None
         if polarData:
@@ -70,15 +78,8 @@ class OnsetData(object):
                 self.imageDF = self.imageDF[ self.imageDF["mlat"] <=0\
                                  ].reset_index(drop=True)
 
-    def _populate_date_list(self, delTCutoff=2, fillTimeRes=1):
+    def _populate_date_list(self):
         """
-        Variables:
-        delTCutoff is the time range between two consecutive onset
-        events that we want to use as cutoff. In other words we'll
-        interpolate between these events if time is < delTCutoff,
-        else we jump to the next event.
-        fillTimeRes is the interpolation time resolutino
-        Some notes:
         We'll create a list of dates that will be used 
         for training and testing. Basically we'll create
         our core date list here. We'll take the onset times
@@ -94,7 +95,7 @@ class OnsetData(object):
         # work through polar data
         if self.polarDF is not None:
             for row in self.polarDF.iterrows():
-                if row[1]["delT"] <= delTCutoff:
+                if row[1]["delT"] <= self.delTCutoff:
                     currIndex = row[0]
                     # get start time
                     startTime = datetime.datetime( \
@@ -112,13 +113,13 @@ class OnsetData(object):
                     iterTime = startTime
                     while iterTime <= endTime:
                         self.polarDateList.append(iterTime)
-                        iterTime += datetime.timedelta(seconds=fillTimeRes*60)
+                        iterTime += datetime.timedelta(seconds=self.fillTimeRes*60)
             # there will be some repeat values, discard them
             self.polarDateList = sorted(list(set(self.polarDateList)))
         # work through image data
         if self.imageDF is not None:
             for row in self.imageDF.iterrows():
-                if row[1]["delT"] <= delTCutoff:
+                if row[1]["delT"] <= self.delTCutoff:
                     currIndex = row[0]
                     # get start time
                     startTime = datetime.datetime( \
@@ -136,7 +137,7 @@ class OnsetData(object):
                     iterTime = startTime
                     while iterTime <= endTime:
                         self.imageDateList.append(iterTime)
-                        iterTime += datetime.timedelta(seconds=fillTimeRes*60)
+                        iterTime += datetime.timedelta(seconds=self.fillTimeRes*60)
             # there will be some repeat values, discard them
             self.imageDateList = sorted(list(set(self.imageDateList)))
 
