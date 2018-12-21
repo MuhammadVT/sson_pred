@@ -1,7 +1,7 @@
 import omn_utils
 import create_onset_data
 import pandas
-import collections
+import datetime
 
 class DataUtils(object):
     
@@ -43,7 +43,7 @@ class DataUtils(object):
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
               onsetFillTimeRes, binTimeRes, nBins, saveBinData, onsetSaveFile)
         self.batchDict = self._get_batchDict(shuffleData)
-        # self.omnDF = self._load_omn_data()
+        self.omnDF = self._load_omn_data()
 
     def _load_onset_data(self, northData, southData,\
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
@@ -79,8 +79,8 @@ class DataUtils(object):
         Load omn data
         """
         # get the time range from onset data
-        omnStartDate = self.onsetDF.index.min()
-        omnEndDate = self.onsetDF.index.max()
+        omnStartDate = self.onsetDF.head().index.min()
+        omnEndDate = self.onsetDF.head().index.max()
         # create the obj and load data
         omnObj = omn_utils.OmnData(omnStartDate, omnEndDate, self.omnDBDir,\
                            self.omnDbName, self.omnTabName,\
@@ -109,4 +109,36 @@ class DataUtils(object):
         for _nbat, _bat in enumerate(dataDateList):
             batchDict[_nbat] = _bat
         return batchDict
-
+    
+    def onset_from_batch(self, dateList):
+        """
+        Given a list of dates from one batch
+        get onset bins, i.e., the outputs.
+        """
+        # Note our dateList could be shuffled
+        # so we can't simply use a range for 
+        # accesing data from the index!
+        outArr = self.onsetDF[\
+                    self.onsetDF.index.isin(dateList)\
+                    ].as_matrix()
+        return outArr.reshape( outArr.shape[0], 1, outArr.shape[1] )
+    
+    def omn_from_batch(self, dateList, history=120):
+        """
+        Given a list of dates from one batch
+        get omn data hist for each data point.
+        history here is the minutes in history 
+        you want to load omn data.
+        """
+        # Note our dateList could be shuffled
+        # so we can't simply use a range for 
+        # accesing data from the index!
+        omnBatchMatrix = []
+        for _cd in dateList:
+            _st = _cd.strftime("%Y-%m-%d %H:%M:%S")
+            _et = (_cd - datetime.timedelta(\
+                    minutes=history) ).strftime(\
+                    "%Y-%m-%d %H:%M:%S")
+            omnBatchMatrix.append(\
+                self.polarDF.loc[ _st : _et ].as_matrix())
+        return numpy.array(omnBatchMatrix)

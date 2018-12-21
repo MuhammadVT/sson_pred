@@ -11,7 +11,7 @@ class OmnData(object):
     def __init__(self, start_date, end_date, omn_dbdir, omn_db_name,\
                  omn_table_name, omn_train, omn_norm_param_file,\
                 imf_normalize=True, db_time_resolution=1,\
-                omn_train_params = [ "By", "Bz", "Bx" ]):
+                omn_train_params = [ "By", "Bz", "Bx", "Vx", "Np" ]):
         """
         setup some vars
         """
@@ -38,6 +38,7 @@ class OmnData(object):
         command = command.format(tb=self.omn_table_name,\
                                  stm=self.start_date, etm=self.end_date)
         omnDF = pandas.read_sql(command, conn)
+        # print omnDF.head()
         # We'll do some processing to 
         # fill missing values in IMF
         # Now we need to find missing dates
@@ -47,7 +48,7 @@ class OmnData(object):
         while curr_time <= self.end_date:
             new_omn_index_arr.append( curr_time )
             curr_time += datetime.timedelta(minutes=self.db_time_resolution)
-        omnDF = omnDF[ self.omn_train_params ]
+        omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
         omnDF = omnDF.replace(numpy.inf, numpy.nan)
         omnDF = omnDF.set_index("datetime").reindex(new_omn_index_arr).reset_index()
         # Replace nan's with preceding value (forward filling)
