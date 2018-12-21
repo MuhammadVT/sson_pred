@@ -1,7 +1,6 @@
 import omn_utils
 import create_onset_data
 import pandas
-import collections
 
 class DataUtils(object):
     
@@ -109,4 +108,35 @@ class DataUtils(object):
         for _nbat, _bat in enumerate(dataDateList):
             batchDict[_nbat] = _bat
         return batchDict
-
+    
+    def onset_from_batch(self, dateList):
+        """
+        Given a list of dates from one batch
+        get onset bins, i.e., the outputs.
+        """
+        # Note our dateList could be shuffled
+        # so we can't simply use a range for 
+        # accesing data from the index!
+        return self.onsetDF[\
+                    self.onsetDF.index.isin(dateList)\
+                    ].as_matrix()
+    
+    def omn_from_batch(self, dateList, history=120):
+        """
+        Given a list of dates from one batch
+        get omn data hist for each data point.
+        history here is the minutes in history 
+        you want to load omn data.
+        """
+        # Note our dateList could be shuffled
+        # so we can't simply use a range for 
+        # accesing data from the index!
+        omnBatchMatrix = []
+        for _cd in dateList:
+            _st = _cd.strftime("%Y-%m-%d %H:%M:%S")
+            _et = _cd - datetime.timedelta(\
+                    minutes=history).strftime(\
+                    "%Y-%m-%d %H:%M:%S")
+            omnBatchMatrix.append(\
+                self.polarDF.loc[ _st : _et ].as_matrix())
+        return numpy.array(omnBatchMatrix)
