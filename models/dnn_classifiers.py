@@ -60,7 +60,7 @@ class FCNN:
                                       min_lr=0.0001)
 
         # Save the model at certain checkpoints 
-        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.hdf5"
+        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
         file_path = os.path.join(self.out_dir, fname)
         model_checkpoint = ModelCheckpoint(file_path, monitor='val_loss', save_best_only=False, period=2)
         
@@ -79,7 +79,7 @@ class FCNN:
 
         # Train the model
         stime = dt.datetime.now() 
-        fit_logs = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
+        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
                                      validation_data=(x_val, y_val), callbacks=self.callbacks, shuffle=True)
         etime = dt.datetime.now() 
         training_time = (etime - stime).total_seconds()/60.    # minutes
@@ -88,7 +88,7 @@ class FCNN:
         # Test the model on evaluation data
         clear_session()
 
-        return fit_logs
+        return fit_history
 
 
 
