@@ -1,6 +1,6 @@
 import pandas
 import datetime
-
+import feather
 
 class OnsetData(object):
     """
@@ -24,9 +24,9 @@ class OnsetData(object):
         self.polarDF = None
         self.imageDF = None
         if polarData:
-            self.polarDF = pandas.read_feather(polarFile)
+            self.polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
         if imageData:
-            self.imageDF = pandas.read_feather(imageFile)
+            self.imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
         # hemispheres to use!
         if (not northData) & (not southData):
             print("No hemi chosen! choosing north")

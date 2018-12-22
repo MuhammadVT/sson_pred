@@ -2,6 +2,7 @@ import omn_utils
 import create_onset_data
 import pandas
 import datetime
+import feather
 
 class DataUtils(object):
     
@@ -21,7 +22,7 @@ class DataUtils(object):
              imageData=True, polarFile="../data/polar_data.feather",\
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
              onsetFillTimeRes=1, binTimeRes=30, nBins=3,\
-            saveBinData=True, onsetSaveFile="../data/binned_data.feather",\
+            saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
             shuffleData=True, omnHistory=120):
         """
         set up the parameters
@@ -57,7 +58,7 @@ class DataUtils(object):
         """
         if self.loadPreComputedOnset:
             print("loading precomputed onset data")
-            onsetDF = pandas.read_feather(self.onsetDataloadFile)
+            onsetDF = feather.read_dataframe(self.onsetDataloadFile)
             # Note we need to reset the date column as index
             onsetDF = onsetDF.set_index( onsetDF["date"] )
             # drop the date column
