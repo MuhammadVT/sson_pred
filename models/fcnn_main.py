@@ -15,7 +15,7 @@ import glob
 import time
 import sys
 sys.path.append("../data_pipeline")
-import batch_utils
+#import batch_utils
 
 # Read the data
 ###########################
@@ -54,6 +54,10 @@ import batch_utils
 print("loading the data...")
 X = np.load("../data/omni.npy")
 y = np.load("../data/output.npy")
+#y = y[:, 0:2]    # two classes
+y = y[:, 0]    # one class
+enc = OneHotEncoder()
+y = enc.fit_transform(y.reshape(-1,1)).toarray()
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=10)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
 
@@ -61,7 +65,7 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.
 loss=keras.losses.categorical_crossentropy
 optimizer=keras.optimizers.Adam()
 batch_size = 32
-n_epochs = 100
+n_epochs = 10
 n_classes = y_train.shape[1] 
 input_shape = x_train.shape[1:]
 out_dir="./trained_models/FCNN/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")

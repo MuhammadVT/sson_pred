@@ -23,28 +23,37 @@ class FCNN:
         from keras.layers import normalization, Activation, pooling
         from keras.models import Model 
         from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+        from keras.layers.core import Dropout
         import os
 
         # Input layer
         input_layer = Input(self.input_shape)
 
         # First CNN layer
-        conv1_layer = Conv1D(filters=128, kernel_size=8, strides=1, padding="same")(input_layer)
-        conv1_layer = normalization.BatchNormalization()(conv1_layer)
-        conv1_layer = Activation(activation="relu")(conv1_layer)
+        conv_layer = Conv1D(filters=64, kernel_size=7, strides=1, padding="same")(input_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
         # Second CNN layer
-        conv2_layer = Conv1D(filters=256, kernel_size=5, strides=1, padding="same")(conv1_layer)
-        conv2_layer = normalization.BatchNormalization()(conv2_layer)
-        conv2_layer = Activation(activation="relu")(conv2_layer)
+        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+
+        # Second CNN layer
+        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
         # Third CNN layer
-        conv3_layer = Conv1D(filters=256, kernel_size=5, strides=1, padding="same")(conv2_layer)
-        conv3_layer = normalization.BatchNormalization()(conv3_layer)
-        conv3_layer = Activation(activation="relu")(conv3_layer)
+        conv_layer = Conv1D(filters=64, kernel_size=3, strides=1, padding="same")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
 
         # Global pooling layer
-        gap_layer = pooling.GlobalAveragePooling1D()(conv3_layer)
+        gap_layer = pooling.GlobalAveragePooling1D()(conv_layer)
 
         # Output layer
         output_layer = Dense(self.n_classes, activation="softmax")(gap_layer)
@@ -56,7 +65,7 @@ class FCNN:
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
 
         # Reduce the learning rate if plateau occurs on the loss curve
-        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, 
+        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=2, 
                                       min_lr=0.0001)
 
         # Save the model at certain checkpoints 
