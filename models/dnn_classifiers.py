@@ -35,6 +35,11 @@ class FCNN:
         conv_layer = Activation(activation="relu")(conv_layer)
         conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
+        conv_layer = Conv1D(filters=64, kernel_size=7, strides=1, padding="same")(input_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+
         # Second CNN layer
         conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
@@ -65,8 +70,8 @@ class FCNN:
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
 
         # Reduce the learning rate if plateau occurs on the loss curve
-        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=2, 
-                                      min_lr=0.0001)
+        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, 
+                                      min_lr=0.00001)
 
         # Save the model at certain checkpoints 
         fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
