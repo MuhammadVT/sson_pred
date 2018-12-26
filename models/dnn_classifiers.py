@@ -46,13 +46,23 @@ class FCNN:
         conv_layer = Activation(activation="relu")(conv_layer)
         conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
-        # Second CNN layer
         conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
+        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+
+
         # Third CNN layer
+        conv_layer = Conv1D(filters=64, kernel_size=3, strides=1, padding="same")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+
         conv_layer = Conv1D(filters=64, kernel_size=3, strides=1, padding="same")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)

@@ -52,23 +52,25 @@ sys.path.append("../data_pipeline")
 #pdb.set_trace()
 ###########################
 print("loading the data...")
-input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_False.npy" 
+input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
+#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_False.npy" 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_False.shuffleData_False.npy" 
-output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
+#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
 X = np.load(input_file)
 y = np.load(output_file)
 #y = y[:, 0:2]    # two classes
 #y = y[:, 0]    # one class
 enc = OneHotEncoder()
 y = enc.fit_transform(y.reshape(-1,1)).toarray()
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=10)
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=10)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
 
 # Build a FCNN model
 loss=keras.losses.categorical_crossentropy
 optimizer=keras.optimizers.Adam(lr=0.0001)
 batch_size = 32
-n_epochs = 50
+n_epochs = 400
 n_classes = y_train.shape[1] 
 input_shape = x_train.shape[1:]
 out_dir="./trained_models/FCNN/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -106,7 +108,8 @@ fig.savefig(fig_path + ".png", dpi=200, bbox_inches="tight")
 # Evaluate the model on test dataset
 print("Evaluating the model...")
 #fname = "weights.epoch_{epoch}.val_loss_{val_loss}.val_acc_{val_acc}.hdf5"
-model_name = glob.glob(os.path.join(out_dir, "weights.epoch_08*hdf5"))[0]
+test_epoch = n_epochs - 2
+model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
 y_pred = test_model.predict(x_test, batch_size=32)
 y_pred = np.argmax(y_pred , axis=1)
