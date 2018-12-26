@@ -71,7 +71,15 @@ class FCNN:
         gap_layer = pooling.GlobalAveragePooling1D()(conv_layer)
 
         # Output layer
-        output_layer = Dense(self.n_classes, activation="softmax")(gap_layer)
+        # Use softmax
+        # NOTE: use the following softmax activator for binary classification or
+        # multi-classification where classes are mutually exclusive.
+        #output_layer = Dense(self.n_classes, activation="softmax")(gap_layer)
+
+        # Use sigmoid
+        # NOTE: use the following sigmoid activator for all cases, expecially 
+        # multi-classification where classes are NOT mutually exclusive.
+        output_layer = Dense(self.n_classes, activation="sigmoid")(gap_layer)
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layer)
@@ -86,7 +94,7 @@ class FCNN:
         # Save the model at certain checkpoints 
         fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
         file_path = os.path.join(self.out_dir, fname)
-        model_checkpoint = ModelCheckpoint(file_path, monitor='val_loss', save_best_only=False, period=2)
+        model_checkpoint = ModelCheckpoint(file_path, monitor='val_loss', save_best_only=False, period=5)
         
 #        # For TensorBoard visualization
 #        log_dir = os.path(out_dir, "logs")
@@ -113,7 +121,4 @@ class FCNN:
         clear_session()
 
         return fit_history
-
-
-
 
