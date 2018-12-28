@@ -148,7 +148,7 @@ class OnsetData(object):
         create corresponding output bins!
         There are two parameters here binTimeRes and nBins.
         binTimeRes (in minutes) corresponds to time resolution
-        of each bin and nBins is well number of bins. For example,
+        of each bin and nBins is well, number of bins. For example,
         if binTimeRes is 30 min and nBins is 3, then the output bins
         would correspond to next 0-30 min, 30-60 min and 60-90 min.
         """
