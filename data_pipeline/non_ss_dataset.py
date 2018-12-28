@@ -52,8 +52,8 @@ class NonSSData(object):
         Get a list of dates where non-ss intervals
         were identified!
         """
-        self.aulDF = self.aulDF[ (self.aulDF["al"] >= alSSCutoff) &\
-             (self.aulDF["ae"] <= aeSSCutoff)\
+        self.aulDF = self.aulDF[ (self.aulDF["al"] >= self.alSSCutoff) &\
+             (self.aulDF["ae"] <= self.aeSSCutoff)\
              ].reset_index(drop=True)
         # Calculate the time diff between two consecutive timesteps
         self.aulDF["delT"] = self.aulDF["datetime"].diff()
@@ -64,7 +64,7 @@ class NonSSData(object):
         # there is no ss
         # here we're getting a diff on the series to get
         # the most continuous dataset
-        brkInds = self.aulDF[ (self.aulDF["delT"] > minDelT)\
+        brkInds = self.aulDF[ (self.aulDF["delT"] > self.minDelT)\
                        ].index.to_frame().diff().reset_index()
         brkInds.columns = [ "inds", "diffs" ]
         # now we also need index value from prev row
@@ -73,7 +73,7 @@ class NonSSData(object):
         brkInds["prevRowInds"] = shftdRows
         # store the dates in a list and return them!
         nonSSDtList = []
-        for row in brkInds[ brkInds["diffs"] > minDiffTime ].iterrows():
+        for row in brkInds[ brkInds["diffs"] > self.minDiffTime ].iterrows():
             dd = self.aulDF.iloc[ \
                 int(row[1]["prevRowInds"]): int(row[1]["inds"]-1)]["datetime"]
             nonSSDtList.append( (dd.min(), dd.max()) )
