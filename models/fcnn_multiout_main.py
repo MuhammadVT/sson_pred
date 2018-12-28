@@ -19,6 +19,9 @@ sys.path.append("../data_pipeline")
 
 # Load the data
 print("loading the data...")
+#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+#output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
+
 input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
 
@@ -39,7 +42,7 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.
 # Build a FCNN_MultiOut model
 optimizer=keras.optimizers.Adam(lr=0.0001)
 batch_size = 64
-n_epochs = 100
+n_epochs = 10
 n_classes = y_train.shape[1] 
 metrics = ["accuracy"]
 input_shape = x_train.shape[1:]
@@ -64,8 +67,8 @@ loss=keras.losses.categorical_crossentropy
 loss_weights = [1., 1., 1., 1., 1., 1.]
 
 #from sklearn import utils
-#class_weights = utils.class_weight.compute_class_weight("balanced", np.unique(y_train) 
-class_weights = [{0:1, 1:(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
+class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
+#class_weights = [{0:1, 1:1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
 #class_weights = [{0:1, 1:10} for i in range(n_classes)]
 #class_weights = None
 
