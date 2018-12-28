@@ -1,4 +1,4 @@
-# Fully Convolutional Neural Network (FCNN)
+# Fully Convolutional Neural Network (FCNN) with single output
 class FCNN:
     def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
                  loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
@@ -104,7 +104,7 @@ class FCNN:
 
         return model
 
-    def train_model(self, x_train, y_train, x_val, y_val, y_true):
+    def train_model(self, x_train, y_train, x_val, y_val, y_true, class_weight=None):
 
         from keras.backend import clear_session
         import datetime as dt
@@ -112,10 +112,13 @@ class FCNN:
         # Train the model
         stime = dt.datetime.now() 
         fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), callbacks=self.callbacks, shuffle=True)
+                                     validation_data=(x_val, y_val), class_weight=class_weight,
+                                     callbacks=self.callbacks, shuffle=True)
         etime = dt.datetime.now() 
         training_time = (etime - stime).total_seconds()/60.    # minutes
         print("Training time is {tm} minutes".format(tm=training_time))
+
+        self.class_weight = class_weight
 
         # Test the model on evaluation data
         clear_session()
