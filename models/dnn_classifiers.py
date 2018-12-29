@@ -313,11 +313,11 @@ class ResNet_MultiOut:
         input_layer = Input(self.input_shape, name="main_input")
 
         # ResNet Units
+        n_filters = 64
+        n_layers = 3
+        kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         resnet_unit_input = input_layer
         for i in range(self.n_resnet_units):
-            n_filters = 64
-            n_layers = 3
-            kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
             if i == 0:
                 first_resnet_unit=True
             else:
@@ -325,16 +325,25 @@ class ResNet_MultiOut:
             resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
                                                            n_layers=n_layers, kernel_sizes=kernel_sizes,
                                                            first_resnet_unit=first_resnet_unit)
-            if i < n_layers-1:
-                resnet_unit_input = resnet_unit_output
+            resnet_unit_input = resnet_unit_output
 
-        # Global pooling layer
-        gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
+#        # Global pooling layer
+#        gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
 
         # Output layer
         # Use softmax
         output_layers = []
         for i in range(self.n_classes):
+
+             ####################
+             # Add resnet layer to each output before global avg pooling
+             resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+                                                            n_layers=n_layers, kernel_sizes=kernel_sizes,
+                                                            first_resnet_unit=False)
+             # Global pooling layer
+             gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
+             ####################
+            
              output_layers.append(Dense(2, activation="softmax", name="output_"+str(i))(gap_layer))
 
         # Put all the model components together
