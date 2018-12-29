@@ -150,7 +150,7 @@ class OnsetData(object):
         """
         binOut = ""
         for _fc in filterColList[::-1]:
-            binOut += str(row[_fc])
+            binOut += str(int(row[_fc]))
         row["outBinary"] = int( binOut, 2 )
         return row
             
@@ -227,10 +227,14 @@ class OnsetData(object):
         # there are substorm onset values in the time range
         # to populate our output bins!
         polarBinList = []
+        polarMlatList = []
+        polarMLTList = []
         for _cpDate in self.polarDateList:
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
             _tmpBinVlas = [ 0 for _tv in range(nBins) ]
+            _tmpLatVlas = [ -1. for _tv in range(nBins) ]
+            _tmpMLTVlas = [ -1. for _tv in range(nBins) ]
             # get a start time and end time for search
             srchStTime = _cpDate.strftime("%Y-%m-%d %H:%M:%S")
             srchETime = (_cpDate + datetime.timedelta(minutes=binTimeRes*nBins)\
@@ -238,20 +242,30 @@ class OnsetData(object):
             _cOnsetList = self.polarDF.loc[ srchStTime : srchETime ].index.tolist()
             # get the difference between current time and the nearest
             # one's found in the DF
-            _delTList = sorted([ \
-                (_t - _cpDate).total_seconds()/60. for _t in _cOnsetList ])
             # we'll ignore the time if the difference is less than 1 minute
-            for _dt in _delTList:
+            for _cto in sorted(_cOnsetList):
+                _dt = (_cto - _cpDate).total_seconds()/60.
                 for _nb in range(nBins):
                     if (_dt >= (_nb*binTimeRes) + 1) & (_dt <= (_nb+1)*binTimeRes):
                         _tmpBinVlas[_nb] = 1
+                        _tmpLatVlas[_nb] = self.polarDF.loc[_cto]["mlat"]/90.
+                        _tmpMLTVlas[_nb] = self.polarDF.loc[_cto]["mlt"]/(15*24.)
             polarBinList.append(_tmpBinVlas)
+            polarMlatList.append(_tmpLatVlas)
+            polarMLTList.append(_tmpMLTVlas)
+            
         # repeat the same for image data
         imageBinList = []
+        imageMlatList = []
+        imageMLTList = []
         for _cpDate in self.imageDateList:
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
+            # similarly we'll fill -1's for lats and lons and 
+            # then populate them later
             _tmpBinVlas = [ 0 for _tv in range(nBins) ]
+            _tmpLatVlas = [ -1. for _tv in range(nBins) ]
+            _tmpMLTVlas = [ -1. for _tv in range(nBins) ]
             # get a start time and end time for search
             srchStTime = _cpDate.strftime("%Y-%m-%d %H:%M:%S")
             srchETime = (_cpDate + datetime.timedelta(minutes=binTimeRes*nBins)\
@@ -259,23 +273,36 @@ class OnsetData(object):
             _cOnsetList = self.imageDF.loc[ srchStTime : srchETime ].index.tolist()
             # get the difference between current time and the nearest
             # one's found in the DF
-            _delTList = sorted([ \
-                (_t - _cpDate).total_seconds()/60. for _t in _cOnsetList ])
             # we'll ignore the time if the difference is less than 1 minute
-            for _dt in _delTList:
+            for _cto in sorted(_cOnsetList):
+                _dt = (_cto - _cpDate).total_seconds()/60.
                 for _nb in range(nBins):
                     if (_dt >= (_nb*binTimeRes) + 1) & (_dt <= (_nb+1)*binTimeRes):
                         _tmpBinVlas[_nb] = 1
+                        _tmpLatVlas[_nb] = self.imageDF.loc[_cto]["mlat"]/90.
+                        _tmpMLTVlas[_nb] = self.imageDF.loc[_cto]["mlt"]/24.
             imageBinList.append(_tmpBinVlas)
+            imageMlatList.append(_tmpLatVlas)
+            imageMLTList.append(_tmpMLTVlas)
+            
         # convert the bin lists into dataframes
         # POLAR
         polDataSet = pandas.DataFrame(polarBinList,\
                      columns=["bin_" + str(_i) for _i in range(nBins)])
+        # add the additional mlat,mlt cols
+        polDataSet[["mlat_" + str(_i) for _i in range(nBins)\
+                                   ]] = pandas.DataFrame(polarMlatList)
+        polDataSet[["mlt_" + str(_i) for _i in range(nBins)\
+                                   ]] = pandas.DataFrame(polarMLTList)
+        
         polDataSet = polDataSet.set_index(\
                     pandas.to_datetime(self.polarDateList))
         # IMAGE
         imgDataSet = pandas.DataFrame(imageBinList,\
                      columns=["bin_" + str(_i) for _i in range(nBins)])
+        # add the additional mlat,mlt cols
+        imgDataSet[["mlat_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMlatList)
+        imgDataSet[["mlt_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMLTList)
         imgDataSet = imgDataSet.set_index(\
                         pandas.to_datetime(self.imageDateList))
         # Now merge both the dataframes!
@@ -308,13 +335,24 @@ class OnsetData(object):
             nonSSDF = self.create_non_ss_bins(ndd, nonSSDataCnt,\
                                 binTimeRes=binTimeRes, nBins=nBins)
             # add 0's to the bins
-            for _fc in filterCols:
-                nonSSDF[_fc] = 0
+            for _cc in ssBinDF.columns:
+                if "bin" in _cc:
+                    nonSSDF[_cc] = 0
+                else:
+                    nonSSDF[_cc] = -1.
             # make both the DFs similar
             nonSSDF = nonSSDF.set_index(\
                             pandas.to_datetime(nonSSDF["date"].tolist()))
-            nonSSDF = nonSSDF[filterCols]
-            ssBinDF = ssBinDF[filterCols]
+            # we'll select the cols we need
+            binCols = [ col for col in ssBinDF\
+                         if col.startswith('bin') ]
+            mlatCols = [ col for col in ssBinDF\
+                         if col.startswith('mlat') ]
+            mltCols = [ col for col in ssBinDF\
+                         if col.startswith('mlt') ]
+            selCols = binCols + mlatCols + mltCols
+            nonSSDF = nonSSDF[selCols]
+            ssBinDF = ssBinDF[selCols]
             # there could be some common dates between SS
             # and non-SS DFs. For now we'll drop all the dates
             # which are present in SS from the non SS DF. But we'll
