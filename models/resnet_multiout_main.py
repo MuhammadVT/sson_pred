@@ -2,7 +2,7 @@ import keras
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
-from dnn_classifiers import FCNN_MultiOut
+from dnn_classifiers import ResNet_MultiOut
 from scipy.io import loadmat
 import matplotlib
 matplotlib.use("Agg")
@@ -13,9 +13,6 @@ import datetime as dt
 import os
 import glob
 import time
-import sys
-sys.path.append("../data_pipeline")
-#import batch_utils
 
 #skip_training = True
 skip_training = False
@@ -23,11 +20,11 @@ skip_training = False
 # Load the data
 print("loading the data...")
 
-input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
-
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
+#output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
+
+input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 #output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
@@ -46,14 +43,6 @@ y = np.load(output_file)
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=10)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
 
-# Build a FCNN_MultiOut model
-optimizer=keras.optimizers.Adam(lr=0.0001)
-batch_size = 64
-n_epochs = 500
-n_classes = y_train.shape[1] 
-metrics = ["accuracy"]
-input_shape = x_train.shape[1:]
-
 # Encode the labels for each output bin
 y_train_list = []
 y_test_list = []
@@ -65,16 +54,25 @@ for i in range(y.shape[1]):
     y_val_list.append(enc.fit_transform(y_val[:, i].reshape(-1,1)).toarray())
 
 # create out_dir
-out_dir="./trained_models/FCNN_MultiOut/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-#out_dir = "trained_models/FCNN_MultiOut/20181228_192830/"
+out_dir="./trained_models/ResNet_MultiOut/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+#out_dir = "trained_models/ResNet_MultiOut/20181228_192830/"
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
+
+# Build a ResNet_MultiOut model
+optimizer=keras.optimizers.Adam(lr=0.0001)
+batch_size = 64
+n_epochs = 500
+n_classes = y_train.shape[1] 
+n_resnet_units = 3
+metrics = ["accuracy"]
+input_shape = x_train.shape[1:]
 
 # Define the loss, loss_weights, and class_weights
 loss=keras.losses.categorical_crossentropy
 #loss_weights = [1. for x in range(n_classes)]
-#loss_weights = [1., 1.2]
-loss_weights = [1., 1.2, 1.4]
+loss_weights = [1., 1.2]
+#loss_weights = [1., 1.2, 1.4]
 
 #from sklearn import utils
 class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
@@ -82,15 +80,16 @@ class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].su
 #class_weights = [{0:1, 1:10} for i in range(n_classes)]
 #class_weights = None
 
-fcnn = FCNN_MultiOut(input_shape, batch_size=batch_size, n_epochs=n_epochs,
-            n_classes=n_classes, loss=loss, loss_weights=loss_weights,
-            optimizer=optimizer, metrics=metrics, out_dir=out_dir)
+resnet = ResNet_MultiOut(input_shape, batch_size=batch_size, n_epochs=n_epochs,
+                    n_classes=n_classes, n_resnet_units=n_resnet_units, loss=loss,
+                    loss_weights=loss_weights, optimizer=optimizer,
+                    metrics=metrics, out_dir=out_dir)
 
 # Train the model
 if not skip_training:
     print("Training the model...")
-    fit_history = fcnn.train_model(x_train, y_train_list, x_val, y_val_list,
-                                   class_weights=class_weights)
+    fit_history = resnet.train_model(x_train, y_train_list, x_val, y_val_list,
+                                     class_weights=class_weights)
 
 ## Plot the training 
 #fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)

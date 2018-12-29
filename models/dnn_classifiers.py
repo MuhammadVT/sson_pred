@@ -254,6 +254,7 @@ class FCNN_MultiOut:
 # ResNet Convolutional Neural Network (ResNet) with multiple outputs
 class ResNet_MultiOut:
     def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
+                 n_resnet_units=3,
                  loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
                  loss_weights=None,
                  out_dir="./trained_models/ResNet_MultiOut/"):
@@ -263,6 +264,7 @@ class ResNet_MultiOut:
         self.batch_size = batch_size 
         self.n_epochs = n_epochs
         self.n_classes = n_classes
+        self.n_resnet_units = n_resnet_units
         self.loss = loss
         self.loss_weights = loss_weights
         self.optimizer = optimizer
@@ -272,7 +274,7 @@ class ResNet_MultiOut:
         # Creat a ResNet model
         self.model = self.creat_model()
 
-    def __create_resnet_unit(input_layer, n_filters=64, n_layers=3, kernel_sizes=[8, 5, 3],
+    def __create_resnet_unit(self, input_layer, n_filters=64, n_layers=3, kernel_sizes=[8, 5, 3],
                              first_resnet_unit=True):
 
         from keras.layers import Conv1D, add 
@@ -298,7 +300,7 @@ class ResNet_MultiOut:
 
         return output_layer
 
-    def creat_model(self, n_resnet_units=3):
+    def creat_model(self):
 
         from keras.layers import Input, Conv1D, Dense
         from keras.layers import normalization, Activation, pooling
@@ -312,17 +314,17 @@ class ResNet_MultiOut:
 
         # ResNet Units
         resnet_unit_input = input_layer
-        for i in range(n_resnet_units):
+        for i in range(self.n_resnet_units):
             n_filters = 64
             n_layers = 3
-            kernel_sizes = [8, 5, 3]   # #elements has to be eqaul to n_layers
+            kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
             if i == 0:
                 first_resnet_unit=True
             else:
                 first_resnet_unit=False
-            resnet_unit_output = __create_resnet_unit(resnet_unit_input, n_filters=n_filters,
-                                                      n_layers=n_layers, kernel_sizes=kernel_sizes,
-                                                      first_resnet_unit=first_resnet_unit)
+            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
+                                                           first_resnet_unit=first_resnet_unit)
             if i < n_layers-1:
                 resnet_unit_input = resnet_unit_output
 
