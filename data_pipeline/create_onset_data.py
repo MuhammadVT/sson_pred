@@ -229,6 +229,8 @@ class OnsetData(object):
         polarBinList = []
         polarMlatList = []
         polarMLTList = []
+        polarClstOnsetTime = []
+        polarClstDelT = []
         for _cpDate in self.polarDateList:
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
@@ -253,11 +255,27 @@ class OnsetData(object):
             polarBinList.append(_tmpBinVlas)
             polarMlatList.append(_tmpLatVlas)
             polarMLTList.append(_tmpMLTVlas)
+            # we'll add another col where we find the shortest time
+            # to ss onset
+            if len(_cOnsetList) > 0:
+                _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
+                # if diff is less than a minute, ignore
+                if _minDelT <= 1.:
+#                     polarClstOnsetTime.append(-1.)
+                    polarClstDelT.append(-1.)
+                else:
+#                     polarClstOnsetTime.append(min(_cOnsetList))
+                    polarClstDelT.append(_minDelT)
+            else:
+#                 polarClstOnsetTime.append(-1.)
+                polarClstDelT.append(-1.)
             
         # repeat the same for image data
         imageBinList = []
         imageMlatList = []
         imageMLTList = []
+        imageClstOnsetTime = []
+        imageClstDelT = []
         for _cpDate in self.imageDateList:
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
@@ -284,6 +302,19 @@ class OnsetData(object):
             imageBinList.append(_tmpBinVlas)
             imageMlatList.append(_tmpLatVlas)
             imageMLTList.append(_tmpMLTVlas)
+            # get the closest time
+            if len(_cOnsetList) > 0:
+                _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
+                # if diff is less than a minute, ignore
+                if _minDelT <= 1.:
+#                     imageClstOnsetTime.append(-1.)
+                    imageClstDelT.append(-1.)
+                else:
+#                     imageClstOnsetTime.append(min(_cOnsetList))
+                    imageClstDelT.append(_minDelT)
+            else:
+#                 imageClstOnsetTime.append(-1.)
+                imageClstDelT.append(-1.)
             
         # convert the bin lists into dataframes
         # POLAR
@@ -294,6 +325,9 @@ class OnsetData(object):
                                    ]] = pandas.DataFrame(polarMlatList)
         polDataSet[["mlt_" + str(_i) for _i in range(nBins)\
                                    ]] = pandas.DataFrame(polarMLTList)
+        # set the closest time cols
+#         polDataSet["closest_time"] = polarClstOnsetTime
+        polDataSet["del_minutes"] = polarClstDelT
         
         polDataSet = polDataSet.set_index(\
                     pandas.to_datetime(self.polarDateList))
@@ -303,6 +337,9 @@ class OnsetData(object):
         # add the additional mlat,mlt cols
         imgDataSet[["mlat_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMlatList)
         imgDataSet[["mlt_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMLTList)
+        # set the closest time cols
+#         imgDataSet["closest_time"] = imageClstOnsetTime
+        imgDataSet["del_minutes"] = imageClstDelT
         imgDataSet = imgDataSet.set_index(\
                         pandas.to_datetime(self.imageDateList))
         # Now merge both the dataframes!
@@ -350,7 +387,8 @@ class OnsetData(object):
                          if col.startswith('mlat') ]
             mltCols = [ col for col in ssBinDF\
                          if col.startswith('mlt') ]
-            selCols = binCols + mlatCols + mltCols
+            otrCols = [ "del_minutes" ]
+            selCols = binCols + mlatCols + mltCols + otrCols
             nonSSDF = nonSSDF[selCols]
             ssBinDF = ssBinDF[selCols]
             # there could be some common dates between SS
@@ -371,6 +409,7 @@ class OnsetData(object):
             ssBinDF = pandas.concat( [ ssBinDF, nonSSDF ] ) 
             newSize = ssBinDF.shape[0]
             print "expanded with new non-SS data--->", origSize, newSize
+        print ssBinDF.head()
         # save the file to make future calc faster
         if saveBinData:
             # Note feather doesn't support datetime index
