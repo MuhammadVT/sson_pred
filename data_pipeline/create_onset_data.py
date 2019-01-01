@@ -193,7 +193,7 @@ class OnsetData(object):
     def create_output_bins(self,\
                  aulDBdir="/home/bharat/Documents/data/ss_onset_dataset/data/sqlite3/", \
                  aulDBName="au_al_ae.sqlite",\
-                 aulTabName="aualae", alSSCutoff = -10, \
+                 aulTabName="aualae", alSSCutoff = -25, \
                  aeSSCutoff = 50, minDelT = 5,\
                  binTimeRes=30, nBins=3, saveBinData=True,\
                  saveFile="../data/binned_data_extra.feather",\
@@ -403,7 +403,9 @@ class OnsetData(object):
                         len(interInds)
                 # drop the common dates from non SS DF
                 nonSSDF.drop(interInds, inplace=True)
-                print "dropped common columns"
+                print "dropped common rows"
+            else:
+                print "no common rows found between ss and non-ss data"
             # Merge Both the DFs
             origSize = ssBinDF.shape[0]
             ssBinDF = pandas.concat( [ ssBinDF, nonSSDF ] ) 

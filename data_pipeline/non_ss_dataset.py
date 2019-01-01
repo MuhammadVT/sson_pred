@@ -7,7 +7,7 @@ class NonSSData(object):
     Load the required data into a DF
     """
     def __init__(self, startDate, endDate, aulDBdir, aulDBName,\
-                 aulTabName, alSSCutoff = -10, aeSSCutoff = 50,\
+                 aulTabName, alSSCutoff = -25, aeSSCutoff = 50,\
                  minDelT = 5, minDiffTime = 180):
         """
         setup some vars
