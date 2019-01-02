@@ -274,11 +274,12 @@ class ResNet_MultiOut:
         # Creat a ResNet model
         self.model = self.creat_model()
 
-    def __create_resnet_unit(self, input_layer, n_filters=64, n_layers=3, kernel_sizes=[8, 5, 3],
+    def __create_resnet_unit(self, input_layer, n_filters=64, n_layers=3, kernel_sizes=[7, 5, 3],
                              first_resnet_unit=True):
 
         from keras.layers import Conv1D, add 
         from keras.layers import normalization, Activation
+        from keras.layers.core import Dropout
 
         tmp_layer = input_layer
         for i in range(n_layers):
@@ -286,9 +287,10 @@ class ResNet_MultiOut:
             conv_layer = normalization.BatchNormalization()(conv_layer)
             if i < n_layers-1:
                 conv_layer = Activation('relu')(conv_layer)
+                #conv_layer = Dropout(0.2, seed=100)(conv_layer)
             tmp_layer = conv_layer
 
-        # expand channels for the sum 
+        # expand the first resnet channels for the sum 
         if first_resnet_unit:
             reslink = Conv1D(filters=n_filters, kernel_size=1, padding='same')(input_layer)
         else:   
@@ -297,6 +299,7 @@ class ResNet_MultiOut:
 
         output_layer = add([reslink, tmp_layer])
         output_layer = Activation('relu')(output_layer)
+        #output_layer = Dropout(0.2, seed=100)(output_layer)
 
         return output_layer
 
@@ -327,24 +330,31 @@ class ResNet_MultiOut:
                                                            first_resnet_unit=first_resnet_unit)
             resnet_unit_input = resnet_unit_output
 
-#        # Global pooling layer
-#        gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
+        # Global pooling layer
+        gap_layer_main = pooling.GlobalAveragePooling1D()(resnet_unit_output)
 
         # Output layer
         # Use softmax
         output_layers = []
+        n_output_resnet_units = 0
         for i in range(self.n_classes):
+            ####################
+            # Add resnet layer to each output before global avg pooling
+            if n_output_resnet_units > 0:
+                resnet_unit_input_j = resnet_unit_input
+                for j in range(n_output_resnet_units):
+                    resnet_unit_output_j = self.__create_resnet_unit(resnet_unit_input_j, n_filters=n_filters,
+                                                                   n_layers=n_layers, kernel_sizes=kernel_sizes,
+                                                                   first_resnet_unit=False)
 
-             ####################
-             # Add resnet layer to each output before global avg pooling
-             resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
-                                                            n_layers=n_layers, kernel_sizes=kernel_sizes,
-                                                            first_resnet_unit=False)
-             # Global pooling layer
-             gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
-             ####################
-            
-             output_layers.append(Dense(2, activation="softmax", name="output_"+str(i))(gap_layer))
+                    resnet_unit_input_j = resnet_unit_output_j
+                # Global pooling layer
+                gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output_j)
+            else:
+                gap_layer = gap_layer_main
+
+            ####################
+            output_layers.append(Dense(2, activation="softmax", name="output_"+str(i))(gap_layer))
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layers)
