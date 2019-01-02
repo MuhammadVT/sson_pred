@@ -23,11 +23,11 @@ skip_training = False
 # Load the data
 print("loading the data...")
 
-input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
-
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
+#output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
+
+input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 #output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
@@ -73,8 +73,8 @@ if not os.path.exists(out_dir):
 # Define the loss, loss_weights, and class_weights
 loss=keras.losses.categorical_crossentropy
 #loss_weights = [1. for x in range(n_classes)]
-#loss_weights = [1., 1.2]
-loss_weights = [1., 1.2, 1.4]
+loss_weights = [1., 1.2]
+#loss_weights = [1., 1.2, 1.4]
 
 #from sklearn import utils
 class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
