@@ -20,14 +20,14 @@ skip_training = False
 # Load the data
 print("loading the data...")
 
-input_file = "../data/input.omnHistory_180.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
+#input_file = "../data/input.omnHistory_180.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+#output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 #output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
 
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
+input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 #output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
@@ -64,7 +64,7 @@ if not os.path.exists(out_dir):
 
 # Build a ResNet_MultiOut model
 optimizer=keras.optimizers.Adam(lr=0.0001)
-batch_size = 64
+batch_size = 32
 n_epochs = 400
 n_classes = y_train.shape[1] 
 n_resnet_units = 3
@@ -74,12 +74,12 @@ input_shape = x_train.shape[1:]
 # Define the loss, loss_weights, and class_weights
 loss=keras.losses.categorical_crossentropy
 #loss_weights = [1. for x in range(n_classes)]
-#loss_weights = [1., 1.2]
-loss_weights = [1., 1.0, 1.0]
+loss_weights = [1., 1.2]
+#loss_weights = [1., 1.0, 1.4]
 
 #from sklearn import utils
-class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
-#class_weights = [{0:1, 1:1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
+class_weights = [{0:1, 1:(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
+#class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
 #class_weights = [{0:1, 1:10} for i in range(n_classes)]
 #class_weights = None
 
@@ -123,6 +123,8 @@ test_model = keras.models.load_model(model_name)
 y_pred_list = test_model.predict(x_test, batch_size=32)
 
 # The final activation layer uses softmax
+if n_classes == 1:
+    y_pred_list = [np.array(y_pred_list)]
 y_pred_list = [np.argmax(y_pred , axis=1) for y_pred in y_pred_list]
 y_true_list = [np.argmax(y_true , axis=1) for y_true in y_test_list]
 for i in range(len(y_pred_list)):
