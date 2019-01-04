@@ -185,7 +185,7 @@ class OnsetData(object):
                 nonSSDtList.append(_it)
                 _it += datetime.timedelta(seconds=self.fillTimeRes*60)
         if nonSSDataCnt < len(nonSSDtList):
-            print "more data found than required---", nonSSDataCnt, len(nonSSDtList)
+            print("more data found than required---", nonSSDataCnt, len(nonSSDtList))
             indices = random.sample(range(len(nonSSDtList)), nonSSDataCnt)
             nonSSDtList = [ nonSSDtList[_i] for _i in sorted(indices) ]
         return pandas.DataFrame(nonSSDtList, columns=["date"])
@@ -399,19 +399,19 @@ class OnsetData(object):
             nssInds = set(nonSSDF.index.tolist())
             interInds = list(ssInds.intersection(nssInds))
             if len(interInds) > 0:
-                print "There are common dates found in both DFs",\
-                        len(interInds)
+                print("There are common dates found in both DFs",\
+                        len(interInds))
                 # drop the common dates from non SS DF
                 nonSSDF.drop(interInds, inplace=True)
-                print "dropped common rows"
+                print("dropped common rows")
             else:
-                print "no common rows found between ss and non-ss data"
+                print("no common rows found between ss and non-ss data")
             # Merge Both the DFs
             origSize = ssBinDF.shape[0]
             ssBinDF = pandas.concat( [ ssBinDF, nonSSDF ] ) 
             newSize = ssBinDF.shape[0]
-            print "expanded with new non-SS data--->", origSize, newSize
-        print ssBinDF.head()
+            print("expanded with new non-SS data--->", origSize, newSize)
+        print(ssBinDF.head())
         # save the file to make future calc faster
         if saveBinData:
             # Note feather doesn't support datetime index

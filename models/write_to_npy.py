@@ -19,11 +19,13 @@ onsetDelTCutoff = 2
 onsetFillTimeRes = 1
 omnDBRes = 1
 binTimeRes = 30
-nBins = 1
+nBins = 2
 loadPreComputedOnset = False
 saveBinData = False 
 onsetSaveFile = "../data/binned_data.feather"
 input_file = "../data/input." +\
+             "nBins_" + str(nBins) + "." +\
+             "binTimeRes_" + str(binTimeRes) + "." +\
 	     "omnHistory_" + str(omnHistory) + "." +\
 	     "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
 	     "omnDBRes_" + str(omnDBRes) + "." +\
