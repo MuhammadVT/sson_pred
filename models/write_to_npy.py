@@ -87,8 +87,8 @@ np.save(input_file, input_data)
 col_dct = {}
 lbl = 0
 for b in range(nBins):
-    col_dct[str(b*binTimeRes) + "_" + str((b+1)*binTimeRes)] = output_data[:, b].tolist()
-    lbl = lbl + (2**(nBins-1-b)) * output_data[:, b]
+    col_dct[str(b*binTimeRes) + "_" + str((b+1)*binTimeRes)] = output_data[:, b].astype(int).tolist()
+    lbl = lbl + (2**(nBins-1-b)) * output_data[:, b].astype(int)
     
 col_dct["label"] = lbl
 df = pd.DataFrame(data=col_dct, index=dtms)
