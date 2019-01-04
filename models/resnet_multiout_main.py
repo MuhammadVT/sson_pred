@@ -43,6 +43,7 @@ output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleDa
 
 X = np.load(input_file)
 y = np.load(output_file)
+y = y[:, 1:]
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=10)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
 
@@ -64,7 +65,7 @@ if not os.path.exists(out_dir):
 
 # Build a ResNet_MultiOut model
 optimizer=keras.optimizers.Adam(lr=0.0001)
-batch_size = 32
+batch_size = 64
 n_epochs = 400
 n_classes = y_train.shape[1] 
 n_resnet_units = 3
@@ -73,15 +74,15 @@ input_shape = x_train.shape[1:]
 
 # Define the loss, loss_weights, and class_weights
 loss=keras.losses.categorical_crossentropy
-#loss_weights = [1. for x in range(n_classes)]
-loss_weights = [1., 1.2]
+loss_weights = [1. for x in range(n_classes)]
+#loss_weights = [1., 1.2]
 #loss_weights = [1., 1.0, 1.4]
 
 #from sklearn import utils
-class_weights = [{0:1, 1:(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
+#class_weights = [{0:1, 1:(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
 #class_weights = [{0:0.1, 1:0.1*(y_train_list[i].shape[0]-y_train_list[i][:,1].sum())/(y_train_list[i][:,1].sum())} for i in range(n_classes)]
 #class_weights = [{0:1, 1:10} for i in range(n_classes)]
-#class_weights = None
+class_weights = None
 
 resnet = ResNet_MultiOut(input_shape, batch_size=batch_size, n_epochs=n_epochs,
                     n_classes=n_classes, n_resnet_units=n_resnet_units, loss=loss,
