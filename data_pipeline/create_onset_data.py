@@ -191,9 +191,9 @@ class OnsetData(object):
         return pandas.DataFrame(nonSSDtList, columns=["date"])
 
     def create_output_bins(self,\
-                 aulDBdir="/home/bharat/Documents/data/ss_onset_dataset/data/sqlite3/", \
-                 aulDBName="au_al_ae.sqlite",\
-                 aulTabName="aualae", alSSCutoff = -25, \
+                 aulDBdir="../data/sqlite3/", \
+                 aulDBName="smu_sml_sme.sqlite",\
+                 aulTabName="smusmlsme", alSSCutoff = -25, \
                  aeSSCutoff = 50, minDelT = 5,\
                  binTimeRes=30, nBins=3, saveBinData=True,\
                  saveFile="../data/binned_data_extra.feather",\

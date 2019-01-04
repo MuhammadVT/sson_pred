@@ -75,7 +75,6 @@ class DataUtils(object):
                         binTimeRes=binTimeRes, nBins=nBins,\
                         saveBinData=saveBinData, saveFile=onsetSaveFile)
             # drop the date column which is already in index
-            onsetDF.drop(columns=["date"], inplace=True)
         return onsetDF
 
     def _load_omn_data(self):
