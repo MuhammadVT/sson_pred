@@ -22,8 +22,11 @@ classes_are_mutually_exclusive = False    # Corresponds to sigmoid activation la
 
 # Load the data
 print("loading the data...")
+#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+#output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
+
 input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
+output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
 
 #input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
 #output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
@@ -36,6 +39,7 @@ output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleDa
 
 X = np.load(input_file)
 y = np.load(output_file)
+#y = y[:, 1:]
 if classes_are_mutually_exclusive:
     #y = y[:, 0:2]    # two classes
     #y = y[:, 0]    # one class
@@ -47,7 +51,7 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.
 # Build a FCNN model
 optimizer=keras.optimizers.Adam(lr=0.0001)
 batch_size = 64
-n_epochs = 200
+n_epochs = 500
 n_classes = y_train.shape[1] 
 metrics = ["accuracy"]
 input_shape = x_train.shape[1:]
@@ -77,8 +81,8 @@ if not os.path.exists(out_dir):
 if classes_are_mutually_exclusive:
     loss=keras.losses.categorical_crossentropy
 else:
-    #loss=keras.losses.binary_crossentropy
-    loss = binary_crossentropy_weigted
+    loss=keras.losses.binary_crossentropy
+    #loss = binary_crossentropy_weigted
 
 
 fcnn = FCNN(input_shape, batch_size=batch_size, n_epochs=n_epochs,
@@ -87,8 +91,8 @@ fcnn = FCNN(input_shape, batch_size=batch_size, n_epochs=n_epochs,
 
 # Train the model
 print("Training the model...")
-fit_history = fcnn.train_model(x_train, y_train, x_val, y_val, y_test,
-                               class_weight=class_weights)
+fit_history = fcnn.train_model(x_train, y_train, x_val, y_val,
+                               class_weights=class_weights)
 
 # Plot the training 
 fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
