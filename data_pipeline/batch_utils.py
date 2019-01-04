@@ -98,17 +98,23 @@ class DataUtils(object):
         omnObj.omnDF = omnObj.omnDF[self.omnTrainParams]
         return omnObj.omnDF
 
-    def _get_batchDict(self, shuffleData):
+    def _get_batchDict(self, shuffleData, set_seed=0):
         """
         create a dict with batch dates as keys
         and corresponding datapoint date list as
         values.
+        Note we're seeding the values to reproduce
+        shuffled results!
+        assign the set_seed keyword to None, if you
+        dont want to "de-randomize" the shuffling!
         """
         import numpy
         # get the data points/dates
         dataDateList = numpy.array( self.onsetDF.index.tolist() )
         # shuffle if we choose to
         if shuffleData:
+            if set_seed is not None:
+                numpy.random.seed(set_seed)
             numpy.random.shuffle(dataDateList)
         # divide the dates by batch size and create a dict of batches
         nArrs = round(dataDateList.shape[0]/float(self.batch_size))
