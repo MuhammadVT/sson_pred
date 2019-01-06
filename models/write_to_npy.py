@@ -18,8 +18,9 @@ batch_size = 1
 onsetDelTCutoff = 2
 onsetFillTimeRes = 1
 omnDBRes = 1
-binTimeRes = 30
-nBins = 2
+binTimeRes = 20
+nBins = 3
+predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 
 onsetSaveFile = "../data/binned_data.feather"
@@ -69,7 +70,7 @@ for _bat in batchObj.batchDict.keys():
     # get the corresponding input (omnData) and output (onsetData)
     # for this particular batch!
     dtm = batchObj.batchDict[_bat][0]
-    onsetData = batchObj.onset_from_batch(batchObj.batchDict[_bat])
+    onsetData = batchObj.onset_from_batch(batchObj.batchDict[_bat], predList=predList)
     omnData = batchObj.omn_from_batch(batchObj.batchDict[_bat])
     onsetData_list.append(onsetData[0])
     omnData_list.append(omnData)
