@@ -75,7 +75,6 @@ class DataUtils(object):
                         binTimeRes=binTimeRes, nBins=nBins,\
                         saveBinData=saveBinData, saveFile=onsetSaveFile)
             # drop the date column which is already in index
-            onsetDF.drop(columns=["date"], inplace=True)
         return onsetDF
 
     def _load_omn_data(self):
@@ -98,17 +97,23 @@ class DataUtils(object):
         omnObj.omnDF = omnObj.omnDF[self.omnTrainParams]
         return omnObj.omnDF
 
-    def _get_batchDict(self, shuffleData):
+    def _get_batchDict(self, shuffleData, set_seed=0):
         """
         create a dict with batch dates as keys
         and corresponding datapoint date list as
         values.
+        Note we're seeding the values to reproduce
+        shuffled results!
+        assign the set_seed keyword to None, if you
+        dont want to "de-randomize" the shuffling!
         """
         import numpy
         # get the data points/dates
         dataDateList = numpy.array( self.onsetDF.index.tolist() )
         # shuffle if we choose to
         if shuffleData:
+            if set_seed is not None:
+                numpy.random.seed(set_seed)
             numpy.random.shuffle(dataDateList)
         # divide the dates by batch size and create a dict of batches
         nArrs = round(dataDateList.shape[0]/float(self.batch_size))
@@ -118,17 +123,24 @@ class DataUtils(object):
             batchDict[_nbat] = _bat
         return batchDict
     
-    def onset_from_batch(self, dateList):
+    def onset_from_batch(self, dateList, predList=["bin"]):
         """
         Given a list of dates from one batch
-        get onset bins, i.e., the outputs.
+        get outputs from the onsetDF
+        predList contains the type of outputs we need
+        during predictions. we generate multiple params
+        and we may not need all of them during training.
         """
         # Note our dateList could be shuffled
         # so we can't simply use a range for 
         # accesing data from the index!
+        predCols = []
+        for _pr in predList:
+            predCols += [ col for col in self.onsetDF\
+                         if col.startswith(_pr) ]
         outArr = self.onsetDF[\
                     self.onsetDF.index.isin(dateList)\
-                    ].as_matrix()
+                    ][predCols].as_matrix()
         return outArr.reshape( outArr.shape[0], 1, outArr.shape[1] )
     
     def omn_from_batch(self, dateList):
