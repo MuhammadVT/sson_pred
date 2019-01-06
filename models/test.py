@@ -14,8 +14,11 @@ import glob
 import time
 
 # Select the model to be tested
-out_dir = "trained_models/ResNet_MultiOut/20181230_120722/"
-test_epoch = 400
+#out_dir = "trained_models/ResNet_MultiOut/20181230_120722/"
+#out_dir="./trained_models/ResNet/20190104_113412/"    # good one for 1-bin prediction
+out_dir="./trained_models/ResNet/20190104_155006/"     # good one for 2-bin prediction
+
+test_epoch = 160
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
 
@@ -23,9 +26,8 @@ test_model = keras.models.load_model(model_name)
 print("loading the data...")
 
 file_dir = "../data/"
-input_fname = "input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_fname = "nBins_1.binTimeRes_30.onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
-
+input_fname = "input.nBins_2.binTimeRes_30.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
+output_fname = "nBins_2.binTimeRes_30.onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
 
 input_file = file_dir + input_fname
 output_file = file_dir + output_fname

@@ -9,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 plt.style.use("ggplot")
 import numpy as np
+import pandas as pd
 import datetime as dt
 import os
 import glob
@@ -17,35 +18,39 @@ import time
 #skip_training = True
 skip_training = False
 
+nBins = 2
+binTimeRes = 30
+file_dir = "../data/"
+input_fname = "input." +\
+              "nBins_" + str(nBins) + "." + "binTimeRes_" + str(binTimeRes) + "." +\
+              "omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy"
+output_fname = "nBins_" + str(nBins) + "." + "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
+
+input_file = file_dir + input_fname
+output_file = file_dir + output_fname
+
 # Load the data
 print("loading the data...")
-
-#input_file = "../data/input.omnHistory_180.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_3.binTimeRes_20.onsetFillTimeRes_1.shuffleData_True.npy"
-
-input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_False.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_False.shuffleData_False.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
-
 X = np.load(input_file)
-y = np.load(output_file)
-y = y[:, 1:]
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=10)
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
+df = pd.read_csv(output_file, index_col=0)
+cols = []
+for b in range(nBins):
+    cols.append(str(b*binTimeRes) + "_" + str((b+1)*binTimeRes))
+y = df.loc[:, cols].values
+
+npoints = X.shape[0]
+train_size = 0.75
+val_size = 0.15
+test_size = 0.1
+train_eindex = int(npoints * train_size)
+val_eindex = train_eindex + int(npoints * val_size)
+x_train = X[:train_eindex, :]
+x_val = X[train_eindex:val_eindex, :]
+x_test = X[val_eindex:, :]
+y_train = y[:train_eindex, :]
+y_val = y[train_eindex:val_eindex, :]
+y_test = y[val_eindex:, :]
 
 # Encode the labels for each output bin
 y_train_list = []
@@ -66,7 +71,7 @@ if not os.path.exists(out_dir):
 # Build a ResNet_MultiOut model
 optimizer=keras.optimizers.Adam(lr=0.0001)
 batch_size = 64
-n_epochs = 400
+n_epochs = 200
 n_classes = y_train.shape[1] 
 n_resnet_units = 3
 metrics = ["accuracy"]
