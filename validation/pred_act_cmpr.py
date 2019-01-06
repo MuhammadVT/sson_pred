@@ -89,7 +89,6 @@ class PredSumry(object):
             _dt = row["date"]
             print "plotting--->", _dt
             esObj.generate_plot(_dt, _actBinLabs, _prBinLabs)
-            break
         
         
         

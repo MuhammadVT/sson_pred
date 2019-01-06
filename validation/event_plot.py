@@ -201,5 +201,6 @@ class EventSummary(object):
         plt.xlim([plotTimeRange[0], plotTimeRange[1]])
         plt.xlabel("Time UT")
         plt.tick_params(labelsize=14)
+        fig.suptitle(eventDate.strftime("%Y-%m-%d"))
         fig.savefig(self.figDir + figName, bbox_inches='tight')            
 
