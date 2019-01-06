@@ -3,6 +3,8 @@ import pandas
 import numpy
 import feather
 import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 import os
@@ -202,5 +204,7 @@ class EventSummary(object):
         plt.xlabel("Time UT")
         plt.tick_params(labelsize=14)
         fig.suptitle(eventDate.strftime("%Y-%m-%d"))
-        fig.savefig(self.figDir + figName, bbox_inches='tight')            
+        fig.savefig(self.figDir + figName, bbox_inches='tight')           
+        fig.clf()
+        fig.close()
 

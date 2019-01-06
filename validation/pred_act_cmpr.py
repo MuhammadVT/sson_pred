@@ -2,6 +2,8 @@ import datetime
 import pandas
 import numpy
 import event_plot
+import matplotlib
+matplotlib.use('Agg')
 
 class PredSumry(object):
     """

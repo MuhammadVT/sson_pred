@@ -1,5 +1,7 @@
 import pred_act_cmpr
 import datetime
+import matplotlib
+matplotlib.use('Agg')
 
 omnDBDir = "/home/bharat/Documents/data/ss_onset_dataset/data/sqlite3/"
 omnDbName = "omni_sw_imf.sqlite"
