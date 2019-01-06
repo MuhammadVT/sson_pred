@@ -48,16 +48,19 @@ class EventSummary(object):
         self.actualLab = actualLab
         self.predLab = predLab
         self.figDir = figDir
+        self.binTimeRes = binTimeRes
+        self.nBins = nBins
         # db params
         self.paramDBDir = paramDBDir
-        # params
+        # geophysical params
         self.omnParams = omnParams
         self.aulParams = aulParams
         self.smParams = smParams
         # get the time range of the plot
         prevTime = self.eventDate - datetime.timedelta(minutes=plotTimeHist)
         futTime = self.eventDate + datetime.timedelta(\
-                                    minutes=(nBins+plotFutureBins)*binTimeRes)
+                                    minutes=(self.nBins+plotFutureBins\
+                                    )*self.binTimeRes)
         self.plotTimeRange = [ prevTime, futTime]
         if paramTimeRange is None:
             self.paramTimeRange = self.plotTimeRange
@@ -84,6 +87,13 @@ class EventSummary(object):
             self.smDF = None
         # load the model pred data labels
         self.predDF = self._load_model_pred_data(modelPredFname, nBins)
+        # set colors for shading regions of True positives, 
+        # True Negatives, False positives and negatives.
+        self.shadeColDict = {}
+        self.shadeColDict["TP"] = "#2d6d66"
+        self.shadeColDict["TN"] = "#1a476f"
+        self.shadeColDict["FP"] = "#90353b"
+        self.shadeColDict["FN"] = "#e30e00"
 
     def _load_omn_data(self, omnDbName, omnTabName):
         """
@@ -140,6 +150,8 @@ class EventSummary(object):
                     len(self.aulParams)-1 + len(self.smParams)-1
         fig, axes = plt.subplots(nrows=nPanels, ncols=1,\
                                  figsize=(8,8), sharex=True)
+        # axis formatting
+        dtLabFmt = DateFormatter('%H:%M')
         axCnt = 0
         # plot omni IMF
         for _op in self.omnParams:
@@ -147,8 +159,9 @@ class EventSummary(object):
                 (self.omnDF["datetime"] >= self.plotTimeRange[0]) &\
                 (self.omnDF["datetime"] <= self.plotTimeRange[1]) ]
             axes[axCnt].plot_date( currOmnDF["datetime"].values,\
-                          currOmnDF[_op].values )
+                          currOmnDF[_op].values, linewidth=1 )
             axes[axCnt].set_ylabel(_op, fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
             axCnt += 1
         # plot auroral indices
         for _aup in self.aulParams:
@@ -156,8 +169,9 @@ class EventSummary(object):
                 (self.aulDF["datetime"] >= self.plotTimeRange[0]) &\
                 (self.aulDF["datetime"] <= self.plotTimeRange[1]) ]
             axes[axCnt].plot_date( currAulDF["datetime"].values,\
-                          currAulDF[_aup].values )
+                          currAulDF[_aup].values, linewidth=1 )
             axes[axCnt].set_ylabel("AU/AL", fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         axCnt += 1
         # plot supermag indices
         for _smp in self.smParams:
@@ -165,13 +179,40 @@ class EventSummary(object):
                 (self.smDF["datetime"] >= self.plotTimeRange[0]) &\
                 (self.smDF["datetime"] <= self.plotTimeRange[1]) ]
             axes[axCnt].plot_date( currSmDF["datetime"].values,\
-                          currSmDF[_smp].values )
+                          currSmDF[_smp].values, linewidth=1 )
             axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         axCnt += 1
+        # shade the region based on the type (TP/TN/FP/FN)
+        for _ax in axes:
+            # plot vertical lines to mark the prediction bins
+            for _nb in range(self.nBins+1):
+                binStart = self.eventDate + datetime.timedelta(\
+                            minutes=_nb*self.binTimeRes)
+                _ax.axvline(x=binStart, color='k', linestyle='--',\
+                            linewidth=0.5)
+                if _nb < self.nBins:
+                    binEnd = self.eventDate + datetime.timedelta(\
+                            minutes=(_nb+1)*self.binTimeRes)
+                    trueNegative = False
+                    if self.actualLab[_nb] == 0:
+                        if self.predLab[_nb] == 0:
+                            currCol = self.shadeColDict["TN"]
+                            trueNegative = True
+                        else:
+                            currCol = self.shadeColDict["FP"]
+                    if self.actualLab[_nb] == 1:
+                        if self.predLab[_nb] == 1:
+                            currCol = self.shadeColDict["TP"]
+                        else:
+                            currCol = self.shadeColDict["FN"]
+                    if not trueNegative:
+                        _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
         # get the figure name
         figName = "stack_event_" +\
                 self.eventDate.strftime("%Y%m%d-%H%M") + "." + figType
-        # Labeling
+        # Labeling and formatting
+        plt.xlim([self.plotTimeRange[0], self.plotTimeRange[1]])
         plt.xlabel("Time UT")
         plt.tick_params(labelsize=14)
         fig.savefig(self.figDir + figName, bbox_inches='tight')
