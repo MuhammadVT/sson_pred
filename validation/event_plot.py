@@ -205,6 +205,6 @@ class EventSummary(object):
         plt.tick_params(labelsize=14)
         fig.suptitle(eventDate.strftime("%Y-%m-%d"))
         fig.savefig(self.figDir + figName, bbox_inches='tight')           
-        fig.clf()
-        fig.close()
+        plt.clf()
+        plt.close()
 
