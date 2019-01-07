@@ -1,9 +1,8 @@
-import event_plot
+import pred_act_cmpr
 import datetime
+import matplotlib
+matplotlib.use('Agg')
 
-eventDate = datetime.datetime(2001, 10, 3, 3, 0)
-actualLab = []
-predLab = []
 omnDBDir = "/home/bharat/Documents/data/ss_onset_dataset/data/sqlite3/"
 omnDbName = "omni_sw_imf.sqlite"
 omnTabName = "imf_sw"
@@ -13,7 +12,6 @@ smlDbName = "smu_sml_sme.sqlite"
 smlTabName = "smusmlsme"
 predFname = "/home/bharat/Documents/data/ss_onset_dataset/data/all_data.nBins_2.binTimeRes_30.onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
 
-esObj = event_plot.EventSummary(eventDate, actualLab, predLab,\
-				 omnDBDir, omnDbName, omnTabName, aulDbName, aulTabName,\
-				  smlDbName, smlTabName, predFname, nBins=2)
-esObj.generate_plot()
+psObj = pred_act_cmpr.PredSumry(predFname)
+psObj.create_pred_plots(omnDBDir, omnDbName, omnTabName, aulDbName,\
+                aulTabName, smlDbName, smlTabName, nBins=2)
