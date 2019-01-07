@@ -148,6 +148,78 @@ class gmi_imf_to_db(object):
         # close db connection
         self.conn.close()
 
+    def imf_sw_to_db(self, resolution):
+        """fetches imf and sw data and writes them to db """
+
+        import datetime as dt
+        from davitpy.gme.ind import readOmni
+        from davitpy.gme.ind import readOmniFtp
+        import numpy as np
+
+        # read the data we want in GSM coords
+        data_dict = {}
+        omni_list = readOmniFtp(sTime=self.stm, eTime=self.etm, res=resolution)
+        data_dict['datetime'] = [omni_list[i].time for i in range(len(omni_list))]
+        data_dict['Bx'] = [omni_list[i].bx for i in range(len(omni_list))]
+        data_dict['By'] = [omni_list[i].bym for i in range(len(omni_list))]
+        data_dict['Bz'] = [omni_list[i].bzm for i in range(len(omni_list))]
+
+        # clock angle
+        #data_dict['theta'] = np.degrees(np.arctan2(data_dict['By'],
+        #                                           data_dict['Bz'])) % 360
+        data_dict['theta'] = [round(np.degrees(np.arctan2(data_dict['By'][i],
+                              data_dict['Bz'][i])) % 360, 2) \
+                              if (data_dict['By'][i] is not None and \
+                              data_dict['Bz'][i] is not None) \
+                              else None for i in range(len(data_dict['By']))]
+
+        # SW parameters
+        data_dict['Vx'] = [omni_list[i].vxe for i in range(len(omni_list))]
+        data_dict['Np'] = [omni_list[i].np for i in range(len(omni_list))]
+        data_dict['Pdyn'] = [omni_list[i].pDyn for i in range(len(omni_list))]
+        data_dict['Temp'] = [omni_list[i].temp for i in range(len(omni_list))]
+        data_dict['Beta'] = [omni_list[i].beta for i in range(len(omni_list))]
+        data_dict['MachNum'] = [omni_list[i].machNum for i in range(len(omni_list))]
+        data_dict['Timeshift'] = [omni_list[i].timeshift for i in range(len(omni_list))]
+
+        # make db connection
+        self.conn = self._create_dbconn()
+        # create table
+        table_name = "imf_sw"
+        colname_type = "datetime TIMESTAMP PRIMARY KEY, Bx REAL, " +\
+                       "By REAL, Bz REAL, theta REAL, Vx REAL, " +\
+                       "Np REAL, Pdyn REAL, Temp REAL, Beta REAL, " +\
+                       "MachNum REAL, Timeshift REAL"
+        command = "CREATE TABLE IF NOT EXISTS {tb} ({colname_type})"
+        command = command.format(tb=table_name, colname_type=colname_type)
+        self.conn.cursor().execute(command)
+        
+        # populate the table
+        row_num = len(data_dict['datetime'])
+        columns = "datetime, Bx, By, Bz, theta, Vx, Np, Pdyn, Temp, Beta, MachNum, Timeshift"
+        for i in xrange(row_num):
+            dtm = data_dict['datetime'][i]
+            Bx = data_dict['Bx'][i]
+            By = data_dict['By'][i]
+            Bz = data_dict['Bz'][i]
+            theta = data_dict['theta'][i]
+            Vx = data_dict['Vx'][i]
+            Np = data_dict['Np'][i]
+            Pdyn = data_dict['Pdyn'][i]
+            Temp = data_dict['Temp'][i]
+            Beta = data_dict['Beta'][i]
+            MachNum = data_dict['MachNum'][i]
+            Timeshift = data_dict['Timeshift'][i]
+            if (Bx is not None) and (By is not None) and (Bz is not None):
+                command = "INSERT OR IGNORE INTO {tb}({columns}) " +\
+                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                command = command.format(tb=table_name, columns=columns)
+                self.conn.cursor().execute(command,\
+                        (dtm, Bx, By, Bz, theta, Vx, Np, Pdyn, Temp, Beta, MachNum, Timeshift))
+        self.conn.commit()
+
+        # close db connection
+        self.conn.close()
 
     def f107_to_db(self, fname="../data/noaa_radio_flux.txt"):
         """fetches F10.7 data and writes them to db """
@@ -440,15 +512,18 @@ class gmi_imf_to_db(object):
 
 def main():
     import datetime as dt
-    #stm = dt.datetime(2010, 1, 1)
-    stm = dt.datetime(1995, 12, 31)
-    etm = dt.datetime(2009, 1, 2)
+    #stm = dt.datetime(1995, 12, 31)
+    #etm = dt.datetime(2009, 1, 2)
+    stm = dt.datetime(2015, 1, 1)
+    etm = dt.datetime(2019, 1, 2)
+    db_name = "omni_sw_imf.sqlite"
+    #db_name = "tmp.sqlite"
     #db_name = "omni_imf.sqlite"
     #db_name = "omni_sw.sqlite"
     #db_name = "au_al_ae.sqlite"
     #db_name = "symh.sqlite"
     #db_name = "dst.sqlite"
-    db_name = "kp.sqlite"
+    #db_name = "kp.sqlite"
     #db_name = "f107.sqlite"
     base_location = "../data/sqlite3/"
 
@@ -459,6 +534,11 @@ def main():
 
     # create an object
     gmi = gmi_imf_to_db(stm, etm, db_name=db_name, base_location=base_location)
+
+    # store IMF and Solar Wind params into db
+    print "storing OMNI IMF and SW params to db"
+    gmi.imf_sw_to_db(resolution=resolution)
+    print "imf_sw is done"
 
 #    # store IMF into db
 #    print "storing IMF to db"
@@ -485,10 +565,10 @@ def main():
 #    gmi.dst_to_db(dst_lim=dst_lim)
 #    print "dst is done"
 
-    # store kp into db
-    print "storing kp to db"
-    gmi.kp_to_db(kp_lim=kp_lim)
-    print "kp is done"
+#    # store kp into db
+#    print "storing kp to db"
+#    gmi.kp_to_db(kp_lim=kp_lim)
+#    print "kp is done"
 
 #    # store F107 into db
 #    fname="../data/noaa_radio_flux.txt"
