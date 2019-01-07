@@ -34,7 +34,7 @@ class OmnData(object):
         conn = sqlite3.connect(self.omn_dbdir + self.omn_db_name,
                        detect_types = sqlite3.PARSE_DECLTYPES)
         # load data to a dataframe
-        command = "SELECT * FROM {tb} "
+        command = "SELECT * FROM {tb} WHERE datetime BETWEEN '{stm}' AND '{etm}'"
         command = command.format(tb=self.omn_table_name,\
                                  stm=self.start_date, etm=self.end_date)
         omnDF = pandas.read_sql(command, conn)
