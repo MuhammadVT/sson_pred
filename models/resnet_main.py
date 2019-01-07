@@ -18,19 +18,59 @@ import time
 #skip_training = True
 skip_training = False
 
-nBins = 3
+nBins = 1
+binTimeRes = 30
+imfNormalize = True
+omn_train = True
+shuffleData = True
+omnHistory = 120
+batch_size = 1
+onsetDelTCutoff = 2
+onsetFillTimeRes = 1
+omnDBRes = 1
 binTimeRes = 20
+nBins = 3
+
+batch_size = 64
+n_epochs = 200
+n_resnet_units = 3
+metrics = ["accuracy"]
+
 file_dir = "../data/"
+output_fname = "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "csv"
+
 input_fname = "input." +\
-              "nBins_" + str(nBins) + "." + "binTimeRes_" + str(binTimeRes) + "." +\
-              "omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy"
-output_fname = "nBins_" + str(nBins) + "." + "binTimeRes_" + str(binTimeRes) + "." +\
-               "onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
+              "nBins_" + str(nBins) + "." +\
+              "binTimeRes_" + str(binTimeRes) + "." +\
+              "omnHistory_" + str(omnHistory) + "." +\
+              "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+              "omnDBRes_" + str(omnDBRes) + "." +\
+              "imfNormalize_" + str(imfNormalize) + "." +\
+              "shuffleData_" + str(shuffleData) + "." +\
+              "npy"
+
+#out_dir="./trained_models/ResNet/20190104_113412/"
+out_dir="./trained_models/ResNet/" +\
+        "nBins_" + str(nBins) + "." +\
+        "binTimeRes_" + str(binTimeRes) + "." +\
+        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+        "omnHistory_" + str(omnHistory) + "." +\
+        "omnDBRes_" + str(omnDBRes) + "." +\
+	dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+
+# create out_dir
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
 
 input_file = file_dir + input_fname
 output_file = file_dir + output_fname
-output_df_file = file_dir + "all_data." + output_fname
-output_df_test_file = file_dir + "test_data." + output_fname
 
 # Load the data
 print("loading the data...")
@@ -63,10 +103,6 @@ y_enc = enc.transform(y).toarray()
 
 # Build a ResNet model
 optimizer=keras.optimizers.Adam(lr=0.0001)
-batch_size = 64
-n_epochs = 400
-n_resnet_units = 3
-metrics = ["accuracy"]
 input_shape = X.shape[1:]
 
 # Define the loss, loss_weights, and class_weights
@@ -77,12 +113,6 @@ class_weights = None
 
 # Train the model
 if not skip_training:
-    # create out_dir
-    out_dir="./trained_models/ResNet/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
-
-
     resnet = ResNet(input_shape, batch_size=batch_size, n_epochs=n_epochs,
                     n_classes=n_classes, n_resnet_units=n_resnet_units, loss=loss,
                     optimizer=optimizer,
@@ -111,9 +141,6 @@ if not skip_training:
     axes[1].legend()
     fig_path = os.path.join(out_dir, "loss_acc")
     fig.savefig(fig_path + ".png", dpi=200, bbox_inches="tight")  
-
-else:
-    out_dir="./trained_models/ResNet/20190104_113412/"
 
 # Evaluate the model on test dataset
 print("Evaluating the model...")
