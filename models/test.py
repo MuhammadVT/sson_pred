@@ -13,35 +13,62 @@ import os
 import glob
 import time
 
+nBins = 1
+binTimeRes = 30
+imfNormalize = True
+shuffleData = True
+omnHistory = 120
+onsetDelTCutoff = 2
+onsetFillTimeRes = 1
+omnDBRes = 1
+batch_size = 32
+
 # Select the model to be tested
 #out_dir = "trained_models/ResNet_MultiOut/20181230_120722/"
 #out_dir="./trained_models/ResNet/20190104_113412/"    # good one for 1-bin prediction
-out_dir="./trained_models/ResNet/20190104_155006/"     # good one for 2-bin prediction
-
-test_epoch = 160
+#out_dir="./trained_models/ResNet/20190104_155006/"     # good one for 2-bin prediction
+out_dir="./trained_models/ResNet/" +\
+        "nBins_" + str(nBins) + "." +\
+        "binTimeRes_" + str(binTimeRes) + "." +\
+        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+        "omnHistory_" + str(omnHistory) + "." +\
+        "omnDBRes_" + str(omnDBRes) + "." +\
+        "20190107.150833"
+test_epoch = 200
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
 
-# Load the data
-print("loading the data...")
-
+# Set file names for the input datapoints and the predicted outputs
 file_dir = "../data/"
-input_fname = "input.nBins_2.binTimeRes_30.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_fname = "nBins_2.binTimeRes_30.onsetFillTimeRes_1.onsetDelTCutoff_2.omnHistory_120.omnDBRes_1.shuffleData_True.csv"
-
+input_fname = "input." +\
+              "nBins_" + str(nBins) + "." +\
+              "binTimeRes_" + str(binTimeRes) + "." +\
+              "omnHistory_" + str(omnHistory) + "." +\
+              "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+              "omnDBRes_" + str(omnDBRes) + "." +\
+              "imfNormalize_" + str(imfNormalize) + "." +\
+              "shuffleData_" + str(shuffleData) + "." +\
+              "npy"
+output_fname = "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "csv"
 input_file = file_dir + input_fname
 output_file = file_dir + output_fname
 output_df_file = file_dir + "all_data." + output_fname
 output_df_test_file = file_dir + "test_data." + output_fname
 
+# Load the data
+print("loading the data...")
 X = np.load(input_file)
 df = pd.read_csv(output_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
-batch_size = 32
 npoints = X.shape[0]
-n_classes = np.unique(y).shape[0]
-
 train_size = 0.75
 val_size = 0.15
 test_size = 0.1

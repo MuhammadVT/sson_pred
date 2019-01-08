@@ -21,15 +21,11 @@ skip_training = False
 nBins = 1
 binTimeRes = 30
 imfNormalize = True
-omn_train = True
 shuffleData = True
 omnHistory = 120
-batch_size = 1
 onsetDelTCutoff = 2
 onsetFillTimeRes = 1
 omnDBRes = 1
-binTimeRes = 20
-nBins = 3
 
 batch_size = 64
 n_epochs = 200
