@@ -1,6 +1,7 @@
 import datetime
 import pandas
 import numpy
+import feather
 import event_plot
 import matplotlib
 matplotlib.use('Agg')
@@ -14,7 +15,10 @@ class PredSumry(object):
     actual results. We'll also be able to have a sanity
     check during these events.
     """
-    def __init__(self, modelPredFname, binTimeRes=30, nBins=2):
+    def __init__(self, modelPredFname, binTimeRes=30, nBins=2,\
+                    northData=True, southData=False,\
+                    polarFile="../data/polar_data.feather",\
+                    imageFile="../data/image_data.feather"):
         """
         modelPredFname : file name to read the prediction results from.
                         NOTE : we expect the actual labels to be present
@@ -27,6 +31,10 @@ class PredSumry(object):
         self.predDF = self._load_model_pred_data(\
                             modelPredFname, nBins)
         print("loaded model predicted data")
+        self.ssOnsetDF = self._load_onset_data(northData,\
+                                     southData, polarFile, imageFile)
+        print("loaded onset data from polar/image")
+
 
     def _load_model_pred_data(self, fileName, nBins):
         """
@@ -45,6 +53,38 @@ class PredSumry(object):
         predDF = predDF.apply( self.pred_bin_out,\
                               axis=1 )
         return predDF
+
+    def _load_onset_data(self, northData, southData, polarFile, imageFile):
+        """
+        Load actual onset data from POLAR UVI and IMAGE satellites
+        """
+        polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
+        imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
+        # hemispheres to use!
+        if (not northData) & (not southData):
+            print("No hemi chosen! choosing north")
+            northData = True
+        # POLAR data
+        # if only northern hemi is used
+        if northData & (not southData):
+            polarDF = polarDF[ polarDF["mlat"] >=0\
+                             ].reset_index(drop=True)
+        # if only southern hemi is used
+        if (not northData) & southData:
+            polarDF = polarDF[ polarDF["mlat"] <=0\
+                             ].reset_index(drop=True)
+        # IMAGE data
+        # if only northern hemi is used
+        if northData & (not southData):
+            imageDF = imageDF[ imageDF["mlat"] >=0\
+                             ].reset_index(drop=True)
+        # if only southern hemi is used
+        if (not northData) & southData:
+            imageDF = imageDF[ imageDF["mlat"] <=0\
+                             ].reset_index(drop=True)
+        # Now merge both the dataframes!
+        ssOnsetDF = pandas.concat( [ polarDF, imageDF ] )
+        return ssOnsetDF
     
     def pred_bin_out(self, row):
         """
@@ -65,11 +105,11 @@ class PredSumry(object):
     
     def create_pred_plots(self, paramDBDir, omnDbName, \
              omnTabName, aulDbName, aulTabName, smlDbName, smlTabName,\
-             plotTimeHist=120, plotFutureBins=2,\
+             binPlotType=False,plotTimeHist=120, plotFutureBins=2,\
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
              aulParams = ["au", "al"],smParams=["au", "al"],\
              binTimeRes=30, nBins=2, paramTimeRange=None,\
-             figDir="/home/bharat/Documents/data/ss_onset_dataset/plots/"):
+             figDir="/home/bharat/Documents/data/ss_onset_dataset/onset_plots/"):
         """
         Loop through each of the events in the prediction
         files and make plots for each of the event dates.
@@ -85,12 +125,38 @@ class PredSumry(object):
         esObj = event_plot.EventSummary(predTimeRange,\
                 paramDBDir, omnDbName, omnTabName, aulDbName,\
                 aulTabName, smlDbName, smlTabName, nBins=2)
-        for index, row in self.predDF.iterrows():
-            _actBinLabs = row[actBinCols].tolist()
-            _prBinLabs = row[predBinCols].tolist()
-            _dt = row["date"]
-            print "plotting--->", _dt
-            esObj.generate_plot(_dt, _actBinLabs, _prBinLabs)
-        
-        
-        
+        if binPlotType:
+            print("generating binned plots with shading")
+            for index, row in self.predDF.iterrows():
+                _actBinLabs = row[actBinCols].tolist()
+                _prBinLabs = row[predBinCols].tolist()
+                _dt = row["date"]
+                print "plotting date--->", _dt
+                esObj.generate_bin_plot(_dt, _actBinLabs, _prBinLabs)
+        else:
+            # set the date axis as index
+            self.ssOnsetDF = self.ssOnsetDF.set_index(\
+                        pandas.to_datetime(self.ssOnsetDF["date"]))
+            # Loop through the rows of predDF and get onset times
+            # and then generate the plots
+            for ind, row in self.predDF.iterrows():
+                _actBinLabs = row[actBinCols].tolist()
+                _prBinLabs = row[predBinCols].tolist()
+                _dt = row["date"]
+                print "_dt",_dt
+                # Now for each bin check if there is a corresponding onset
+                onsetTimeDict = {}
+                for _n in range(nBins):
+                    _cOnsetDts = self.ssOnsetDF.loc[ _dt +\
+                        datetime.timedelta(minutes=binTimeRes*(_n)) : _dt +\
+                         datetime.timedelta(minutes=binTimeRes*(_n+1))\
+                            ].index.tolist()
+                    if (_actBinLabs == 0) & (len(_cOnsetDts) >0):
+                        print "SOMETHING VERY WRONG, FOUND" +\
+                                  " A LABEL FOR NON-SS PERIOD--->",\
+                                   _dt, _cOnsetDts, _actBinLabs[_n]
+                    onsetTimeDict[_n] = _cOnsetDts
+                print "plotting date--->", _dt
+                esObj.generate_onset_plot(_dt, _actBinLabs, _prBinLabs, onsetTimeDict)
+            # first get the onset times by merging predDF and polar/imageDF
+            print("generating prediction bins and actual onsets")

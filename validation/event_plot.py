@@ -30,7 +30,7 @@ class EventSummary(object):
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
              aulParams = ["au", "al"],smParams=["au", "al"],\
              binTimeRes=30, nBins=2,\
-             figDir="/home/bharat/Documents/data/ss_onset_dataset/plots/"):
+             figDir="/home/bharat/Documents/data/ss_onset_dataset/onset_plots/"):
         """
         eventDate : the time of onset or time under consideration
         plotTimeHist : number of minutes before onset to plot.
@@ -116,7 +116,7 @@ class EventSummary(object):
                                   etm=self.paramTimeRange[1])
         return pandas.read_sql(command, conn)
     
-    def generate_plot(self, eventDate, actualLab, predLab,\
+    def generate_bin_plot(self, eventDate, actualLab, predLab,\
                       figType="png"):
         """
         Generate the plot.
@@ -145,8 +145,8 @@ class EventSummary(object):
             currOmnDF = self.omnDF[ \
                 (self.omnDF["datetime"] >= plotTimeRange[0]) &\
                 (self.omnDF["datetime"] <= plotTimeRange[1]) ]
-            axes[axCnt].plot_date( currOmnDF["datetime"].values,\
-                          currOmnDF[_op].values, linewidth=1 )
+            axes[axCnt].plot( currOmnDF["datetime"].values,\
+                          currOmnDF[_op].values, linewidth=2 )
             axes[axCnt].set_ylabel(_op, fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
             axCnt += 1
@@ -155,8 +155,8 @@ class EventSummary(object):
             currAulDF = self.aulDF[ \
                 (self.aulDF["datetime"] >= plotTimeRange[0]) &\
                 (self.aulDF["datetime"] <= plotTimeRange[1]) ]
-            axes[axCnt].plot_date( currAulDF["datetime"].values,\
-                          currAulDF[_aup].values, linewidth=1 )
+            axes[axCnt].plot( currAulDF["datetime"].values,\
+                          currAulDF[_aup].values, linewidth=2 )
             axes[axCnt].set_ylabel("AU/AL", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         axCnt += 1
@@ -165,13 +165,13 @@ class EventSummary(object):
             currSmDF = self.smDF[ \
                 (self.smDF["datetime"] >= plotTimeRange[0]) &\
                 (self.smDF["datetime"] <= plotTimeRange[1]) ]
-            axes[axCnt].plot_date( currSmDF["datetime"].values,\
-                          currSmDF[_smp].values, linewidth=1 )
+            axes[axCnt].plot( currSmDF["datetime"].values,\
+                          currSmDF[_smp].values, linewidth=2 )
             axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         axCnt += 1
         # shade the region based on the type (TP/TN/FP/FN)
-        for _ax in axes:
+        for _nax, _ax in enumerate(axes):
             # plot vertical lines to mark the prediction bins
             for _nb in range(self.nBins+1):
                 binStart = eventDate + datetime.timedelta(\
@@ -185,19 +185,29 @@ class EventSummary(object):
                     if actualLab[_nb] == 0:
                         if predLab[_nb] == 0:
                             currCol = self.shadeColDict["TN"]
+                            textOut = "TN"
                             trueNegative = True
                         else:
                             currCol = self.shadeColDict["FP"]
+                            textOut = "FP"
                     if actualLab[_nb] == 1:
                         if predLab[_nb] == 1:
                             currCol = self.shadeColDict["TP"]
+                            textOut = "TP"
                         else:
                             currCol = self.shadeColDict["FN"]
+                            textOut = "FN"
                     if not trueNegative:
                         _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
+                    if _nax == 0 :
+                        textXLoc = eventDate + datetime.timedelta(\
+                                minutes=(_nb+0.5)*self.binTimeRes) 
+                        textYLoc = _ax.get_ylim()[1] - (\
+                             abs(_ax.get_ylim()[1]) - _ax.get_ylim()[0] )/2
+                        _ax.text(textXLoc, textYLoc, textOut)
         # get the figure name
-        figName = "binRes" + str(self.binTimeRes) + \
-                    "nbins_" + str(self.nBins) + "stack_event_" +\
+        figName = "bins_binRes_" + str(self.binTimeRes) + \
+                    "_nbins_" + str(self.nBins) + "_stack_event_" +\
                     eventDate.strftime("%Y%m%d-%H%M") + "." + figType
         # Labeling and formatting
         plt.xlim([plotTimeRange[0], plotTimeRange[1]])
@@ -205,6 +215,114 @@ class EventSummary(object):
         plt.tick_params(labelsize=14)
         fig.suptitle(eventDate.strftime("%Y-%m-%d"))
         fig.savefig(self.figDir + figName, bbox_inches='tight')           
-        plt.clf()
+        fig.clf()
+        plt.close()
+
+    def generate_onset_plot(self, eventDate, actualLab, predLab,\
+                      onsetTimeDict, figType="png"):
+        """
+        Generate the plot.
+        """
+        # get the plot details
+        # get the time range of the plot
+        prevTime = eventDate - datetime.timedelta(minutes=self.plotTimeHist)
+        futTime = eventDate + datetime.timedelta(\
+                                    minutes=(self.nBins+self.plotFutureBins\
+                                    )*self.binTimeRes)
+        plotTimeRange = [ prevTime, futTime]
+        # set plot styling
+        plt.style.use("fivethirtyeight")
+        f = plt.figure(figsize=(12, 8))
+        ax = f.add_subplot(1,1,1)
+        # get the number of panels
+        nPanels = len(self.omnParams) +\
+                    len(self.aulParams)-1 + len(self.smParams)-1
+        fig, axes = plt.subplots(nrows=nPanels, ncols=1,\
+                                 figsize=(8,8), sharex=True)
+        # axis formatting
+        dtLabFmt = DateFormatter('%H:%M')
+        axCnt = 0
+        # plot omni IMF
+        for _op in self.omnParams:
+            currOmnDF = self.omnDF[ \
+                (self.omnDF["datetime"] >= plotTimeRange[0]) &\
+                (self.omnDF["datetime"] <= plotTimeRange[1]) ]
+            axes[axCnt].plot( currOmnDF["datetime"].values,\
+                          currOmnDF[_op].values, linewidth=2 )
+            axes[axCnt].set_ylabel(_op, fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
+            axCnt += 1
+        # plot auroral indices
+        for _aup in self.aulParams:
+            currAulDF = self.aulDF[ \
+                (self.aulDF["datetime"] >= plotTimeRange[0]) &\
+                (self.aulDF["datetime"] <= plotTimeRange[1]) ]
+            axes[axCnt].plot( currAulDF["datetime"].values,\
+                          currAulDF[_aup].values, linewidth=2 )
+            axes[axCnt].set_ylabel("AU/AL", fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
+        axCnt += 1
+        # plot supermag indices
+        for _smp in self.smParams:
+            currSmDF = self.smDF[ \
+                (self.smDF["datetime"] >= plotTimeRange[0]) &\
+                (self.smDF["datetime"] <= plotTimeRange[1]) ]
+            axes[axCnt].plot( currSmDF["datetime"].values,\
+                          currSmDF[_smp].values, linewidth=2 )
+            axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
+            axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
+        axCnt += 1
+        # mark the actual onset time  and shade the region 
+        # based on pred onset.
+        # shade the region based on the type (TP/TN/FP/FN)
+        for _nax, _ax in enumerate(axes):
+            # plot vertical lines to mark the prediction bins
+            for _nb in range(self.nBins+1):
+                binStart = eventDate + datetime.timedelta(\
+                            minutes=_nb*self.binTimeRes)
+                _ax.axvline(x=binStart, color='k', linestyle='--',\
+                            linewidth=1)
+                if _nb < self.nBins:
+                    binEnd = eventDate + datetime.timedelta(\
+                            minutes=(_nb+1)*self.binTimeRes)
+                    trueNegative = False
+                    if actualLab[_nb] == 0:
+                        if predLab[_nb] == 0:
+                            currCol = self.shadeColDict["TN"]
+                            textOut = "TN"
+                            trueNegative = True
+                        else:
+                            currCol = self.shadeColDict["FP"]
+                            textOut = "FP"
+                    if actualLab[_nb] == 1:
+                        if predLab[_nb] == 1:
+                            currCol = self.shadeColDict["TP"]
+                            textOut = "TP"
+                        else:
+                            currCol = self.shadeColDict["FN"]
+                            textOut = "FN"
+                    if not trueNegative:
+                        _ax.axvspan(binStart, binEnd, alpha=0.5,\
+                                 color=currCol)
+                    for _ot in onsetTimeDict[_nb]:
+                        _ax.axvline(x=_ot, color='r',\
+                                 linestyle='--', linewidth=2)
+                    if _nax == 0 :
+                        textXLoc = eventDate + datetime.timedelta(\
+                                minutes=(_nb+0.5)*self.binTimeRes) 
+                        textYLoc = _ax.get_ylim()[1] - (\
+                             abs(_ax.get_ylim()[1]) - _ax.get_ylim()[0] )/3
+                        _ax.text(textXLoc, textYLoc, textOut)
+        # get the figure name
+        figName = "onset_binRes_" + str(self.binTimeRes) + \
+                    "_nbins_" + str(self.nBins) + "_stack_event_" +\
+                    eventDate.strftime("%Y%m%d-%H%M") + "." + figType
+        # Labeling and formatting
+        plt.xlim([plotTimeRange[0], plotTimeRange[1]])
+        plt.xlabel("Time UT")
+        plt.tick_params(labelsize=14)
+        fig.suptitle(eventDate.strftime("%Y-%m-%d"))
+        fig.savefig(self.figDir + figName, bbox_inches='tight')           
+        fig.clf()
         plt.close()
 
