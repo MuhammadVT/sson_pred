@@ -383,61 +383,76 @@ class OnsetData(object):
                              args=(filterCols,) )
             # Now get value counts for the binary 
             valCntDict = ssBinDF["outBinary"].value_counts().to_dict()
+            print("data distribution---->", valCntDict)
             maxNonZeroCnt = int(max({_k: _v for _k, _v in\
                           valCntDict.items() if _k > 0}.values()))
             zeroCnt = valCntDict[0]
             # get the number of data points needed for non-ss intervals
             nonSSDataCnt = int( (maxNonZeroCnt-zeroCnt) * noSSbinRatio)
-            # we'll set minDiffTime to be slightly higher than
-            # bin time resolution * number of bins. This way
-            # we make sure there is a good set of 0's
-            minDiffTime = self.binTimeRes*(self.nBins+1)
-            ndd = self.get_non_ss_intervals(_sDt, _eDt, aulDBdir, \
-                 aulDBName, aulTabName, alSSCutoff = alSSCutoff, \
-                 aeSSCutoff = aeSSCutoff, minDelT = minDelT,\
-                 minDiffTime = minDiffTime)
-            # get the nonSSDF from the dates
-            nonSSDF = self.create_non_ss_bins(ndd, nonSSDataCnt)
-            # add 0's to the bins
-            for _cc in ssBinDF.columns:
-                if "bin" in _cc:
-                    nonSSDF[_cc] = 0
+            # Now nonSSDataCnt could some times be higher!
+            # in such a case skip the rest of hte process
+            if nonSSDataCnt > 0:
+                # we'll set minDiffTime to be slightly higher than
+                # bin time resolution * number of bins. This way
+                # we make sure there is a good set of 0's
+                minDiffTime = self.binTimeRes*(self.nBins+1)
+                ndd = self.get_non_ss_intervals(_sDt, _eDt, aulDBdir, \
+                     aulDBName, aulTabName, alSSCutoff = alSSCutoff, \
+                     aeSSCutoff = aeSSCutoff, minDelT = minDelT,\
+                     minDiffTime = minDiffTime)
+                # get the nonSSDF from the dates
+                nonSSDF = self.create_non_ss_bins(ndd, nonSSDataCnt)
+                # add 0's to the bins
+                for _cc in ssBinDF.columns:
+                    if "bin" in _cc:
+                        nonSSDF[_cc] = 0
+                    else:
+                        nonSSDF[_cc] = -1.
+                # make both the DFs similar
+                nonSSDF = nonSSDF.set_index(\
+                                pandas.to_datetime(nonSSDF["date"].tolist()))
+                # we'll select the cols we need
+                binCols = [ col for col in ssBinDF\
+                             if col.startswith('bin') ]
+                mlatCols = [ col for col in ssBinDF\
+                             if col.startswith('mlat') ]
+                mltCols = [ col for col in ssBinDF\
+                             if col.startswith('mlt') ]
+                otrCols = [ "del_minutes" ]
+                selCols = binCols + mlatCols + mltCols + otrCols
+                nonSSDF = nonSSDF[selCols]
+                ssBinDF = ssBinDF[selCols]
+                # there could be some common dates between SS
+                # and non-SS DFs. For now we'll drop all the dates
+                # which are present in SS from the non SS DF. But we'll
+                # work on a better method in the future
+                ssInds = set(ssBinDF.index.tolist())
+                nssInds = set(nonSSDF.index.tolist())
+                interInds = list(ssInds.intersection(nssInds))
+                if len(interInds) > 0:
+                    print("There are common dates found in both DFs",\
+                            len(interInds))
+                    # drop the common dates from non SS DF
+                    nonSSDF.drop(interInds, inplace=True)
+                    print("dropped common rows")
                 else:
-                    nonSSDF[_cc] = -1.
-            # make both the DFs similar
-            nonSSDF = nonSSDF.set_index(\
-                            pandas.to_datetime(nonSSDF["date"].tolist()))
-            # we'll select the cols we need
-            binCols = [ col for col in ssBinDF\
-                         if col.startswith('bin') ]
-            mlatCols = [ col for col in ssBinDF\
-                         if col.startswith('mlat') ]
-            mltCols = [ col for col in ssBinDF\
-                         if col.startswith('mlt') ]
-            otrCols = [ "del_minutes" ]
-            selCols = binCols + mlatCols + mltCols + otrCols
-            nonSSDF = nonSSDF[selCols]
-            ssBinDF = ssBinDF[selCols]
-            # there could be some common dates between SS
-            # and non-SS DFs. For now we'll drop all the dates
-            # which are present in SS from the non SS DF. But we'll
-            # work on a better method in the future
-            ssInds = set(ssBinDF.index.tolist())
-            nssInds = set(nonSSDF.index.tolist())
-            interInds = list(ssInds.intersection(nssInds))
-            if len(interInds) > 0:
-                print("There are common dates found in both DFs",\
-                        len(interInds))
-                # drop the common dates from non SS DF
-                nonSSDF.drop(interInds, inplace=True)
-                print("dropped common rows")
+                    print("no common rows found between ss and non-ss data")
+                # Merge Both the DFs
+                origSize = ssBinDF.shape[0]
+                ssBinDF = pandas.concat( [ ssBinDF, nonSSDF ] ) 
+                newSize = ssBinDF.shape[0]
+                print("expanded with new non-SS data--->", origSize, newSize)
             else:
-                print("no common rows found between ss and non-ss data")
-            # Merge Both the DFs
-            origSize = ssBinDF.shape[0]
-            ssBinDF = pandas.concat( [ ssBinDF, nonSSDF ] ) 
-            newSize = ssBinDF.shape[0]
-            print("expanded with new non-SS data--->", origSize, newSize)
+                # we'll select the cols we need
+                binCols = [ col for col in ssBinDF\
+                             if col.startswith('bin') ]
+                mlatCols = [ col for col in ssBinDF\
+                             if col.startswith('mlat') ]
+                mltCols = [ col for col in ssBinDF\
+                             if col.startswith('mlt') ]
+                otrCols = [ "del_minutes" ]
+                selCols = binCols + mlatCols + mltCols + otrCols
+                ssBinDF = ssBinDF[selCols]
         print(ssBinDF.head())
         # save the file to make future calc faster
         if saveBinData:
