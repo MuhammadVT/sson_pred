@@ -9,7 +9,7 @@ class OnsetData(object):
     def __init__(self, northData=True, southData=False, polarData=True,\
                  imageData=True, polarFile="../data/polar_data.feather",\
                 imageFile="../data/image_data.feather", delTCutoff=2,\
-                 fillTimeRes=1):
+                 fillTimeRes=1, binTimeRes=30, nBins=2):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -23,6 +23,8 @@ class OnsetData(object):
         self.fillTimeRes = fillTimeRes
         self.polarDF = None
         self.imageDF = None
+        self.binTimeRes = binTimeRes
+        self.nBins = nBins
         if polarData:
             self.polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
         if imageData:
@@ -78,7 +80,7 @@ class OnsetData(object):
                 self.imageDF = self.imageDF[ self.imageDF["mlat"] <=0\
                                  ].reset_index(drop=True)
 
-    def _populate_date_list(self):
+    def _populate_date_list(self, delStartTime=30):
         """
         We'll create a list of dates that will be used 
         for training and testing. Basically we'll create
@@ -104,12 +106,25 @@ class OnsetData(object):
                              self.polarDF.iloc[currIndex-1]["date"].day,\
                              self.polarDF.iloc[currIndex-1]["date"].hour,\
                              self.polarDF.iloc[currIndex-1]["date"].minute)
+                    # we can get some additional 1's in the data by 
+                    # preceeding the start time. i.e., subtracting a 
+                    # few minutes from the start time!
+                    startTime = startTime - datetime.timedelta(minutes=delStartTime)
                     # get end time
                     endTime = datetime.datetime( row[1]["date"].year,\
                                                  row[1]["date"].month,\
                                                  row[1]["date"].day,\
                                                  row[1]["date"].hour,\
                                                  row[1]["date"].minute)
+                    # Now while creating the bins we need to be careful
+                    # about the end times, since we are making predictions
+                    # over the next few minutes/hours we need to subtract
+                    # certain time from the end time. 
+                    if self.nBins > 1:
+                        endTime = endTime - datetime.timedelta(\
+                                 minutes=(self.nBins-1) * self.binTimeRes )
+                    else:
+                        endTime = endTime - datetime.timedelta(minutes=self.binTimeRes/2)
                     iterTime = startTime
                     while iterTime <= endTime:
                         self.polarDateList.append(iterTime)
@@ -128,12 +143,25 @@ class OnsetData(object):
                              self.imageDF.iloc[currIndex-1]["date"].day,\
                              self.imageDF.iloc[currIndex-1]["date"].hour,\
                              self.imageDF.iloc[currIndex-1]["date"].minute)
+                    # we can get some additional 1's in the data by 
+                    # preceeding the start time. i.e., subtracting a 
+                    # few minutes from the start time!
+                    startTime = startTime - datetime.timedelta(minutes=delStartTime)
                     # get end time
                     endTime = datetime.datetime( row[1]["date"].year,\
                                                  row[1]["date"].month,\
                                                  row[1]["date"].day,\
                                                  row[1]["date"].hour,\
                                                  row[1]["date"].minute)
+                    # Now while creating the bins we need to be careful
+                    # about the end times, since we are making predictions
+                    # over the next few minutes/hours we need to subtract
+                    # certain time from the end time. 
+                    if self.nBins > 1:
+                        endTime = endTime - datetime.timedelta(\
+                                 minutes=(self.nBins-1) * self.binTimeRes )
+                    else:
+                        endTime = endTime - datetime.timedelta(minutes=self.binTimeRes/2)
                     iterTime = startTime
                     while iterTime <= endTime:
                         self.imageDateList.append(iterTime)
@@ -169,8 +197,7 @@ class OnsetData(object):
         nonSSDt = nonSSObj.get_non_ss_dates()
         return nonSSDt
     
-    def create_non_ss_bins(self, ndd, nonSSDataCnt,\
-                          binTimeRes=30, nBins=3):
+    def create_non_ss_bins(self, ndd, nonSSDataCnt):
         """
         Given non ss dates and number of rows needed
         get the non ss df with bins
@@ -181,7 +208,7 @@ class OnsetData(object):
             _it = _d[0]
             # remember we have bins showing no activity for the next
             # few hours/minutes, so be careful selecting the days!
-            while (_d[1] - _it).total_seconds()/(60) >= binTimeRes*nBins:
+            while (_d[1] - _it).total_seconds()/(60) >= self.binTimeRes*(self.nBins+1):
                 nonSSDtList.append(_it)
                 _it += datetime.timedelta(seconds=self.fillTimeRes*60)
         if nonSSDataCnt < len(nonSSDtList):
@@ -194,10 +221,9 @@ class OnsetData(object):
                  aulDBdir="../data/sqlite3/", \
                  aulDBName="smu_sml_sme.sqlite",\
                  aulTabName="smusmlsme", alSSCutoff = -25, \
-                 aeSSCutoff = 50, minDelT = 5,\
-                 binTimeRes=30, nBins=3, saveBinData=True,\
+                 aeSSCutoff = 50, minDelT = 5, saveBinData=True,\
                  saveFile="../data/binned_data_extra.feather",\
-                 getNonSSInt=True, noSSbinRatio=1, dropDefaulnonSS=True):
+                 getNonSSInt=True, noSSbinRatio=1):
         """
         For each of the dates in the polar and image lists
         create corresponding output bins!
@@ -234,12 +260,12 @@ class OnsetData(object):
         for _cpDate in self.polarDateList:
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
-            _tmpBinVlas = [ 0 for _tv in range(nBins) ]
-            _tmpLatVlas = [ -1. for _tv in range(nBins) ]
-            _tmpMLTVlas = [ -1. for _tv in range(nBins) ]
+            _tmpBinVlas = [ 0 for _tv in range(self.nBins) ]
+            _tmpLatVlas = [ -1. for _tv in range(self.nBins) ]
+            _tmpMLTVlas = [ -1. for _tv in range(self.nBins) ]
             # get a start time and end time for search
             srchStTime = _cpDate.strftime("%Y-%m-%d %H:%M:%S")
-            srchETime = (_cpDate + datetime.timedelta(minutes=binTimeRes*nBins)\
+            srchETime = (_cpDate + datetime.timedelta(minutes=self.binTimeRes*self.nBins)\
                 ).strftime("%Y-%m-%d %H:%M:%S")
             _cOnsetList = self.polarDF.loc[ srchStTime : srchETime ].index.tolist()
             # get the difference between current time and the nearest
@@ -247,8 +273,8 @@ class OnsetData(object):
             # we'll ignore the time if the difference is less than 1 minute
             for _cto in sorted(_cOnsetList):
                 _dt = (_cto - _cpDate).total_seconds()/60.
-                for _nb in range(nBins):
-                    if (_dt >= (_nb*binTimeRes) + 1) & (_dt <= (_nb+1)*binTimeRes):
+                for _nb in range(self.nBins):
+                    if (_dt >= (_nb*self.binTimeRes) + 1) & (_dt <= (_nb+1)*self.binTimeRes):
                         _tmpBinVlas[_nb] = 1
                         _tmpLatVlas[_nb] = self.polarDF.loc[_cto]["mlat"]/90.
                         _tmpMLTVlas[_nb] = self.polarDF.loc[_cto]["mlt"]/(15*24.)
@@ -281,12 +307,12 @@ class OnsetData(object):
             # then later fill the values based on onset times
             # similarly we'll fill -1's for lats and lons and 
             # then populate them later
-            _tmpBinVlas = [ 0 for _tv in range(nBins) ]
-            _tmpLatVlas = [ -1. for _tv in range(nBins) ]
-            _tmpMLTVlas = [ -1. for _tv in range(nBins) ]
+            _tmpBinVlas = [ 0 for _tv in range(self.nBins) ]
+            _tmpLatVlas = [ -1. for _tv in range(self.nBins) ]
+            _tmpMLTVlas = [ -1. for _tv in range(self.nBins) ]
             # get a start time and end time for search
             srchStTime = _cpDate.strftime("%Y-%m-%d %H:%M:%S")
-            srchETime = (_cpDate + datetime.timedelta(minutes=binTimeRes*nBins)\
+            srchETime = (_cpDate + datetime.timedelta(minutes=self.binTimeRes*self.nBins)\
                 ).strftime("%Y-%m-%d %H:%M:%S")
             _cOnsetList = self.imageDF.loc[ srchStTime : srchETime ].index.tolist()
             # get the difference between current time and the nearest
@@ -294,8 +320,8 @@ class OnsetData(object):
             # we'll ignore the time if the difference is less than 1 minute
             for _cto in sorted(_cOnsetList):
                 _dt = (_cto - _cpDate).total_seconds()/60.
-                for _nb in range(nBins):
-                    if (_dt >= (_nb*binTimeRes) + 1) & (_dt <= (_nb+1)*binTimeRes):
+                for _nb in range(self.nBins):
+                    if (_dt >= (_nb*self.binTimeRes) + 1) & (_dt <= (_nb+1)*self.binTimeRes):
                         _tmpBinVlas[_nb] = 1
                         _tmpLatVlas[_nb] = self.imageDF.loc[_cto]["mlat"]/90.
                         _tmpMLTVlas[_nb] = self.imageDF.loc[_cto]["mlt"]/24.
@@ -319,11 +345,11 @@ class OnsetData(object):
         # convert the bin lists into dataframes
         # POLAR
         polDataSet = pandas.DataFrame(polarBinList,\
-                     columns=["bin_" + str(_i) for _i in range(nBins)])
+                     columns=["bin_" + str(_i) for _i in range(self.nBins)])
         # add the additional mlat,mlt cols
-        polDataSet[["mlat_" + str(_i) for _i in range(nBins)\
+        polDataSet[["mlat_" + str(_i) for _i in range(self.nBins)\
                                    ]] = pandas.DataFrame(polarMlatList)
-        polDataSet[["mlt_" + str(_i) for _i in range(nBins)\
+        polDataSet[["mlt_" + str(_i) for _i in range(self.nBins)\
                                    ]] = pandas.DataFrame(polarMLTList)
         # set the closest time cols
 #         polDataSet["closest_time"] = polarClstOnsetTime
@@ -333,10 +359,10 @@ class OnsetData(object):
                     pandas.to_datetime(self.polarDateList))
         # IMAGE
         imgDataSet = pandas.DataFrame(imageBinList,\
-                     columns=["bin_" + str(_i) for _i in range(nBins)])
+                     columns=["bin_" + str(_i) for _i in range(self.nBins)])
         # add the additional mlat,mlt cols
-        imgDataSet[["mlat_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMlatList)
-        imgDataSet[["mlt_" + str(_i) for _i in range(nBins)]] = pandas.DataFrame(imageMLTList)
+        imgDataSet[["mlat_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMlatList)
+        imgDataSet[["mlt_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMLTList)
         # set the closest time cols
 #         imgDataSet["closest_time"] = imageClstOnsetTime
         imgDataSet["del_minutes"] = imageClstDelT
@@ -353,24 +379,25 @@ class OnsetData(object):
             # get binary rep of the bins
             filterCols = [ col for col in ssBinDF\
                          if col.startswith('bin') ]
-            ssBinDF = ssBinDF.apply( self.onset_binary, axis=1, args=(filterCols,) )
-            if dropDefaulnonSS:
-                ssBinDF = ssBinDF[ ssBinDF["outBinary"] > 0. ] 
+            ssBinDF = ssBinDF.apply( self.onset_binary, axis=1,\
+                             args=(filterCols,) )
             # Now get value counts for the binary 
             valCntDict = ssBinDF["outBinary"].value_counts().to_dict()
+            maxNonZeroCnt = int(max({_k: _v for _k, _v in\
+                          valCntDict.items() if _k > 0}.values()))
+            zeroCnt = valCntDict[0]
             # get the number of data points needed for non-ss intervals
-            nonSSDataCnt = int( max(valCntDict.values()) * noSSbinRatio)
+            nonSSDataCnt = int( (maxNonZeroCnt-zeroCnt) * noSSbinRatio)
             # we'll set minDiffTime to be slightly higher than
             # bin time resolution * number of bins. This way
             # we make sure there is a good set of 0's
-            minDiffTime = binTimeRes*(nBins+1)
+            minDiffTime = self.binTimeRes*(self.nBins+1)
             ndd = self.get_non_ss_intervals(_sDt, _eDt, aulDBdir, \
                  aulDBName, aulTabName, alSSCutoff = alSSCutoff, \
                  aeSSCutoff = aeSSCutoff, minDelT = minDelT,\
                  minDiffTime = minDiffTime)
             # get the nonSSDF from the dates
-            nonSSDF = self.create_non_ss_bins(ndd, nonSSDataCnt,\
-                                binTimeRes=binTimeRes, nBins=nBins)
+            nonSSDF = self.create_non_ss_bins(ndd, nonSSDataCnt)
             # add 0's to the bins
             for _cc in ssBinDF.columns:
                 if "bin" in _cc:

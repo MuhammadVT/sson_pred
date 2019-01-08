@@ -21,7 +21,7 @@ class DataUtils(object):
              northData=True, southData=False, polarData=True,\
              imageData=True, polarFile="../data/polar_data.feather",\
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
-             onsetFillTimeRes=1, binTimeRes=30, nBins=3,\
+             onsetFillTimeRes=1, binTimeRes=30, nBins=2,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
             shuffleData=True, omnHistory=120):
         """
@@ -66,13 +66,12 @@ class DataUtils(object):
         else:
             print("creating onset data")
             dataObj = create_onset_data.OnsetData(\
-                        northData=northData, southData=southData,\
-                         polarData=polarData, imageData=imageData,\
-                         polarFile=polarFile, imageFile=imageFile,\
-                         delTCutoff=onsetDelTCutoff,\
-                         fillTimeRes=onsetFillTimeRes)
+                    northData=northData, southData=southData,\
+                     polarData=polarData, imageData=imageData,\
+                     polarFile=polarFile, imageFile=imageFile,\
+                     binTimeRes=binTimeRes, nBins=nBins, \
+                     delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes)
             onsetDF = dataObj.create_output_bins(\
-                        binTimeRes=binTimeRes, nBins=nBins,\
                         saveBinData=saveBinData, saveFile=onsetSaveFile)
             # drop the date column which is already in index
         return onsetDF
