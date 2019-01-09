@@ -42,9 +42,9 @@ output_fname = "nBins_" + str(nBins) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-               "csv"
                "polarData_" + str(polarData) + "." +\
                "imageData_" + str(imageData) + "." +\
+               "csv"
 
 input_fname = "input." +\
               "nBins_" + str(nBins) + "." +\
@@ -54,9 +54,9 @@ input_fname = "input." +\
               "omnDBRes_" + str(omnDBRes) + "." +\
               "imfNormalize_" + str(imfNormalize) + "." +\
               "shuffleData_" + str(shuffleData) + "." +\
-              "npy"
               "polarData_" + str(polarData) + "." +\
               "imageData_" + str(imageData) + "." +\
+              "npy"
 
 #out_dir="./trained_models/ResNet/20190104_113412/"
 out_dir="./trained_models/ResNet/" +\
@@ -96,6 +96,7 @@ y_val = y[train_eindex:val_eindex, :]
 y_test = y[val_eindex:, :]
 
 # Shuffle the training data
+
 
 # Encode the labels
 enc = OneHotEncoder()

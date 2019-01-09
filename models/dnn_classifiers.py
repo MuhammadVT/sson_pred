@@ -313,7 +313,7 @@ class ResNet:
         input_layer = Input(self.input_shape, name="main_input")
 
         # ResNet Units
-        n_filters = 8
+        n_filters = 16
         n_layers = 3
         kernel_sizes = [10, 5, 3]   # #elements has to be eqaul to n_layers
         resnet_unit_input = input_layer
