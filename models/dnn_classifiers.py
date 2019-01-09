@@ -297,7 +297,6 @@ class ResNet:
 
         output_layer = add([reslink, tmp_layer])
         output_layer = Activation('relu')(output_layer)
-        #output_layer = Dropout(0.2, seed=100)(output_layer)
 
         return output_layer
 
@@ -314,7 +313,7 @@ class ResNet:
         input_layer = Input(self.input_shape, name="main_input")
 
         # ResNet Units
-        n_filters = 64
+        n_filters = 16
         n_layers = 3
         kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         resnet_unit_input = input_layer
@@ -340,7 +339,7 @@ class ResNet:
 
         # Add Dense layer 
         fc_layer = Dense(200, activation="relu")(flat_layer)
-        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+        #fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
         # Output layer
         # Use softmax

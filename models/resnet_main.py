@@ -28,8 +28,8 @@ onsetFillTimeRes = 1
 omnDBRes = 1
 
 batch_size = 64
-n_epochs = 200
-n_resnet_units = 1
+n_epochs = 30
+n_resnet_units = 3
 metrics = ["accuracy"]
 
 file_dir = "../data/"
@@ -77,9 +77,9 @@ y = df.loc[:, "label"].values.reshape(-1, 1)
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.75
-val_size = 0.15
-test_size = 0.1
+train_size = 0.30
+val_size = 0.20
+test_size = 0.50
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
 x_train = X[:train_eindex, :]
