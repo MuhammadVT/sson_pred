@@ -230,7 +230,7 @@ class OnsetData(object):
                  aulTabName="smusmlsme", alSSCutoff = -25, \
                  aeSSCutoff = 50, minDelT = 5, saveBinData=True,\
                  saveFile="../data/binned_data_extra.feather",\
-                 getNonSSInt=True, noSSbinRatio=1):
+                 getNonSSInt=False, noSSbinRatio=1):
         """
         For each of the dates in the polar and image lists
         create corresponding output bins!
@@ -489,8 +489,9 @@ class OnsetData(object):
                 indsVal = numpy.concatenate( [indsVal, _split[1]] )
                 indsTest = numpy.concatenate( [indsTest, _split[2]] )
             # re-order the dataframe based on new splits
-            ssBinDF = pandas.concat( [ ssBinDF.loc[indsTrain],\
-                        ssBinDF.loc[indsVal], ssBinDF.loc[indsTest] ] )
+            ssBinDF = pandas.concat( [ ssBinDF.loc[numpy.sort(indsTrain)],\
+                        ssBinDF.loc[numpy.sort(indsVal)],\
+                         ssBinDF.loc[numpy.sort(indsTest)] ] )
         else:
             # sort the index to make sure non-ss intervals
             # are not segregated at the end
