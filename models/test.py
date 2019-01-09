@@ -84,10 +84,12 @@ y_test = y[val_eindex:, :]
 
 # Encode the labels
 enc = OneHotEncoder()
-y_train_enc = enc.fit_transform(y_train).toarray()
-y_test_enc = enc.fit_transform(y_test).toarray()
-y_val_enc = enc.fit_transform(y_val).toarray()
-y_enc = enc.fit_transform(y).toarray()
+unique_labels = np.unique(y, axis=0)
+enc.fit(unique_labels)
+y_train_enc = enc.transform(y_train).toarray()
+y_test_enc = enc.transform(y_test).toarray()
+y_val_enc = enc.transform(y_val).toarray()
+y_enc = enc.transform(y).toarray()
 
 # Evaluate the model on test dataset
 print("Evaluating the model...")
@@ -112,6 +114,9 @@ print(classification_report(y_test_true, y_test_pred))
 df.loc[:, "pred_label"] = y_pred
 df_test = df.iloc[val_eindex:, :]
 df_test.loc[:, "pred_label"] = y_test_pred
+for i in y_pred_enc.shape[1]:
+    df.loc[:, "prob_"+str(i)] = y_pred_enc[:, i]
+    df_test.loc[:, "prob_"+str(i)] = y_test_pred_enc[:, i]
 df.to_csv(output_df_file)
 df_test.to_csv(output_df_test_file)
 

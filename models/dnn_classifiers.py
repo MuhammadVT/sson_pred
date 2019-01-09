@@ -313,9 +313,9 @@ class ResNet:
         input_layer = Input(self.input_shape, name="main_input")
 
         # ResNet Units
-        n_filters = 16
+        n_filters = 8
         n_layers = 3
-        kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+        kernel_sizes = [10, 5, 3]   # #elements has to be eqaul to n_layers
         resnet_unit_input = input_layer
         for i in range(self.n_resnet_units):
             if i == 0:
@@ -338,7 +338,7 @@ class ResNet:
         flat_layer = Dropout(0.2, seed=100)(flat_layer)
 
         # Add Dense layer 
-        fc_layer = Dense(200, activation="relu")(flat_layer)
+        fc_layer = Dense(100, activation="relu")(flat_layer)
         #fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
         # Output layer
@@ -556,7 +556,7 @@ class LSTM_FC:
         self.metrics = metrics 
         self.out_dir = out_dir
 
-        # Creat a ResNet model
+        # Creat a LSTM model
         self.model = self.creat_model()
 
     def creat_model(self):
