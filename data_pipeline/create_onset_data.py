@@ -1,6 +1,7 @@
 import pandas
 import datetime
 import feather
+import numpy
 
 class OnsetData(object):
     """
@@ -9,7 +10,8 @@ class OnsetData(object):
     def __init__(self, northData=True, southData=False, polarData=True,\
                  imageData=True, polarFile="../data/polar_data.feather",\
                 imageFile="../data/image_data.feather", delTCutoff=2,\
-                 fillTimeRes=1, binTimeRes=30, nBins=2):
+                 fillTimeRes=1, binTimeRes=30, nBins=2, trnValTestSplitData=True,\
+                 trnSplit=0.75, valSplit=0.15):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -25,6 +27,10 @@ class OnsetData(object):
         self.imageDF = None
         self.binTimeRes = binTimeRes
         self.nBins = nBins
+        # set params for shuffling
+        self.trnValTestSplitData = trnValTestSplitData
+        self.trnSplit = trnSplit
+        self.valSplit = valSplit
         if polarData:
             self.polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
         if imageData:
@@ -344,36 +350,41 @@ class OnsetData(object):
                 imageClstDelT.append(-1.)
             
         # convert the bin lists into dataframes
+        allDFList = []
+        if len(self.polarDateList) > 0:
         # POLAR
-        polDataSet = pandas.DataFrame(polarBinList,\
-                     columns=["bin_" + str(_i) for _i in range(self.nBins)])
-        # add the additional mlat,mlt cols
-        polDataSet[["mlat_" + str(_i) for _i in range(self.nBins)\
-                                   ]] = pandas.DataFrame(polarMlatList)
-        polDataSet[["mlt_" + str(_i) for _i in range(self.nBins)\
-                                   ]] = pandas.DataFrame(polarMLTList)
-        # set the closest time cols
-#         polDataSet["closest_time"] = polarClstOnsetTime
-        polDataSet["del_minutes"] = polarClstDelT
-        polDataSet["data_label"] = "P"
-        
-        polDataSet = polDataSet.set_index(\
-                    pandas.to_datetime(self.polarDateList))
+            polDataSet = pandas.DataFrame(polarBinList,\
+                         columns=["bin_" + str(_i) for _i in range(self.nBins)])
+            # add the additional mlat,mlt cols
+            polDataSet[["mlat_" + str(_i) for _i in range(self.nBins)\
+                                       ]] = pandas.DataFrame(polarMlatList)
+            polDataSet[["mlt_" + str(_i) for _i in range(self.nBins)\
+                                       ]] = pandas.DataFrame(polarMLTList)
+            # set the closest time cols
+    #         polDataSet["closest_time"] = polarClstOnsetTime
+            polDataSet["del_minutes"] = polarClstDelT
+            polDataSet["data_label"] = "P"
+            
+            polDataSet = polDataSet.set_index(\
+                        pandas.to_datetime(self.polarDateList))
+            allDFList.append(polDataSet)
         # IMAGE
-        imgDataSet = pandas.DataFrame(imageBinList,\
-                     columns=["bin_" + str(_i) for _i in range(self.nBins)])
-        # add the additional mlat,mlt cols
-        imgDataSet[["mlat_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMlatList)
-        imgDataSet[["mlt_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMLTList)
-        # set the closest time cols
-#         imgDataSet["closest_time"] = imageClstOnsetTime
-        imgDataSet["del_minutes"] = imageClstDelT
-        imgDataSet["data_label"] = "I"
+        if len(self.imageDateList) > 0:
+            imgDataSet = pandas.DataFrame(imageBinList,\
+                         columns=["bin_" + str(_i) for _i in range(self.nBins)])
+            # add the additional mlat,mlt cols
+            imgDataSet[["mlat_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMlatList)
+            imgDataSet[["mlt_" + str(_i) for _i in range(self.nBins)]] = pandas.DataFrame(imageMLTList)
+            # set the closest time cols
+    #         imgDataSet["closest_time"] = imageClstOnsetTime
+            imgDataSet["del_minutes"] = imageClstDelT
+            imgDataSet["data_label"] = "I"
 
-        imgDataSet = imgDataSet.set_index(\
-                        pandas.to_datetime(self.imageDateList))
+            imgDataSet = imgDataSet.set_index(\
+                            pandas.to_datetime(self.imageDateList))
+            allDFList.append(imgDataSet)
         # Now merge both the dataframes!
-        ssBinDF = pandas.concat( [ polDataSet, imgDataSet ] )
+        ssBinDF = pandas.concat( allDFList )
         # sort by index(dates here)
         ssBinDF.sort_index(inplace=True)
         # Now we'll get the non-ss times
@@ -458,6 +469,32 @@ class OnsetData(object):
                 otrCols = [ "del_minutes", "data_label" ]
                 selCols = binCols + mlatCols + mltCols + otrCols
                 ssBinDF = ssBinDF[selCols]
+        # Now we might want to rearrange the DF based on data_labels
+        # so that its easier to split it later
+        if self.trnValTestSplitData:
+            # sort the index before splitting
+            ssBinDF.sort_index(inplace=True)
+            print("Splitting the data into train, validation and test")
+            # get the counts in different labels
+            splitBins = ssBinDF["data_label"].value_counts()
+            indsTrain = numpy.empty([0], dtype=ssBinDF.index.dtype)
+            indsVal = numpy.array([0], dtype=ssBinDF.index.dtype)
+            indsTest = numpy.array([0], dtype=ssBinDF.index.dtype)
+            for _dl in splitBins.index:
+                _currInds = ssBinDF[ ssBinDF["data_label"] == _dl\
+                            ].index.get_values()
+                _split = numpy.split( _currInds, [int(self.trnSplit*_currInds.size),\
+                                    int((self.trnSplit+self.valSplit)*_currInds.size)] )
+                indsTrain = numpy.concatenate( [indsTrain, _split[0]] )
+                indsVal = numpy.concatenate( [indsVal, _split[1]] )
+                indsTest = numpy.concatenate( [indsTest, _split[2]] )
+            # re-order the dataframe based on new splits
+            ssBinDF = pandas.concat( [ ssBinDF.loc[indsTrain],\
+                        ssBinDF.loc[indsVal], ssBinDF.loc[indsTest] ] )
+        else:
+            # sort the index to make sure non-ss intervals
+            # are not segregated at the end
+            ssBinDF.sort_index(inplace=True)
         print(ssBinDF.head())
         # save the file to make future calc faster
         if saveBinData:
@@ -465,7 +502,6 @@ class OnsetData(object):
             # so we'll reset it and then convert back when
             # we read the file back!
             # sort by dates
-            ssBinDF.sort_index(inplace=True)
             ssBinDF["date"] = ssBinDF.index
             ssBinDF.reset_index(drop=True).to_feather(saveFile)
         return ssBinDF

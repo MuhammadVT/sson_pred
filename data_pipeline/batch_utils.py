@@ -51,7 +51,8 @@ class DataUtils(object):
 
     def _load_onset_data(self, northData, southData,\
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
-              onsetFillTimeRes, binTimeRes, nBins, saveBinData, onsetSaveFile):
+              onsetFillTimeRes, binTimeRes, nBins, saveBinData, onsetSaveFile,\
+              trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15):
         """
         Load onset datadf, either the precomputed file
         or calculate it on the fly!
@@ -70,7 +71,9 @@ class DataUtils(object):
                      polarData=polarData, imageData=imageData,\
                      polarFile=polarFile, imageFile=imageFile,\
                      binTimeRes=binTimeRes, nBins=nBins, \
-                     delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes)
+                     delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes,\
+                     trnValTestSplitData=trnValTestSplitData,\
+                     trnSplit=trnSplit, valSplit=valSplit)
             onsetDF = dataObj.create_output_bins(\
                         saveBinData=saveBinData, saveFile=onsetSaveFile)
             # drop the date column which is already in index
