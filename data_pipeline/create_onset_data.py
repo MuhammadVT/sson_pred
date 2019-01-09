@@ -478,8 +478,8 @@ class OnsetData(object):
             # get the counts in different labels
             splitBins = ssBinDF["data_label"].value_counts()
             indsTrain = numpy.empty([0], dtype=ssBinDF.index.dtype)
-            indsVal = numpy.array([0], dtype=ssBinDF.index.dtype)
-            indsTest = numpy.array([0], dtype=ssBinDF.index.dtype)
+            indsVal = numpy.empty([0], dtype=ssBinDF.index.dtype)
+            indsTest = numpy.empty([0], dtype=ssBinDF.index.dtype)
             for _dl in splitBins.index:
                 _currInds = ssBinDF[ ssBinDF["data_label"] == _dl\
                             ].index.get_values()
