@@ -13,7 +13,7 @@ class OnsetData(object):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
-        self.delTCutoff is the time range between two consecutive onset
+        delTCutoff is the time range between two consecutive onset
         events that we want to use as cutoff. In other words we'll
         interpolate between these events if time is < self.delTCutoff,
         else we jump to the next event.
@@ -101,11 +101,11 @@ class OnsetData(object):
                     currIndex = row[0]
                     # get start time
                     startTime = datetime.datetime( \
-                            self.polarDF.iloc[currIndex-1]["date"].year,\
-                             self.polarDF.iloc[currIndex-1]["date"].month,\
-                             self.polarDF.iloc[currIndex-1]["date"].day,\
-                             self.polarDF.iloc[currIndex-1]["date"].hour,\
-                             self.polarDF.iloc[currIndex-1]["date"].minute)
+                                self.polarDF.iloc[currIndex-1]["date"].year,\
+                                 self.polarDF.iloc[currIndex-1]["date"].month,\
+                                 self.polarDF.iloc[currIndex-1]["date"].day,\
+                                 self.polarDF.iloc[currIndex-1]["date"].hour,\
+                                 self.polarDF.iloc[currIndex-1]["date"].minute)
                     # we can get some additional 1's in the data by 
                     # preceeding the start time. i.e., subtracting a 
                     # few minutes from the start time!
@@ -213,8 +213,9 @@ class OnsetData(object):
                 _it += datetime.timedelta(seconds=self.fillTimeRes*60)
         if nonSSDataCnt < len(nonSSDtList):
             print("more data found than required---", nonSSDataCnt, len(nonSSDtList))
-            indices = random.sample(range(len(nonSSDtList)), nonSSDataCnt)
-            nonSSDtList = [ nonSSDtList[_i] for _i in sorted(indices) ]
+            # indices = random.sample(range(len(nonSSDtList)), nonSSDataCnt)
+            # nonSSDtList = [ nonSSDtList[_i] for _i in sorted(indices) ]
+            nonSSDtList = nonSSDtList[:nonSSDataCnt]
         return pandas.DataFrame(nonSSDtList, columns=["date"])
 
     def create_output_bins(self,\
@@ -354,6 +355,7 @@ class OnsetData(object):
         # set the closest time cols
 #         polDataSet["closest_time"] = polarClstOnsetTime
         polDataSet["del_minutes"] = polarClstDelT
+        polDataSet["data_label"] = "P"
         
         polDataSet = polDataSet.set_index(\
                     pandas.to_datetime(self.polarDateList))
@@ -366,6 +368,8 @@ class OnsetData(object):
         # set the closest time cols
 #         imgDataSet["closest_time"] = imageClstOnsetTime
         imgDataSet["del_minutes"] = imageClstDelT
+        imgDataSet["data_label"] = "I"
+
         imgDataSet = imgDataSet.set_index(\
                         pandas.to_datetime(self.imageDateList))
         # Now merge both the dataframes!
@@ -409,6 +413,7 @@ class OnsetData(object):
                     else:
                         nonSSDF[_cc] = -1.
                 # make both the DFs similar
+                nonSSDF["data_label"] = "N"
                 nonSSDF = nonSSDF.set_index(\
                                 pandas.to_datetime(nonSSDF["date"].tolist()))
                 # we'll select the cols we need
@@ -418,7 +423,7 @@ class OnsetData(object):
                              if col.startswith('mlat') ]
                 mltCols = [ col for col in ssBinDF\
                              if col.startswith('mlt') ]
-                otrCols = [ "del_minutes" ]
+                otrCols = [ "del_minutes", "data_label" ]
                 selCols = binCols + mlatCols + mltCols + otrCols
                 nonSSDF = nonSSDF[selCols]
                 ssBinDF = ssBinDF[selCols]
@@ -450,7 +455,7 @@ class OnsetData(object):
                              if col.startswith('mlat') ]
                 mltCols = [ col for col in ssBinDF\
                              if col.startswith('mlt') ]
-                otrCols = [ "del_minutes" ]
+                otrCols = [ "del_minutes", "data_label" ]
                 selCols = binCols + mlatCols + mltCols + otrCols
                 ssBinDF = ssBinDF[selCols]
         print(ssBinDF.head())
@@ -459,6 +464,8 @@ class OnsetData(object):
             # Note feather doesn't support datetime index
             # so we'll reset it and then convert back when
             # we read the file back!
+            # sort by dates
+            ssBinDF.sort_index(inplace=True)
             ssBinDF["date"] = ssBinDF.index
             ssBinDF.reset_index(drop=True).to_feather(saveFile)
         return ssBinDF
