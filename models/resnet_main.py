@@ -22,12 +22,14 @@ nBins = 2
 binTimeRes = 30
 imfNormalize = True
 shuffleData = False 
+polarData = True
+imageData = False 
 omnHistory = 120
-onsetDelTCutoff = 2
+onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64
+batch_size = 32
 n_epochs = 30
 n_resnet_units = 3
 metrics = ["accuracy"]
@@ -41,6 +43,8 @@ output_fname = "nBins_" + str(nBins) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
                "csv"
+#               "polarData_" + str(polarData) + "." +\
+#               "imageData_" + str(imageData) + "." +\
 
 input_fname = "input." +\
               "nBins_" + str(nBins) + "." +\
@@ -51,6 +55,8 @@ input_fname = "input." +\
               "imfNormalize_" + str(imfNormalize) + "." +\
               "shuffleData_" + str(shuffleData) + "." +\
               "npy"
+#              "polarData_" + str(polarData) + "." +\
+#              "imageData_" + str(imageData) + "." +\
 
 #out_dir="./trained_models/ResNet/20190104_113412/"
 out_dir="./trained_models/ResNet/" +\
@@ -77,9 +83,9 @@ y = df.loc[:, "label"].values.reshape(-1, 1)
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.30
-val_size = 0.20
-test_size = 0.50
+train_size = 0.75
+val_size = 0.15
+test_size = 0.10
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
 x_train = X[:train_eindex, :]
@@ -89,9 +95,12 @@ y_train = y[:train_eindex, :]
 y_val = y[train_eindex:val_eindex, :]
 y_test = y[val_eindex:, :]
 
+# Shuffle the training data
+
 # Encode the labels
 enc = OneHotEncoder()
-enc.fit(y)
+unique_labels = np.unique(y, axis=0)
+enc.fit(unique_labels)
 y_train_enc = enc.transform(y_train).toarray()
 y_test_enc = enc.transform(y_test).toarray()
 y_val_enc = enc.transform(y_val).toarray()

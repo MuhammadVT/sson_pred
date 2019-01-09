@@ -13,9 +13,11 @@ omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 imfNormalize = True
 omn_train = True
 shuffleData = False
+polarData=True
+imageData=False
 omnHistory = 120
 batch_size = 1
-onsetDelTCutoff = 4
+onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 binTimeRes = 30
@@ -32,6 +34,8 @@ input_file = "../data/input." +\
 	     "omnDBRes_" + str(omnDBRes) + "." +\
 	     "imfNormalize_" + str(imfNormalize) + "." +\
 	     "shuffleData_" + str(shuffleData) + "." +\
+	     "polarData_" + str(polarData) + "." +\
+	     "imageData_" + str(imageData) + "." +\
 	     "npy"
 #output_file = "../data/output." +\
 #	      "nBins_" + str(nBins) + "." +\
@@ -48,6 +52,8 @@ csv_file = "../data/" +\
            "omnHistory_" + str(omnHistory) + "." +\
            "omnDBRes_" + str(omnDBRes) + "." +\
            "shuffleData_" + str(shuffleData) + "." +\
+	   "polarData_" + str(polarData) + "." +\
+	   "imageData_" + str(imageData) + "." +\
            "csv"
 
 batchObj = batch_utils.DataUtils(omn_dbdir,\
@@ -56,8 +62,8 @@ batchObj = batch_utils.DataUtils(omn_dbdir,\
                     omnTrainParams = [ "By", "Bz", "Bx", "Vx", "Np" ],\
                     batch_size=batch_size, loadPreComputedOnset=loadPreComputedOnset,\
                     onsetDataloadFile="../data/binned_data.feather",\
-                    northData=True, southData=False, polarData=True,\
-                    imageData=True, polarFile="../data/polar_data.feather",\
+                    northData=True, southData=False, polarData=polarData,\
+                    imageData=imageData, polarFile="../data/polar_data.feather",\
                     imageFile="../data/image_data.feather", onsetDelTCutoff=onsetDelTCutoff,\
                     onsetFillTimeRes=onsetFillTimeRes, binTimeRes=binTimeRes, nBins=nBins,\
                     saveBinData=saveBinData, onsetSaveFile=onsetSaveFile,\
