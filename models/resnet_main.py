@@ -23,7 +23,7 @@ binTimeRes = 30
 imfNormalize = True
 shuffleData = False 
 polarData = True
-imageData = False 
+imageData = True
 omnHistory = 120
 onsetDelTCutoff = 3
 onsetFillTimeRes = 1
@@ -43,8 +43,8 @@ output_fname = "nBins_" + str(nBins) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
                "csv"
-#               "polarData_" + str(polarData) + "." +\
-#               "imageData_" + str(imageData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
 
 input_fname = "input." +\
               "nBins_" + str(nBins) + "." +\
@@ -55,8 +55,8 @@ input_fname = "input." +\
               "imfNormalize_" + str(imfNormalize) + "." +\
               "shuffleData_" + str(shuffleData) + "." +\
               "npy"
-#              "polarData_" + str(polarData) + "." +\
-#              "imageData_" + str(imageData) + "." +\
+              "polarData_" + str(polarData) + "." +\
+              "imageData_" + str(imageData) + "." +\
 
 #out_dir="./trained_models/ResNet/20190104_113412/"
 out_dir="./trained_models/ResNet/" +\
