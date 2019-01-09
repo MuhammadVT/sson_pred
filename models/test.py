@@ -13,10 +13,10 @@ import os
 import glob
 import time
 
-nBins = 1
+nBins = 2
 binTimeRes = 30
 imfNormalize = True
-shuffleData = True
+shuffleData = False
 omnHistory = 120
 onsetDelTCutoff = 2
 onsetFillTimeRes = 1
@@ -33,8 +33,9 @@ out_dir="./trained_models/ResNet/" +\
         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
         "omnHistory_" + str(omnHistory) + "." +\
         "omnDBRes_" + str(omnDBRes) + "." +\
-        "20190107.150833"
-test_epoch = 200
+        "20190108.114941"
+
+test_epoch = 110
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
 

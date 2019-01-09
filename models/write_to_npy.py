@@ -12,14 +12,14 @@ omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 
 imfNormalize = True
 omn_train = True
-shuffleData = True 
+shuffleData = False
 omnHistory = 120
 batch_size = 1
-onsetDelTCutoff = 2
+onsetDelTCutoff = 4
 onsetFillTimeRes = 1
 omnDBRes = 1
 binTimeRes = 30
-nBins = 1
+nBins = 2
 predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 

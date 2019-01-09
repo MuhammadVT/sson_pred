@@ -18,10 +18,10 @@ import time
 #skip_training = True
 skip_training = False
 
-nBins = 1
+nBins = 2
 binTimeRes = 30
 imfNormalize = True
-shuffleData = True
+shuffleData = False 
 omnHistory = 120
 onsetDelTCutoff = 2
 onsetFillTimeRes = 1
@@ -29,7 +29,7 @@ omnDBRes = 1
 
 batch_size = 64
 n_epochs = 200
-n_resnet_units = 3
+n_resnet_units = 1
 metrics = ["accuracy"]
 
 file_dir = "../data/"
