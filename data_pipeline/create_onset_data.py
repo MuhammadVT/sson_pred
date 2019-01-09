@@ -489,8 +489,9 @@ class OnsetData(object):
                 indsVal = numpy.concatenate( [indsVal, _split[1]] )
                 indsTest = numpy.concatenate( [indsTest, _split[2]] )
             # re-order the dataframe based on new splits
-            ssBinDF = pandas.concat( [ ssBinDF.loc[indsTrain],\
-                        ssBinDF.loc[indsVal], ssBinDF.loc[indsTest] ] )
+            ssBinDF = pandas.concat( [ ssBinDF.loc[numpy.sort(indsTrain)],\
+                        ssBinDF.loc[numpy.sort(indsVal)],\
+                         ssBinDF.loc[numpy.sort(indsTest)] ] )
         else:
             # sort the index to make sure non-ss intervals
             # are not segregated at the end
