@@ -285,7 +285,7 @@ class ResNet:
             conv_layer = normalization.BatchNormalization()(conv_layer)
             if i < n_layers-1:
                 conv_layer = Activation('relu')(conv_layer)
-                #conv_layer = Dropout(0.2, seed=100)(conv_layer)
+                conv_layer = Dropout(0.2, seed=100)(conv_layer)
             tmp_layer = conv_layer
 
         # expand the first resnet channels for the sum 
@@ -303,7 +303,7 @@ class ResNet:
 
     def creat_model(self):
 
-        from keras.layers import Input, Conv1D, Dense
+        from keras.layers import Input, Conv1D, Flatten, Dense
         from keras.layers import normalization, Activation, pooling
         from keras.models import Model 
         from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
@@ -329,11 +329,22 @@ class ResNet:
             resnet_unit_input = resnet_unit_output
 
         # Global pooling layer
-        gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
+        #gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
+
+        # Max pooling layer
+        mpl_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+
+        # Flatten 2D data into 1D
+        flat_layer = Flatten()(mpl_layer)
+        flat_layer = Dropout(0.2, seed=100)(flat_layer)
+
+        # Add Dense layer 
+        fc_layer = Dense(200, activation="relu")(flat_layer)
+        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
         # Output layer
         # Use softmax
-        output_layer = Dense(self.n_classes, activation="softmax")(gap_layer)
+        output_layer = Dense(self.n_classes, activation="softmax")(fc_layer)
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layer)
