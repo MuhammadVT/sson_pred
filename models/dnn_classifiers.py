@@ -19,7 +19,7 @@ class FCNN:
 
     def creat_model(self):
 
-        from keras.layers import Input, Conv1D, Dense
+        from keras.layers import Input, Conv1D, Dense, Flatten
         from keras.layers import normalization, Activation, pooling
         from keras.models import Model 
         from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
@@ -29,57 +29,62 @@ class FCNN:
         # Input layer
         input_layer = Input(self.input_shape)
 
-        # First CNN layer
-        conv_layer = Conv1D(filters=64, kernel_size=7, strides=1, padding="same")(input_layer)
+        conv_layer = Conv1D(filters=16, kernel_size=3, strides=2, padding="valid")(input_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+        # Max pooling layer
+        #conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+        #Dropout
+        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
-        conv_layer = Conv1D(filters=64, kernel_size=7, strides=1, padding="same")(input_layer)
+        conv_layer = Conv1D(filters=32, kernel_size=3, strides=2, padding="valid")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+#        #Dropout
+#        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
-        # Second CNN layer
-        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
+        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+        # Max pooling layer
+        #conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
+        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+#
+#        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="same")(conv_layer)
+#        conv_layer = normalization.BatchNormalization()(conv_layer)
+#        conv_layer = Activation(activation="relu")(conv_layer)
+#        #Dropout
+#        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
+#
+#        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="same")(conv_layer)
+#        conv_layer = normalization.BatchNormalization()(conv_layer)
+#        conv_layer = Activation(activation="relu")(conv_layer)
 
-        conv_layer = Conv1D(filters=128, kernel_size=5, strides=1, padding="same")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+        ## Global pooling layer
+        #gap_layer = pooling.GlobalAveragePooling1D()(conv_layer)
 
+        # Max pooling layer
+#        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-        # Third CNN layer
-        conv_layer = Conv1D(filters=64, kernel_size=3, strides=1, padding="same")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
-        conv_layer = Dropout(0.2, seed=100)(conv_layer)
+        # Flatten 2D data into 1D
+        fc_layer = Flatten()(conv_layer)
+        fc_layer = Dropout(0.5, seed=100)(fc_layer)
 
-        conv_layer = Conv1D(filters=64, kernel_size=3, strides=1, padding="same")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
+        # Add Dense layer 
+        fc_layer = Dense(50, activation="relu")(fc_layer)
+        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
-        # Global pooling layer
-        gap_layer = pooling.GlobalAveragePooling1D()(conv_layer)
+        # Add Dense layer 
+        fc_layer = Dense(10, activation="relu")(fc_layer)
 
         # Output layer
         # Use softmax
-        # NOTE: use the following softmax activator for binary classification or
-        # multi-classification where classes are mutually exclusive.
-        #output_layer = Dense(self.n_classes, activation="softmax")(gap_layer)
-
-        # Use sigmoid
-        # NOTE: use the following sigmoid activator for all cases, expecially 
-        # multi-classification where classes are NOT mutually exclusive.
-        output_layer = Dense(self.n_classes, activation="sigmoid")(gap_layer)
+        output_layer = Dense(self.n_classes, activation="softmax")(fc_layer)
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layer)
@@ -285,7 +290,7 @@ class ResNet:
             conv_layer = normalization.BatchNormalization()(conv_layer)
             if i < n_layers-1:
                 conv_layer = Activation('relu')(conv_layer)
-                conv_layer = Dropout(0.2, seed=100)(conv_layer)
+                #conv_layer = Dropout(0.2, seed=100)(conv_layer)
             tmp_layer = conv_layer
 
         # expand the first resnet channels for the sum 
@@ -312,11 +317,24 @@ class ResNet:
         # Input layer
         input_layer = Input(self.input_shape, name="main_input")
 
+        # CNN layers
+        conv_layer = Conv1D(filters=8, kernel_size=7, strides=2, padding="valid")(input_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+
+        conv_layer = Conv1D(filters=8, kernel_size=7, strides=1, padding="valid")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+
+        #############################
         # ResNet Units
-        n_filters = 16
+        n_filters = 8
         n_layers = 3
-        kernel_sizes = [10, 5, 3]   # #elements has to be eqaul to n_layers
-        resnet_unit_input = input_layer
+        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
+        resnet_unit_input = conv_layer
         for i in range(self.n_resnet_units):
             if i == 0:
                 first_resnet_unit=True
@@ -327,19 +345,63 @@ class ResNet:
                                                            first_resnet_unit=first_resnet_unit)
             resnet_unit_input = resnet_unit_output
 
+        #############################
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+        #############################
+        # ResNet Units
+        n_filters = 16
+        n_layers = 3
+        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
+        resnet_unit_input = conv_layer
+        for i in range(self.n_resnet_units):
+            if i == 0:
+                first_resnet_unit=True
+            else:
+                first_resnet_unit=False
+            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
+                                                           first_resnet_unit=first_resnet_unit)
+            resnet_unit_input = resnet_unit_output
+        #############################
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+        #############################
+        # ResNet Units
+        n_filters = 32
+        n_layers = 3
+        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
+        resnet_unit_input = conv_layer
+        for i in range(self.n_resnet_units):
+            if i == 0:
+                first_resnet_unit=True
+            else:
+                first_resnet_unit=False
+            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
+                                                           first_resnet_unit=first_resnet_unit)
+            resnet_unit_input = resnet_unit_output
+        #############################
+
+
         # Global pooling layer
         #gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
 
         # Max pooling layer
-        mpl_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
 
         # Flatten 2D data into 1D
-        flat_layer = Flatten()(mpl_layer)
-        flat_layer = Dropout(0.2, seed=100)(flat_layer)
+        fc_layer = Flatten()(conv_layer)
+        #fc_layer = Dropout(0.5, seed=100)(fc_layer)
+
+#        # Add Dense layer 
+#        fc_layer = Dense(50, activation="relu")(fc_layer)
+#        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
         # Add Dense layer 
-        fc_layer = Dense(100, activation="relu")(flat_layer)
-        #fc_layer = Dropout(0.2, seed=100)(fc_layer)
+        fc_layer = Dense(10, activation="relu")(fc_layer)
 
         # Output layer
         # Use softmax
@@ -350,8 +412,7 @@ class ResNet:
 
         # configure the model
         model.compile(loss=self.loss, optimizer=self.optimizer,
-                      metrics=self.metrics)
-
+                      metrics=self.metrics) 
         # Reduce the learning rate if plateau occurs on the loss curve
         reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, 
                                       min_lr=0.00001)

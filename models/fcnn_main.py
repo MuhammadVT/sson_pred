@@ -9,130 +9,168 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 plt.style.use("ggplot")
 import numpy as np
+import pandas as pd
 import datetime as dt
 import os
 import glob
 import time
-import sys
-sys.path.append("../data_pipeline")
-#import batch_utils
 
-classes_are_mutually_exclusive = False    # Corresponds to sigmoid activation layer
-#classes_are_mutually_exclusive = True    # Corresponds to softmax activation layer
+#skip_training = True
+skip_training = False
 
-# Load the data
-print("loading the data...")
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_6.binTimeRes_10.onsetFillTimeRes_1.shuffleData_True.npy"
+nBins = 1
+binTimeRes = 30
+imfNormalize = True
+shuffleData = False 
+polarData = True
+imageData = True
+omnHistory = 120 
+onsetDelTCutoff = 3
+onsetFillTimeRes = 1
+omnDBRes = 1
 
-input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-output_file = "../data/output.nBins_2.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_True.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_True.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_True.shuffleData_False.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
-
-#input_file = "../data/input.omnHistory_120.onsetDelTCutoff_2.omnDBRes_1.imfNormalize_False.shuffleData_False.npy" 
-#output_file = "../data/output.nBins_1.binTimeRes_30.onsetFillTimeRes_1.shuffleData_False.npy"
-
-X = np.load(input_file)
-y = np.load(output_file)
-#y = y[:, 1:]
-if classes_are_mutually_exclusive:
-    #y = y[:, 0:2]    # two classes
-    #y = y[:, 0]    # one class
-    enc = OneHotEncoder()
-    y = enc.fit_transform(y.reshape(-1,1)).toarray()
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=10)
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.20, random_state=10)
-
-# Build a FCNN model
-optimizer=keras.optimizers.Adam(lr=0.0001)
-batch_size = 64
-n_epochs = 500
-n_classes = y_train.shape[1] 
+batch_size = 64 * 10
+n_epochs = 20
 metrics = ["accuracy"]
-input_shape = x_train.shape[1:]
 
-# Set class weight
-def binary_crossentropy_weigted(y_true, y_pred):
-    import keras.backend as K
-    class_weights = K.variable(np.array([5]))
-    #class_weights = np.array([5, 1])
-    y_pred = K.clip(y_pred, K.epsilon(), 1.0 - K.epsilon())
-    #loss = K.mean(class_weights*(-y_true * K.log(y_pred) - (1.0 - y_true) * K.log(1.0 - y_pred)),axis=-1)
-    loss = K.mean((-y_true * K.log(y_pred) * class_weights - (1.0 - y_true) * K.log(1.0 - y_pred)),axis=-1)
-    return loss
+file_dir = "../data/"
+output_fname = "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
+               "csv"
 
-#from sklearn import utils
-#class_weights = utils.class_weight.compute_class_weight("balanced", np.unique(y_train) 
-#class_weights = {i:(1./y_train[:,i].mean()) for i in range(n_classes)}
-#class_weights = {0:10, 1:1, 2:1, 3:1, 4:1, 5:1}
-class_weights = None
+input_fname = "input." +\
+              "nBins_" + str(nBins) + "." +\
+              "binTimeRes_" + str(binTimeRes) + "." +\
+              "omnHistory_" + str(omnHistory) + "." +\
+              "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+              "omnDBRes_" + str(omnDBRes) + "." +\
+              "imfNormalize_" + str(imfNormalize) + "." +\
+              "shuffleData_" + str(shuffleData) + "." +\
+              "polarData_" + str(polarData) + "." +\
+              "imageData_" + str(imageData) + "." +\
+              "npy"
+
+#out_dir="./trained_models/FCNN/20190104_113412/"
+out_dir="./trained_models/FCNN/" +\
+        "nBins_" + str(nBins) + "." +\
+        "binTimeRes_" + str(binTimeRes) + "." +\
+        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+        "omnHistory_" + str(omnHistory) + "." +\
+        "omnDBRes_" + str(omnDBRes) + "." +\
+	dt.datetime.now().strftime("%Y%m%d.%H%M%S")
 
 # create out_dir
-out_dir="./trained_models/FCNN/" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
-# Define the loss
-if classes_are_mutually_exclusive:
-    loss=keras.losses.categorical_crossentropy
-else:
-    loss=keras.losses.binary_crossentropy
-    #loss = binary_crossentropy_weigted
+input_file = file_dir + input_fname
+output_file = file_dir + output_fname
 
+# Load the data
+print("loading the data...")
+X = np.load(input_file)
+df = pd.read_csv(output_file, index_col=0)
+y = df.loc[:, "label"].values.reshape(-1, 1)
 
-fcnn = FCNN(input_shape, batch_size=batch_size, n_epochs=n_epochs,
-            n_classes=n_classes, loss=loss, optimizer=optimizer,
-            metrics=metrics, out_dir=out_dir)
+npoints = X.shape[0]
+n_classes = np.unique(y).shape[0]
+
+train_size = 0.75
+val_size = 0.15
+test_size = 0.10
+train_eindex = int(npoints * train_size)
+val_eindex = train_eindex + int(npoints * val_size)
+x_train = X[:train_eindex, :]
+x_val = X[train_eindex:val_eindex, :]
+x_test = X[val_eindex:, :]
+y_train = y[:train_eindex, :]
+y_val = y[train_eindex:val_eindex, :]
+y_test = y[val_eindex:, :]
+
+## Shuffle the training data
+#idx_train = np.array(range(x_train.shape[0]))
+#np.random.shuffle(idx_train)
+#x_train = x_train[idx_train, :, :]
+#y_train = y_train[idx_train, :]
+
+# Encode the labels
+enc = OneHotEncoder()
+unique_labels = np.unique(y, axis=0)
+enc.fit(unique_labels)
+y_train_enc = enc.transform(y_train).toarray()
+y_test_enc = enc.transform(y_test).toarray()
+y_val_enc = enc.transform(y_val).toarray()
+y_enc = enc.transform(y).toarray()
+
+# Build a FCNN model
+optimizer=keras.optimizers.Adam(lr=0.0001)
+#optimizer=keras.optimizers.RMSprop(lr=0.0001)
+input_shape = X.shape[1:]
+
+# Define the loss, loss_weights, and class_weights
+loss=keras.losses.categorical_crossentropy
+
+#from sklearn import utils
+class_weights = {0:1, 1:1.5} 
 
 # Train the model
-print("Training the model...")
-fit_history = fcnn.train_model(x_train, y_train, x_val, y_val,
-                               class_weights=class_weights)
+if not skip_training:
+    fcnn = FCNN(input_shape, batch_size=batch_size, n_epochs=n_epochs,
+                    n_classes=n_classes, loss=loss,
+                    optimizer=optimizer,
+                    metrics=metrics, out_dir=out_dir)
 
-# Plot the training 
-fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
-xs = np.arange(n_epochs)
-train_loss = fit_history.history["loss"]
-val_loss = fit_history.history["val_loss"]
-train_acc = fit_history.history["acc"]
-val_acc = fit_history.history["val_acc"]
-axes[0].plot(xs, train_loss, label="train_loss") 
-axes[0].plot(xs, val_loss, label="val_loss") 
-axes[1].plot(xs, train_acc, label="train_acc") 
-axes[1].plot(xs, val_acc, label="val_acc") 
-axes[0].set_title("Training Loss and Accuracy")
-axes[0].set_ylabel("Loss")
-axes[1].set_ylabel("Accuracy")
-axes[1].set_xlabel("Epoch")
-axes[0].legend()
-axes[1].legend()
-fig_path = os.path.join(out_dir, "loss_acc")
-fig.savefig(fig_path + ".png", dpi=200, bbox_inches="tight")  
+    print("Training the model...")
+    fcnn.model.summary()
+    fit_history = fcnn.train_model(x_train, y_train_enc, x_val, y_val_enc,
+                                     class_weights=class_weights)
+
+    # Plot the training 
+    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
+    xs = np.arange(n_epochs)
+    train_loss = fit_history.history["loss"]
+    val_loss = fit_history.history["val_loss"]
+    train_acc = fit_history.history["acc"]
+    val_acc = fit_history.history["val_acc"]
+    axes[0].plot(xs, train_loss, label="train_loss") 
+    axes[0].plot(xs, val_loss, label="val_loss") 
+    axes[1].plot(xs, train_acc, label="train_acc") 
+    axes[1].plot(xs, val_acc, label="val_acc") 
+    axes[0].set_title("Training Loss and Accuracy")
+    axes[0].set_ylabel("Loss")
+    axes[1].set_ylabel("Accuracy")
+    axes[1].set_xlabel("Epoch")
+    axes[0].legend()
+    axes[1].legend()
+    fig_path = os.path.join(out_dir, "loss_acc")
+    fig.savefig(fig_path + ".png", dpi=200, bbox_inches="tight")  
 
 # Evaluate the model on test dataset
 print("Evaluating the model...")
-#fname = "weights.epoch_{epoch}.val_loss_{val_loss}.val_acc_{val_acc}.hdf5"
 test_epoch = n_epochs
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
-test_model = keras.models.load_model(model_name, custom_objects={'binary_crossentropy_weigted': binary_crossentropy_weigted}) 
-y_pred = test_model.predict(x_test, batch_size=32)
+test_model = keras.models.load_model(model_name) 
+y_pred_enc = test_model.predict(X, batch_size=batch_size)
+y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
 
-if classes_are_mutually_exclusive:
-    # The final activation layer uses softmax
-    y_pred = np.argmax(y_pred , axis=1)
-    y_true = np.argmax(y_test , axis=1)
-    print(classification_report(y_true, y_pred))
-else:
-    # The final activation layer uses sigmoid
-    y_pred = (y_pred > 0.5).astype(int)
-    y_true = y_test
-    for col in range(y_pred.shape[1]):
-        #print(classification_report(y_true[:, col], y_pred[:, col], target_names=["bin_"+str(col)]))
-        print(classification_report(y_true[:, col], y_pred[:, col]))
+# The final activation layer uses softmax
+y_test_pred = np.argmax(y_test_pred_enc , axis=1)
+y_pred = np.argmax(y_pred_enc , axis=1)
+y_test_true = y_test
+y_true = y
 
+# Report for all input data
+print("Prediction report for all input data.")
+print(classification_report(y_true, y_pred))
+
+# Report for test data
+print("Prediction report for test data.")
+print(classification_report(y_test_true, y_test_pred))
 

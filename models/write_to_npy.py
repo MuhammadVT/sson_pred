@@ -10,6 +10,7 @@ omn_db_name = "omni_sw_imf.sqlite"
 omn_table_name = "imf_sw"
 omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 
+omnTrainParams = ["By", "Bz", "Bx", "Vx", "Np", "Pdyn"]
 imfNormalize = True
 omn_train = True
 shuffleData = False
@@ -21,7 +22,7 @@ onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 binTimeRes = 30
-nBins = 2
+nBins = 1
 predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 
@@ -59,7 +60,7 @@ csv_file = "../data/" +\
 batchObj = batch_utils.DataUtils(omn_dbdir,\
                     omn_db_name, omn_table_name,\
                     omn_train, omn_norm_param_file, imfNormalize=imfNormalize, omnDBRes=omnDBRes,\
-                    omnTrainParams = [ "By", "Bz", "Bx", "Vx", "Np" ],\
+                    omnTrainParams=omnTrainParams,\
                     batch_size=batch_size, loadPreComputedOnset=loadPreComputedOnset,\
                     onsetDataloadFile="../data/binned_data.feather",\
                     northData=True, southData=False, polarData=polarData,\

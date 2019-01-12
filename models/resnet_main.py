@@ -18,7 +18,7 @@ import time
 #skip_training = True
 skip_training = False
 
-nBins = 2
+nBins = 1
 binTimeRes = 30
 imfNormalize = True
 shuffleData = False 
@@ -29,8 +29,8 @@ onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 32
-n_epochs = 30
+batch_size = 64 * 10
+n_epochs = 20
 n_resnet_units = 3
 metrics = ["accuracy"]
 
@@ -95,8 +95,11 @@ y_train = y[:train_eindex, :]
 y_val = y[train_eindex:val_eindex, :]
 y_test = y[val_eindex:, :]
 
-# Shuffle the training data
-
+## Shuffle the training data
+#idx_train = np.array(range(x_train.shape[0]))
+#np.random.shuffle(idx_train)
+#x_train = x_train[idx_train, :, :]
+#y_train = y_train[idx_train, :]
 
 # Encode the labels
 enc = OneHotEncoder()
@@ -115,7 +118,8 @@ input_shape = X.shape[1:]
 loss=keras.losses.categorical_crossentropy
 
 #from sklearn import utils
-class_weights = None
+class_weights = {0:1, 1:1.2}
+#class_weights = None
 
 # Train the model
 if not skip_training:
@@ -125,6 +129,7 @@ if not skip_training:
                     metrics=metrics, out_dir=out_dir)
 
     print("Training the model...")
+    resnet.model.summary()
     fit_history = resnet.train_model(x_train, y_train_enc, x_val, y_val_enc,
                                      class_weights=class_weights)
 
