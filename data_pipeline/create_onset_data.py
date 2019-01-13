@@ -7,11 +7,13 @@ class OnsetData(object):
     """
     Load the required data into a DF
     """
-    def __init__(self, northData=True, southData=False, polarData=True,\
-                 imageData=True, polarFile="../data/polar_data.feather",\
-                imageFile="../data/image_data.feather", delTCutoff=2,\
-                 fillTimeRes=1, binTimeRes=30, nBins=2, trnValTestSplitData=True,\
-                 trnSplit=0.75, valSplit=0.15):
+    def __init__(self, useSML=False, northData=True, southData=False,\
+                 polarData=True, imageData=True, \
+                polarFile="../data/polar_data.feather",\
+                 imageFile="../data/image_data.feather",delTCutoff=2,\
+                 fillTimeRes=1, binTimeRes=30, nBins=2, \
+                 trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15,\
+                 smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -19,36 +21,42 @@ class OnsetData(object):
         events that we want to use as cutoff. In other words we'll
         interpolate between these events if time is < self.delTCutoff,
         else we jump to the next event.
-        self.fillTimeRes is the interpolation time resolutino
+        fillTimeRes is the interpolation time resolution
+        smlDateRange indicates the date range to create SS bins for,
+        if set to None it will create bins for the entire range.
         """
         self.delTCutoff = delTCutoff
         self.fillTimeRes = fillTimeRes
-        self.polarDF = None
-        self.imageDF = None
         self.binTimeRes = binTimeRes
         self.nBins = nBins
         # set params for shuffling
         self.trnValTestSplitData = trnValTestSplitData
         self.trnSplit = trnSplit
         self.valSplit = valSplit
-        if polarData:
-            self.polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
-        if imageData:
-            self.imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
-        # hemispheres to use!
-        if (not northData) & (not southData):
-            print("No hemi chosen! choosing north")
-            northData = True
-        self.northData = northData
-        self.southData = southData
-        # Now filter the data
-        self._filter_data()
-        # we'll have some arrays to create datelist which is our
-        # training/testing dataset
-        self.polarDateList = []
-        self.imageDateList = []
-        # Now populate the data
-        self._populate_date_list()
+        if not useSML:
+            self.polarDF = None
+            self.imageDF = None
+            if polarData:
+                self.polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
+            if imageData:
+                self.imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
+            # hemispheres to use!
+            if (not northData) & (not southData):
+                print("No hemi chosen! choosing north")
+                northData = True
+            self.northData = northData
+            self.southData = southData
+            # Now filter the data
+            self._filter_data()
+            # we'll have some arrays to create datelist which is our
+            # training/testing dataset
+            self.polarDateList = []
+            self.imageDateList = []
+            # Now populate the data
+            self._populate_date_list()
+        else:
+            self.smlFname = smlFname
+            self.smlDateRange = smlDateRange
 
     def _filter_data(self):
         """
@@ -223,6 +231,113 @@ class OnsetData(object):
             # nonSSDtList = [ nonSSDtList[_i] for _i in sorted(indices) ]
             nonSSDtList = nonSSDtList[:nonSSDataCnt]
         return pandas.DataFrame(nonSSDtList, columns=["date"])
+    
+    def create_sml_bins(self, saveBinData=True,\
+                 saveFile="../data/sml_binned_data_extra.feather"):
+        """
+        Create the bins based on SML index instead of
+        POLAR UVI and IMAGE datasets. This is an alternative
+        dataset.
+        """
+        # Read data from the files
+        smlDF = pandas.read_csv(self.smlFname,\
+                            parse_dates=["Date_UTC"])
+        # rename the cols
+        smlDF.columns = [ "datetime", "mlat", "mlt" ]
+        # limit the DF range to
+        if self.smlDateRange is None:
+            smlDTStart = smlDF["datetime"].min()
+            smlDTEnd = smlDF["datetime"].max()
+        else:
+            smlDTStart = self.smlDateRange[0]
+            smlDTEnd = self.smlDateRange[1]
+        # for quicker search set datetime as index
+        smlDF.set_index( pandas.to_datetime(\
+                        smlDF["datetime"]), inplace=True )
+        smlDF = smlDF[ ["mlat", "mlt"] ]
+        smlBinList = []
+        smlMlatList = []
+        smlMLTList = []
+        smlClstOnsetTime = []
+        smlClstDelT = []
+        smlDateList = []
+        _cpDate = smlDTStart
+        while _cpDate <= smlDTEnd:
+            # we'll start with 0's (no onset) for all the bins
+            # then later fill the values based on onset times
+            _tmpBinVlas = [ 0 for _tv in range(self.nBins) ]
+            _tmpLatVlas = [ -1. for _tv in range(self.nBins) ]
+            _tmpMLTVlas = [ -1. for _tv in range(self.nBins) ]
+            # get a start time and end time for search
+            srchStTime = _cpDate.strftime("%Y-%m-%d %H:%M:%S")
+            srchETime = (_cpDate + datetime.timedelta(minutes=self.binTimeRes*self.nBins)\
+                ).strftime("%Y-%m-%d %H:%M:%S")
+            _cOnsetList = smlDF.loc[ srchStTime : srchETime ].index.tolist()
+            # get the difference between current time and the nearest
+            # one's found in the DF
+            # we'll ignore the time if the difference is less than 1 minute
+            for _cto in sorted(_cOnsetList):
+                _dt = (_cto - _cpDate).total_seconds()/60.
+                for _nb in range(self.nBins):
+                    if (_dt >= (_nb*self.binTimeRes) + 1) & (_dt <= (_nb+1)*self.binTimeRes):
+                        _tmpBinVlas[_nb] = 1
+                        _tmpLatVlas[_nb] = smlDF.loc[_cto]["mlat"]/90.
+                        _tmpMLTVlas[_nb] = smlDF.loc[_cto]["mlt"]/(15*24.)
+            smlBinList.append(_tmpBinVlas)
+            smlMlatList.append(_tmpLatVlas)
+            smlMLTList.append(_tmpMLTVlas)
+            smlDateList.append(_cpDate)
+            # we'll add another col where we find the shortest time
+            # to ss onset
+            if len(_cOnsetList) > 0:
+                _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
+                # if diff is less than a minute, ignore
+                if _minDelT <= 1.:
+                    smlClstDelT.append(-1.)
+                else:
+                    smlClstDelT.append(_minDelT)
+            else:
+                smlClstDelT.append(-1.)
+            # Next bin time
+            _cpDate += datetime.timedelta(seconds=self.fillTimeRes*60)
+        # convert to dataframe
+        smlDataSet = pandas.DataFrame(smlBinList,\
+                     columns=["bin_" + str(_i) for _i in range(self.nBins)])
+        # add the additional mlat,mlt cols
+        smlDataSet[["mlat_" + str(_i) for _i in range(self.nBins)\
+                                   ]] = pandas.DataFrame(smlMlatList)
+        smlDataSet[["mlt_" + str(_i) for _i in range(self.nBins)\
+                                   ]] = pandas.DataFrame(smlMLTList)
+        # set the closest time cols
+        #         polDataSet["closest_time"] = smlClstOnsetTime
+        smlDataSet["del_minutes"] = smlClstDelT
+        smlDataSet["data_label"] = "S"
+
+        smlDataSet = smlDataSet.set_index(\
+                    pandas.to_datetime(smlDateList))
+        # we'll select the cols we need
+        binCols = [ col for col in smlDataSet\
+                     if col.startswith('bin') ]
+        mlatCols = [ col for col in smlDataSet\
+                     if col.startswith('mlat') ]
+        mltCols = [ col for col in smlDataSet\
+                     if col.startswith('mlt') ]
+        otrCols = [ "del_minutes", "data_label" ]
+        selCols = binCols + mlatCols + mltCols + otrCols
+        smlDataSet = smlDataSet[selCols]
+        # sort the index to make sure non-ss intervals
+        # are not segregated at the end
+        smlDataSet.sort_index(inplace=True)
+        print(smlDataSet.head())
+        # save the file to make future calc faster
+        if saveBinData:
+            # Note feather doesn't support datetime index
+            # so we'll reset it and then convert back when
+            # we read the file back!
+            # sort by dates
+            smlDataSet["date"] = smlDataSet.index
+            smlDataSet.reset_index(drop=True).to_feather(saveFile)
+        return smlDataSet
 
     def create_output_bins(self,\
                  aulDBdir="../data/sqlite3/", \
@@ -352,7 +467,7 @@ class OnsetData(object):
         # convert the bin lists into dataframes
         allDFList = []
         if len(self.polarDateList) > 0:
-        # POLAR
+            # POLAR
             polDataSet = pandas.DataFrame(polarBinList,\
                          columns=["bin_" + str(_i) for _i in range(self.nBins)])
             # add the additional mlat,mlt cols
