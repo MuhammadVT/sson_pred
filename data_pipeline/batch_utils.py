@@ -14,7 +14,7 @@ class DataUtils(object):
     """
     
     def __init__(self, omnDBDir, omnDbName, omnTabName, omnTrain, \
-            omnNormParamFile, imfNormalize=True, omnDBRes=1,\
+            omnNormParamFile, useSML=False, imfNormalize=True, omnDBRes=1,\
              omnTrainParams = [ "By", "Bz", "Bx", "Vx", "Np" ],\
              batch_size=64, loadPreComputedOnset=True,\
              onsetDataloadFile="../data/binned_data.feather",\
@@ -23,7 +23,8 @@ class DataUtils(object):
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
              onsetFillTimeRes=1, binTimeRes=30, nBins=2,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
-            shuffleData=True, omnHistory=120):
+            shuffleData=True, omnHistory=120,\
+            smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)]):
         """
         set up the parameters
         NOTE shuffleBatchDates shuffles the data points
@@ -39,6 +40,8 @@ class DataUtils(object):
         self.omnTabName = omnTabName
         self.omnTrain = omnTrain
         self.omnNormParamFile = omnNormParamFile
+        self.useSML = useSML
+        self.smlDateRange = smlDateRange
         self.imfNormalize = imfNormalize
         self.omnDBRes = omnDBRes
         self.omnTrainParams = omnTrainParams
@@ -66,7 +69,7 @@ class DataUtils(object):
             onsetDF.drop(columns=["date"], inplace=True)
         else:
             print("creating onset data")
-            dataObj = create_onset_data.OnsetData(\
+            dataObj = create_onset_data.OnsetData(useSML=self.useSML,\
                     northData=northData, southData=southData,\
                      polarData=polarData, imageData=imageData,\
                      polarFile=polarFile, imageFile=imageFile,\
@@ -74,8 +77,12 @@ class DataUtils(object):
                      delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes,\
                      trnValTestSplitData=trnValTestSplitData,\
                      trnSplit=trnSplit, valSplit=valSplit)
-            onsetDF = dataObj.create_output_bins(\
-                        saveBinData=saveBinData, saveFile=onsetSaveFile)
+            if self.useSML:
+                onsetDF = dataObj.create_sml_bins(smlDateRange=self.smlDateRange,\
+                                    saveBinData=saveBinData, saveFile=onsetSaveFile)
+            else:
+                onsetDF = dataObj.create_output_bins(\
+                            saveBinData=saveBinData, saveFile=onsetSaveFile)
             # drop the date column which is already in index
         return onsetDF
 
