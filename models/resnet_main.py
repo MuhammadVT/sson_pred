@@ -35,28 +35,77 @@ n_resnet_units = 10
 metrics = ["accuracy"]
 
 file_dir = "../data/"
-output_fname = "nBins_" + str(nBins) + "." +\
+
+
+
+
+useSML = True
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
+smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+
+if useSML:
+    print("Using SML data")
+
+    input_file = "../data/input." +\
+             "nBins_" + str(nBins) + "." +\
+             "binTimeRes_" + str(binTimeRes) + "." +\
+       "omnHistory_" + str(omnHistory) + "." +\
+       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+       "omnDBRes_" + str(omnDBRes) + "." +\
+       "imfNormalize_" + str(imfNormalize) + "." +\
+       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+       "npy"
+#output_file = "../data/output." +\
+#       "nBins_" + str(nBins) + "." +\
+#       "binTimeRes_" + str(binTimeRes) + "." +\
+#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+#       "shuffleData_" + str(shuffleData) + "." +\
+#       "npy"
+
+    csv_file = "../data/sml_" +\
+           "nBins_" + str(nBins) + "." +\
+           "binTimeRes_" + str(binTimeRes) + "." +\
+           "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+           "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+           "omnHistory_" + str(omnHistory) + "." +\
+           "omnDBRes_" + str(omnDBRes) + "." +\
+           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+           "csv"
+else:  
+    input_file = "../data/input." +\
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+             "omnHistory_" + str(omnHistory) + "." +\
+             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+             "omnDBRes_" + str(omnDBRes) + "." +\
+             "imfNormalize_" + str(imfNormalize) + "." +\
+             "shuffleData_" + str(shuffleData) + "." +\
+             "polarData_" + str(polarData) + "." +\
+             "imageData_" + str(imageData) + "." +\
+             "npy"
+    #output_file = "../data/output." +\
+    #         "nBins_" + str(nBins) + "." +\
+    #         "binTimeRes_" + str(binTimeRes) + "." +\
+    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+    #         "shuffleData_" + str(shuffleData) + "." +\
+    #         "npy"
+
+    csv_file = "../data/" +\
+               "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-               "polarData_" + str(polarData) + "." +\
-               "imageData_" + str(imageData) + "." +\
+           "polarData_" + str(polarData) + "." +\
+           "imageData_" + str(imageData) + "." +\
                "csv"
 
-input_fname = "input." +\
-              "nBins_" + str(nBins) + "." +\
-              "binTimeRes_" + str(binTimeRes) + "." +\
-              "omnHistory_" + str(omnHistory) + "." +\
-              "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-              "omnDBRes_" + str(omnDBRes) + "." +\
-              "imfNormalize_" + str(imfNormalize) + "." +\
-              "shuffleData_" + str(shuffleData) + "." +\
-              "polarData_" + str(polarData) + "." +\
-              "imageData_" + str(imageData) + "." +\
-              "npy"
+               
 
 #out_dir="./trained_models/ResNet/20190104_113412/"
 out_dir="./trained_models/ResNet/" +\
@@ -65,7 +114,7 @@ out_dir="./trained_models/ResNet/" +\
         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
         "omnHistory_" + str(omnHistory) + "." +\
         "omnDBRes_" + str(omnDBRes) + "." +\
-	dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+  dt.datetime.now().strftime("%Y%m%d.%H%M%S")
 
 # create out_dir
 if not os.path.exists(out_dir):

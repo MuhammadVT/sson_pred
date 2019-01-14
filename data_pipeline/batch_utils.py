@@ -76,10 +76,11 @@ class DataUtils(object):
                      binTimeRes=binTimeRes, nBins=nBins, \
                      delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes,\
                      trnValTestSplitData=trnValTestSplitData,\
-                     trnSplit=trnSplit, valSplit=valSplit)
+                     trnSplit=trnSplit, valSplit=valSplit,\
+                     smlDateRange=self.smlDateRange)
             if self.useSML:
-                onsetDF = dataObj.create_sml_bins(smlDateRange=self.smlDateRange,\
-                                    saveBinData=saveBinData, saveFile=onsetSaveFile)
+                onsetDF = dataObj.create_sml_bins(saveBinData=saveBinData,\
+                                     saveFile=onsetSaveFile)
             else:
                 onsetDF = dataObj.create_output_bins(\
                             saveBinData=saveBinData, saveFile=onsetSaveFile)

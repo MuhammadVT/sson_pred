@@ -262,7 +262,11 @@ class OnsetData(object):
         smlClstDelT = []
         smlDateList = []
         _cpDate = smlDTStart
+        _printYear = _cpDate.year - 1 # for pritning purposes
         while _cpDate <= smlDTEnd:
+            if _printYear < _cpDate.year:
+                print("Working through year-->", _cpDate.year)
+                _printYear = _cpDate.year
             # we'll start with 0's (no onset) for all the bins
             # then later fill the values based on onset times
             _tmpBinVlas = [ 0 for _tv in range(self.nBins) ]

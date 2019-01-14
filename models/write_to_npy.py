@@ -4,6 +4,7 @@ import batch_utils
 import time
 import numpy as np
 import pandas as pd
+import datetime as dt
 
 omn_dbdir = "../data/sqlite3/"
 omn_db_name = "omni_sw_imf.sqlite"
@@ -16,50 +17,87 @@ omn_train = True
 shuffleData = False
 polarData=True
 imageData=True
-omnHistory = 120
+omnHistory = 120#120
 batch_size = 1
-onsetDelTCutoff = 3
-onsetFillTimeRes = 1
+onsetDelTCutoff = 4
+onsetFillTimeRes = 10
 omnDBRes = 1
-binTimeRes = 30
+binTimeRes = 60#30
 nBins = 1
 predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 
 onsetSaveFile = "../data/binned_data.feather"
-input_file = "../data/input." +\
+
+useSML = True
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
+smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+
+if useSML:
+    print("Using SML data")
+
+    input_file = "../data/input." +\
              "nBins_" + str(nBins) + "." +\
              "binTimeRes_" + str(binTimeRes) + "." +\
-	     "omnHistory_" + str(omnHistory) + "." +\
-	     "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-	     "omnDBRes_" + str(omnDBRes) + "." +\
-	     "imfNormalize_" + str(imfNormalize) + "." +\
-	     "shuffleData_" + str(shuffleData) + "." +\
-	     "polarData_" + str(polarData) + "." +\
-	     "imageData_" + str(imageData) + "." +\
-	     "npy"
+       "omnHistory_" + str(omnHistory) + "." +\
+       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+       "omnDBRes_" + str(omnDBRes) + "." +\
+       "imfNormalize_" + str(imfNormalize) + "." +\
+       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+       "npy"
 #output_file = "../data/output." +\
-#	      "nBins_" + str(nBins) + "." +\
-#	      "binTimeRes_" + str(binTimeRes) + "." +\
-#	      "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-#	      "shuffleData_" + str(shuffleData) + "." +\
-#	      "npy"
+#       "nBins_" + str(nBins) + "." +\
+#       "binTimeRes_" + str(binTimeRes) + "." +\
+#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+#       "shuffleData_" + str(shuffleData) + "." +\
+#       "npy"
 
-csv_file = "../data/" +\
+    csv_file = "../data/sml_" +\
            "nBins_" + str(nBins) + "." +\
            "binTimeRes_" + str(binTimeRes) + "." +\
            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
            "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
            "omnHistory_" + str(omnHistory) + "." +\
            "omnDBRes_" + str(omnDBRes) + "." +\
-           "shuffleData_" + str(shuffleData) + "." +\
-	   "polarData_" + str(polarData) + "." +\
-	   "imageData_" + str(imageData) + "." +\
+           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
            "csv"
+else:  
+    input_file = "../data/input." +\
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+             "omnHistory_" + str(omnHistory) + "." +\
+             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+             "omnDBRes_" + str(omnDBRes) + "." +\
+             "imfNormalize_" + str(imfNormalize) + "." +\
+             "shuffleData_" + str(shuffleData) + "." +\
+             "polarData_" + str(polarData) + "." +\
+             "imageData_" + str(imageData) + "." +\
+             "npy"
+    #output_file = "../data/output." +\
+    #         "nBins_" + str(nBins) + "." +\
+    #         "binTimeRes_" + str(binTimeRes) + "." +\
+    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+    #         "shuffleData_" + str(shuffleData) + "." +\
+    #         "npy"
+
+    csv_file = "../data/" +\
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+           "polarData_" + str(polarData) + "." +\
+           "imageData_" + str(imageData) + "." +\
+               "csv"
 
 batchObj = batch_utils.DataUtils(omn_dbdir,\
                     omn_db_name, omn_table_name,\
-                    omn_train, omn_norm_param_file, imfNormalize=imfNormalize, omnDBRes=omnDBRes,\
+                    omn_train, omn_norm_param_file, useSML=useSML, imfNormalize=imfNormalize, omnDBRes=omnDBRes,\
                     omnTrainParams=omnTrainParams,\
                     batch_size=batch_size, loadPreComputedOnset=loadPreComputedOnset,\
                     onsetDataloadFile="../data/binned_data.feather",\
@@ -68,7 +106,7 @@ batchObj = batch_utils.DataUtils(omn_dbdir,\
                     imageFile="../data/image_data.feather", onsetDelTCutoff=onsetDelTCutoff,\
                     onsetFillTimeRes=onsetFillTimeRes, binTimeRes=binTimeRes, nBins=nBins,\
                     saveBinData=saveBinData, onsetSaveFile=onsetSaveFile,\
-                    shuffleData=shuffleData, omnHistory=omnHistory)
+                    shuffleData=shuffleData, omnHistory=omnHistory, smlDateRange=smlDateRange)
 x = time.time()
 onsetData_list = []
 omnData_list = []
