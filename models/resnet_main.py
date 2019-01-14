@@ -2,7 +2,7 @@ import keras
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
-from dnn_classifiers import ResNet
+from dnn_classifiers import ResNet, train_model
 from scipy.io import loadmat
 import matplotlib
 matplotlib.use("Agg")
@@ -19,7 +19,7 @@ import time
 skip_training = False
 
 nBins = 1
-binTimeRes = 30
+binTimeRes = 60
 imfNormalize = True
 shuffleData = False 
 polarData = True
@@ -29,9 +29,9 @@ onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64 * 10
-n_epochs = 20
-n_resnet_units = 3
+batch_size = 64 * 5
+n_epochs = 200
+n_resnet_units = 1
 metrics = ["accuracy"]
 
 file_dir = "../data/"
@@ -118,20 +118,22 @@ input_shape = X.shape[1:]
 loss=keras.losses.categorical_crossentropy
 
 #from sklearn import utils
-class_weights = {0:1, 1:1.2}
-#class_weights = None
+#class_weights = {0:1, 1:1.3}
+class_weights = None
 
 # Train the model
 if not skip_training:
-    resnet = ResNet(input_shape, batch_size=batch_size, n_epochs=n_epochs,
+    dl_obj = ResNet(input_shape, batch_size=batch_size, n_epochs=n_epochs,
                     n_classes=n_classes, n_resnet_units=n_resnet_units, loss=loss,
                     optimizer=optimizer,
                     metrics=metrics, out_dir=out_dir)
 
     print("Training the model...")
-    resnet.model.summary()
-    fit_history = resnet.train_model(x_train, y_train_enc, x_val, y_val_enc,
-                                     class_weights=class_weights)
+    dl_obj.model.summary()
+    fit_history = train_model(dl_obj.model, x_train, y_train_enc, x_val, y_val_enc,
+                              batch_size=batch_size, n_epochs=n_epochs,
+                              callbacks=dl_obj.callbacks, shuffle=True,
+                              class_weights=class_weights)
 
     # Plot the training 
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
