@@ -24,13 +24,13 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 120
+omnHistory = 180
 onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64 * 1
-n_epochs = 200
+batch_size = 64 * 10
+n_epochs = 20
 metrics = ["accuracy"]
 
 file_dir = "../data/"
@@ -80,7 +80,7 @@ df = pd.read_csv(output_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
 # Do 5-min average to the input data
-X = np.mean(X[:, :-1, :].reshape(X.shape[0], 24, 5, X.shape[-1]), axis=2)
+X = np.mean(X[:, :-1, :].reshape(X.shape[0], int((X.shape[1]-1)/5), 5, X.shape[-1]), axis=2)
 X = X[::5, :-1, :]
 y = y[::5, :]
 

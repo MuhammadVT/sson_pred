@@ -52,7 +52,7 @@ class OmnData(object):
         omnDF = omnDF.replace(numpy.inf, numpy.nan)
         omnDF = omnDF.set_index("datetime").reindex(new_omn_index_arr).reset_index()
         # Replace nan's with preceding value (forward filling)
-        omnDF = omnDF.fillna(method='ffill')
+        omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
         
         if (self.imf_normalize == True):
             print ('normalizing the IMF data ...')
