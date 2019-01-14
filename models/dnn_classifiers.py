@@ -274,16 +274,18 @@ class ResNet:
         # Input layer
         input_layer = Input(self.input_shape, name="main_input")
 
-        # CNN layers
-        conv_layer = Conv1D(filters=8, kernel_size=7, strides=2, padding="valid")(input_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
+#        # CNN layers
+#        conv_layer = Conv1D(filters=8, kernel_size=7, strides=2, padding="valid")(input_layer)
+#        conv_layer = normalization.BatchNormalization()(conv_layer)
+#        conv_layer = Activation(activation="relu")(conv_layer)
+#
+#        conv_layer = Conv1D(filters=8, kernel_size=7, strides=1, padding="valid")(conv_layer)
+#        conv_layer = normalization.BatchNormalization()(conv_layer)
+#        conv_layer = Activation(activation="relu")(conv_layer)
+#        # Max pooling layer
+#        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-        conv_layer = Conv1D(filters=8, kernel_size=7, strides=1, padding="valid")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
-        # Max pooling layer
-        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+        conv_layer = input_layer
 
         #############################
         # ResNet Units
@@ -302,45 +304,45 @@ class ResNet:
                                                            first_resnet_unit=first_resnet_unit)
             resnet_unit_input = resnet_unit_output
 
-        #############################
-        # Max pooling layer
-        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
-        #############################
-        # ResNet Units
-        n_filters = 16
-        n_layers = 3
-        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
-        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
-        resnet_unit_input = conv_layer
-        for i in range(self.n_resnet_units):
-            if i == 0:
-                first_resnet_unit=True
-            else:
-                first_resnet_unit=False
-            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
-                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
-                                                           first_resnet_unit=first_resnet_unit)
-            resnet_unit_input = resnet_unit_output
-        #############################
-        # Max pooling layer
-        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
-        #############################
-        # ResNet Units
-        n_filters = 32
-        n_layers = 3
-        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
-        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
-        resnet_unit_input = conv_layer
-        for i in range(self.n_resnet_units):
-            if i == 0:
-                first_resnet_unit=True
-            else:
-                first_resnet_unit=False
-            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
-                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
-                                                           first_resnet_unit=first_resnet_unit)
-            resnet_unit_input = resnet_unit_output
-        #############################
+#        #############################
+#        # Max pooling layer
+#        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+#        #############################
+#        # ResNet Units
+#        n_filters = 16
+#        n_layers = 3
+#        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+#        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
+#        resnet_unit_input = conv_layer
+#        for i in range(self.n_resnet_units):
+#            if i == 0:
+#                first_resnet_unit=True
+#            else:
+#                first_resnet_unit=False
+#            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+#                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
+#                                                           first_resnet_unit=first_resnet_unit)
+#            resnet_unit_input = resnet_unit_output
+#        #############################
+#        # Max pooling layer
+#        conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+#        #############################
+#        # ResNet Units
+#        n_filters = 32
+#        n_layers = 3
+#        #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
+#        kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
+#        resnet_unit_input = conv_layer
+#        for i in range(self.n_resnet_units):
+#            if i == 0:
+#                first_resnet_unit=True
+#            else:
+#                first_resnet_unit=False
+#            resnet_unit_output = self.__create_resnet_unit(resnet_unit_input, n_filters=n_filters,
+#                                                           n_layers=n_layers, kernel_sizes=kernel_sizes,
+#                                                           first_resnet_unit=first_resnet_unit)
+#            resnet_unit_input = resnet_unit_output
+#        #############################
 
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
@@ -557,21 +559,21 @@ class MLSTM_FCN:
 
 
         # Add CNN layer + squeeze-excite block
-        conv_layer = Conv1D(filters=128, kernel_size=8, strides=1, padding="same",\
+        conv_layer = Conv1D(filters=32, kernel_size=8, strides=1, padding="same",\
                             kernel_initializer='he_uniform')(input_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         conv_layer = squeeze_excite_block(conv_layer)
 
         # Add CNN layer + squeeze-excite block
-        conv_layer = Conv1D(filters=256, kernel_size=5, strides=1, padding="same",\
+        conv_layer = Conv1D(filters=64, kernel_size=5, strides=1, padding="same",\
                             kernel_initializer='he_uniform')(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         conv_layer = squeeze_excite_block(conv_layer)
 
         # Add CNN layer
-        conv_layer = Conv1D(filters=128, kernel_size=3, strides=1, padding="same",\
+        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="same",\
                             kernel_initializer='he_uniform')(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)

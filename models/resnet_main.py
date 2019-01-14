@@ -29,9 +29,9 @@ onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64 * 5
-n_epochs = 200
-n_resnet_units = 1
+batch_size = 64 * 1
+n_epochs = 100
+n_resnet_units = 10
 metrics = ["accuracy"]
 
 file_dir = "../data/"
@@ -79,6 +79,11 @@ print("loading the data...")
 X = np.load(input_file)
 df = pd.read_csv(output_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
+
+# Do 5-min average to the input data
+X = np.mean(X[:, :-1, :].reshape(X.shape[0], 24, 5, X.shape[-1]), axis=2)
+X = X[::5, :-1, :]
+y = y[::5, :]
 
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]

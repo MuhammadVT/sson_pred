@@ -29,7 +29,7 @@ onsetDelTCutoff = 3
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64 * 5
+batch_size = 64 * 1
 n_epochs = 200
 metrics = ["accuracy"]
 
@@ -78,6 +78,11 @@ print("loading the data...")
 X = np.load(input_file)
 df = pd.read_csv(output_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
+
+# Do 5-min average to the input data
+X = np.mean(X[:, :-1, :].reshape(X.shape[0], 24, 5, X.shape[-1]), axis=2)
+X = X[::5, :-1, :]
+y = y[::5, :]
 
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
@@ -158,7 +163,7 @@ print("Evaluating the model...")
 test_epoch = n_epochs
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
-y_train_pred_enc = test_model.predict(X_train, batch_size=batch_size)
+y_train_pred_enc = test_model.predict(x_train, batch_size=batch_size)
 y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
 
 # The final activation layer uses softmax
@@ -168,7 +173,7 @@ y_test_true = y_test
 y_train_true = y_train
 
 # Report for all input data
-print("Prediction report for all input data.")
+print("Prediction report for train data.")
 print(classification_report(y_train_true, y_train_pred))
 
 # Report for test data
