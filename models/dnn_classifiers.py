@@ -290,7 +290,7 @@ class ResNet:
         #############################
         # ResNet Units
         n_filters = 8
-        n_layers = 3
+        n_layers = 3   # Keep it as it is
         #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
         resnet_unit_input = conv_layer
