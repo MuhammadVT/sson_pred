@@ -109,28 +109,6 @@ class FCNN:
 
         return model
 
-    def train_model(self, x_train, y_train, x_val, y_val, class_weights=None):
-
-        from keras.backend import clear_session
-        import datetime as dt
-
-        # Train the model
-        stime = dt.datetime.now() 
-        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), class_weight=class_weights,
-                                     callbacks=self.callbacks, shuffle=True)
-        etime = dt.datetime.now() 
-        training_time = (etime - stime).total_seconds()/60.    # minutes
-        print("Training time is {tm} minutes".format(tm=training_time))
-
-        self.class_weights = class_weights
-
-        # Test the model on evaluation data
-        clear_session()
-
-        return fit_history
-
-
 # Fully Convolutional Neural Network (FCNN) with multiple outputs
 class FCNN_MultiOut:
     def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
@@ -234,27 +212,6 @@ class FCNN_MultiOut:
         self.callbacks = [reduce_lr,model_checkpoint]
 
         return model
-
-    def train_model(self, x_train, y_train, x_val, y_val, class_weights=None):
-
-        from keras.backend import clear_session
-        import datetime as dt
-
-        # Train the model
-        stime = dt.datetime.now() 
-        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), class_weight=class_weights,
-                                     callbacks=self.callbacks, shuffle=True)
-        etime = dt.datetime.now() 
-        training_time = (etime - stime).total_seconds()/60.    # minutes
-        print("Training time is {tm} minutes".format(tm=training_time))
-
-        self.class_weights = class_weights
-
-        # Test the model on evaluation data
-        clear_session()
-
-        return fit_history
 
 # ResNet Convolutional Neural Network (ResNet) with single output
 class ResNet:
@@ -385,12 +342,11 @@ class ResNet:
             resnet_unit_input = resnet_unit_output
         #############################
 
-
-        # Global pooling layer
-        #gap_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
-
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
+
+        # Global pooling layer
+        #fc_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
 
         # Flatten 2D data into 1D
         fc_layer = Flatten()(conv_layer)
@@ -400,8 +356,8 @@ class ResNet:
 #        fc_layer = Dense(50, activation="relu")(fc_layer)
 #        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
-        # Add Dense layer 
-        fc_layer = Dense(10, activation="relu")(fc_layer)
+#        # Add Dense layer 
+#        fc_layer = Dense(10, activation="relu")(fc_layer)
 
         # Output layer
         # Use softmax
@@ -425,28 +381,6 @@ class ResNet:
         self.callbacks = [reduce_lr,model_checkpoint]
 
         return model
-
-    def train_model(self, x_train, y_train, x_val, y_val, class_weights=None):
-
-        from keras.backend import clear_session
-        import datetime as dt
-
-        # Train the model
-        stime = dt.datetime.now() 
-        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), class_weight=class_weights,
-                                     callbacks=self.callbacks, shuffle=True)
-        etime = dt.datetime.now() 
-        training_time = (etime - stime).total_seconds()/60.    # minutes
-        print("Training time is {tm} minutes".format(tm=training_time))
-
-        self.class_weights = class_weights
-
-        # Test the model on evaluation data
-        clear_session()
-
-        return fit_history
-
 
 # ResNet Convolutional Neural Network (ResNet) with multiple outputs
 class ResNet_MultiOut:
@@ -577,30 +511,9 @@ class ResNet_MultiOut:
 
         return model
 
-    def train_model(self, x_train, y_train, x_val, y_val, class_weights=None):
-
-        from keras.backend import clear_session
-        import datetime as dt
-
-        # Train the model
-        stime = dt.datetime.now() 
-        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), class_weight=class_weights,
-                                     callbacks=self.callbacks, shuffle=True)
-        etime = dt.datetime.now() 
-        training_time = (etime - stime).total_seconds()/60.    # minutes
-        print("Training time is {tm} minutes".format(tm=training_time))
-
-        self.class_weights = class_weights
-
-        # Test the model on evaluation data
-        clear_session()
-
-        return fit_history
-
-
 #  Use LSTM to encode the input and then use Fully Connected NN to make prediction
-class LSTM_FC:
+class MLSTM_FCN:
+    """ Modified based on https://github.com/houshd/MLSTM-FCN/blob/master """
     def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
                  loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
                  loss_weights=None,
@@ -622,18 +535,24 @@ class LSTM_FC:
 
     def creat_model(self):
 
-        from keras.layers import Input, Conv1D, Dense, LSTM
+        from keras.layers import Input, Conv1D, Dense, LSTM, Masking
         from keras.layers import normalization, Activation, pooling
         from keras.models import Model 
         from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
         from keras.layers.core import Dropout
         import os
 
-        # Input layer
+        # Input layer 
         input_layer = Input(self.input_shape, name="main_input")
 
+        # Add masking
+        input_layer = Masking(masking_value=0.0)(input_layer)
+
         # LSTM
-        lstm_layer = LSTM(64)(input_layer)
+        lstm_layer = LSTM(8)(input_layer)
+
+        # Dropout
+        lstm_layer = Dropout(0.8, seed=100)(lstm_layer)
 
         # FC Dense layer
         fc_layer = Dense(64, activation="relu")(lstm_layer) 
@@ -667,25 +586,23 @@ class LSTM_FC:
 
         return model
 
-    def train_model(self, x_train, y_train, x_val, y_val, class_weights=None):
+def train_model(model, x_train, y_train, x_val, y_val, class_weights=None,
+                batch_size=32, n_epochs=10, callbacks=None, shuffle=True):
 
-        from keras.backend import clear_session
-        import datetime as dt
+    from keras.backend import clear_session
+    import datetime as dt
 
-        # Train the model
-        stime = dt.datetime.now() 
-        fit_history = self.model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.n_epochs, 
-                                     validation_data=(x_val, y_val), class_weight=class_weights,
-                                     callbacks=self.callbacks, shuffle=True)
-        etime = dt.datetime.now() 
-        training_time = (etime - stime).total_seconds()/60.    # minutes
-        print("Training time is {tm} minutes".format(tm=training_time))
+    # Train the model
+    stime = dt.datetime.now() 
+    fit_history = model.fit(x_train, y_train, batch_size=batch_size, epochs=n_epochs, 
+                            validation_data=(x_val, y_val), class_weight=class_weights,
+                            callbacks=callbacks, shuffle=shuffle)
+    etime = dt.datetime.now() 
+    training_time = (etime - stime).total_seconds()/60.    # minutes
+    print("Training time is {tm} minutes".format(tm=training_time))
 
-        self.class_weights = class_weights
+    # Test the model on evaluation data
+    clear_session()
 
-        # Test the model on evaluation data
-        clear_session()
-
-        return fit_history
-
+    return fit_history
 
