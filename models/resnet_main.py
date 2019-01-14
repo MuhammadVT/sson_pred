@@ -69,7 +69,7 @@ out_dir="./trained_models/ResNet/" +\
 
 # create out_dir
 if not os.path.exists(out_dir):
-    os.mkdir(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
 
 input_file = file_dir + input_fname
 output_file = file_dir + output_fname
