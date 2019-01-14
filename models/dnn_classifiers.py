@@ -534,7 +534,7 @@ class MLSTM_FCN:
 
     def creat_model(self):
 
-        from keras.layers import Input, Conv1D, Dense, LSTM, Masking
+        from keras.layers import Input, Conv1D, Dense, LSTM, Masking, Permute
         from keras.layers import normalization, Activation, pooling, concatenate
         from keras.models import Model 
         from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
@@ -542,19 +542,19 @@ class MLSTM_FCN:
         import os
 
         # Input layer 
-        input_shape_shuffle = (self.input_shape[1], self.input_shape[0])
-        input_layer_shuffle = Input(input_shape_shuffle)
+        input_layer = Input(self.input_shape)
+
+        # Permute the input layer
+        input_layer_shuffle = Permute((1,2))(input_layer)
 
         # Add masking
-        input_layer_masked = Masking(masking_value=0.0)(input_layer_shuffle)
+        input_layer_masked = Masking(mask_value=0.0)(input_layer_shuffle)
 
         # LSTM
         lstm_layer = LSTM(8)(input_layer_masked)
         # Dropout
         lstm_layer = Dropout(0.8, seed=100)(lstm_layer)
 
-        # Permute the shuffled input layer
-        input_layer = Permute((2,1))(input_layer_shuffle)
 
         # Add CNN layer + squeeze-excite block
         conv_layer = Conv1D(filters=128, kernel_size=8, strides=1, padding="same",\
@@ -582,11 +582,11 @@ class MLSTM_FCN:
 
 
         # Softmax output layer
-        output_layer = Dense(n_classes, activation="softmax")(concat_layer)
+        output_layer = Dense(self.n_classes, activation="softmax")(concat_layer)
 
 
         # Put all the model components together
-        model = Model(inputs=input_layer_shuffle, outputs=output_layer)
+        model = Model(inputs=input_layer, outputs=output_layer)
 
         # configure the model
         model.compile(loss=self.loss, optimizer=self.optimizer,

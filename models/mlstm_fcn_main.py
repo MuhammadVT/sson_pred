@@ -68,7 +68,7 @@ out_dir="./trained_models/MLSTM_FCN/" +\
 
 # create out_dir
 if not os.path.exists(out_dir):
-    os.mkdir(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
 
 input_file = file_dir + input_fname
 output_file = file_dir + output_fname
@@ -158,18 +158,18 @@ print("Evaluating the model...")
 test_epoch = n_epochs
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
-y_pred_enc = test_model.predict(X, batch_size=batch_size)
+y_train_pred_enc = test_model.predict(X_train, batch_size=batch_size)
 y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
 
 # The final activation layer uses softmax
 y_test_pred = np.argmax(y_test_pred_enc , axis=1)
-y_pred = np.argmax(y_pred_enc , axis=1)
+y_train_pred = np.argmax(y_train_pred_enc , axis=1)
 y_test_true = y_test
-y_true = y
+y_train_true = y_train
 
 # Report for all input data
 print("Prediction report for all input data.")
-print(classification_report(y_true, y_pred))
+print(classification_report(y_train_true, y_train_pred))
 
 # Report for test data
 print("Prediction report for test data.")
