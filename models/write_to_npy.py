@@ -11,7 +11,7 @@ omn_db_name = "omni_sw_imf.sqlite"
 omn_table_name = "imf_sw"
 omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 
-omnTrainParams = ["By", "Bz", "Bx", "Vx", "Np", "Pdyn"]
+omnTrainParams = ["By", "Bz", "Vx", "Np"]
 imfNormalize = True
 omn_train = True
 shuffleData = False
@@ -20,7 +20,7 @@ imageData=True
 omnHistory = 120#120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 10
+onsetFillTimeRes = 5
 omnDBRes = 1
 binTimeRes = 60#30
 nBins = 1

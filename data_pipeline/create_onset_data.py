@@ -346,6 +346,7 @@ class OnsetData(object):
         smlDataSet = smlDataSet.apply( self.onset_binary, axis=1,\
                          args=(filterCols,) )
         # Downsample the data if the option is set
+        print("original DF label counts---->", smlDataSet["outBinary"].value_counts())
         if self.smlDownsample:
             print("Downsampling the data")
             smLabs = smlDataSet["outBinary"].value_counts()
@@ -362,7 +363,6 @@ class OnsetData(object):
                                  random_state=randomState) )# reproducible results
             # Combine minority class with downsampled majority class
             smlDataSet = pandas.concat(dfList)
-            print("new DF ---->", smlDataSet["outBinary"].value_counts())
         if self.smlUpsample:
             print("Upsampling the data")
             smLabs = smlDataSet["outBinary"].value_counts()
@@ -379,7 +379,34 @@ class OnsetData(object):
                                  random_state=randomState) )# reproducible results
             # Combine minority class with downsampled majority class
             smlDataSet = pandas.concat(dfList)
-            print("new DF ---->", smlDataSet["outBinary"].value_counts())
+        # Now shuffle tha dataframe, otherwise all the 1's, 0's are stacked
+        # and this causes imbalance during training/validation/testing.
+        # This is not a good thing for SML based bins (although this is what we
+        # want for the POLAR/IMAGE datasets).
+        smlDataSet = smlDataSet.reindex( numpy.random.permutation(smlDataSet.index) )
+
+        # if self.trnValTestSplitData:
+        #     # sort the index before splitting
+        #     smlDataSet.sort_index(inplace=True)
+        #     print("Splitting the data into train, validation and test")
+        #     # get the counts in different labels
+        #     splitBins = smlDataSet["outBinary"].value_counts()
+        #     indsTrain = numpy.empty([0], dtype=smlDataSet.index.dtype)
+        #     indsVal = numpy.empty([0], dtype=smlDataSet.index.dtype)
+        #     indsTest = numpy.empty([0], dtype=smlDataSet.index.dtype)
+        #     for _dl in splitBins.index:
+        #         _currInds = smlDataSet[ smlDataSet["outBinary"] == _dl\
+        #                     ].index.get_values()
+        #         _split = numpy.split( _currInds, [int(self.trnSplit*_currInds.size),\
+        #                             int((self.trnSplit+self.valSplit)*_currInds.size)] )
+        #         indsTrain = numpy.concatenate( [indsTrain, _split[0]] )
+        #         indsVal = numpy.concatenate( [indsVal, _split[1]] )
+        #         indsTest = numpy.concatenate( [indsTest, _split[2]] )
+        #     # re-order the dataframe based on new splits
+        #     smlDataSet = pandas.concat( [ smlDataSet.loc[numpy.sort(indsTrain)],\
+        #                 smlDataSet.loc[numpy.sort(indsVal)],\
+        #                  smlDataSet.loc[numpy.sort(indsTest)] ] )
+        print("new DF label counts---->", smlDataSet["outBinary"].value_counts())
         # save the file to make future calc faster
         if saveBinData:
             # Note feather doesn't support datetime index
