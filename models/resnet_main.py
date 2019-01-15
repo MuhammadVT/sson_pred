@@ -36,62 +36,58 @@ metrics = ["accuracy"]
 
 file_dir = "../data/"
 
-
-
-
 useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,1,1)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 
 if useSML:
     print("Using SML data")
-
     input_file = "../data/input." +\
-             "nBins_" + str(nBins) + "." +\
-             "binTimeRes_" + str(binTimeRes) + "." +\
-       "omnHistory_" + str(omnHistory) + "." +\
-       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-       "omnDBRes_" + str(omnDBRes) + "." +\
-       "imfNormalize_" + str(imfNormalize) + "." +\
-       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-       "npy"
-#output_file = "../data/output." +\
-#       "nBins_" + str(nBins) + "." +\
-#       "binTimeRes_" + str(binTimeRes) + "." +\
-#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-#       "shuffleData_" + str(shuffleData) + "." +\
-#       "npy"
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 "npy"
 
     csv_file = "../data/sml_" +\
-           "nBins_" + str(nBins) + "." +\
-           "binTimeRes_" + str(binTimeRes) + "." +\
-           "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-           "omnHistory_" + str(omnHistory) + "." +\
-           "omnDBRes_" + str(omnDBRes) + "." +\
-           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               "csv"
+
+    out_dir="./trained_models/ResNet/" +\
+            "sml.nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
             "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "csv"
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+
 else:  
     input_file = "../data/input." +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
-             "omnHistory_" + str(omnHistory) + "." +\
-             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-             "omnDBRes_" + str(omnDBRes) + "." +\
-             "imfNormalize_" + str(imfNormalize) + "." +\
-             "shuffleData_" + str(shuffleData) + "." +\
-             "polarData_" + str(polarData) + "." +\
-             "imageData_" + str(imageData) + "." +\
-             "npy"
-    #output_file = "../data/output." +\
-    #         "nBins_" + str(nBins) + "." +\
-    #         "binTimeRes_" + str(binTimeRes) + "." +\
-    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-    #         "shuffleData_" + str(shuffleData) + "." +\
-    #         "npy"
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "polarData_" + str(polarData) + "." +\
+                 "imageData_" + str(imageData) + "." +\
+                 "npy"
 
     csv_file = "../data/" +\
                "nBins_" + str(nBins) + "." +\
@@ -100,33 +96,28 @@ else:
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-           "polarData_" + str(polarData) + "." +\
-           "imageData_" + str(imageData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
                "csv"
 
-               
-
-#out_dir="./trained_models/ResNet/20190104_113412/"
-out_dir="./trained_models/ResNet/" +\
-        "nBins_" + str(nBins) + "." +\
-        "binTimeRes_" + str(binTimeRes) + "." +\
-        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-        "omnHistory_" + str(omnHistory) + "." +\
-        "omnDBRes_" + str(omnDBRes) + "." +\
-  dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+    out_dir="./trained_models/ResNet/" +\
+            "nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            dt.datetime.now().strftime("%Y%m%d.%H%M%S")
 
 # create out_dir
 if not os.path.exists(out_dir):
     os.makedirs(out_dir, exist_ok=True)
 
-input_file = file_dir + input_fname
-output_file = file_dir + output_fname
-
 # Load the data
 print("loading the data...")
 X = np.load(input_file)
-df = pd.read_csv(output_file, index_col=0)
+df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
 # Do 5-min average to the input data

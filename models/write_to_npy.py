@@ -36,52 +36,42 @@ smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 
 if useSML:
     print("Using SML data")
-
     input_file = "../data/input." +\
-             "nBins_" + str(nBins) + "." +\
-             "binTimeRes_" + str(binTimeRes) + "." +\
-       "omnHistory_" + str(omnHistory) + "." +\
-       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-       "omnDBRes_" + str(omnDBRes) + "." +\
-       "imfNormalize_" + str(imfNormalize) + "." +\
-       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-       "npy"
-#output_file = "../data/output." +\
-#       "nBins_" + str(nBins) + "." +\
-#       "binTimeRes_" + str(binTimeRes) + "." +\
-#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-#       "shuffleData_" + str(shuffleData) + "." +\
-#       "npy"
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 "npy"
 
     csv_file = "../data/sml_" +\
-           "nBins_" + str(nBins) + "." +\
-           "binTimeRes_" + str(binTimeRes) + "." +\
-           "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-           "omnHistory_" + str(omnHistory) + "." +\
-           "omnDBRes_" + str(omnDBRes) + "." +\
-           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "csv"
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               "csv"
 else:  
     input_file = "../data/input." +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
-             "omnHistory_" + str(omnHistory) + "." +\
-             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-             "omnDBRes_" + str(omnDBRes) + "." +\
-             "imfNormalize_" + str(imfNormalize) + "." +\
-             "shuffleData_" + str(shuffleData) + "." +\
-             "polarData_" + str(polarData) + "." +\
-             "imageData_" + str(imageData) + "." +\
-             "npy"
-    #output_file = "../data/output." +\
-    #         "nBins_" + str(nBins) + "." +\
-    #         "binTimeRes_" + str(binTimeRes) + "." +\
-    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-    #         "shuffleData_" + str(shuffleData) + "." +\
-    #         "npy"
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "polarData_" + str(polarData) + "." +\
+                 "imageData_" + str(imageData) + "." +\
+                 "npy"
 
     csv_file = "../data/" +\
                "nBins_" + str(nBins) + "." +\
@@ -90,9 +80,10 @@ else:
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-           "polarData_" + str(polarData) + "." +\
-           "imageData_" + str(imageData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
                "csv"
 
 batchObj = batch_utils.DataUtils(omn_dbdir,\
