@@ -26,12 +26,12 @@ polarData = True
 imageData = True
 omnHistory = 120
 onsetDelTCutoff = 4
-onsetFillTimeRes = 1
+onsetFillTimeRes = 5
 omnDBRes = 1
 
-batch_size = 64 * 5
-n_epochs = 30
-n_resnet_units = 10
+batch_size = 64 * 10
+n_epochs = 10
+n_resnet_units = 1
 metrics = ["accuracy"]
 
 file_dir = "../data/"
@@ -156,7 +156,7 @@ y_val_enc = enc.transform(y_val).toarray()
 y_enc = enc.transform(y).toarray()
 
 # Build a ResNet model
-optimizer=keras.optimizers.Adam(lr=0.0001)
+optimizer=keras.optimizers.Adam(lr=0.0002)
 input_shape = X.shape[1:]
 
 # Define the loss, loss_weights, and class_weights
@@ -205,18 +205,26 @@ print("Evaluating the model...")
 test_epoch = n_epochs
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
 test_model = keras.models.load_model(model_name) 
-y_pred_enc = test_model.predict(X, batch_size=batch_size)
+y_train_pred_enc = test_model.predict(x_train, batch_size=batch_size)
+y_val_pred_enc = test_model.predict(x_val, batch_size=batch_size)
 y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
 
 # The final activation layer uses softmax
+y_train_pred = np.argmax(y_train_pred_enc , axis=1)
+y_val_pred = np.argmax(y_val_pred_enc , axis=1)
 y_test_pred = np.argmax(y_test_pred_enc , axis=1)
-y_pred = np.argmax(y_pred_enc , axis=1)
+y_train_true = y_train
+y_val_true = y_val
 y_test_true = y_test
-y_true = y
 
-# Report for all input data
-print("Prediction report for all input data.")
-print(classification_report(y_true, y_pred))
+# Report for train data
+print("Prediction report for train input data.")
+print(classification_report(y_train_true, y_train_pred))
+
+# Report for validation data
+print("Prediction report for validation input data.")
+print(classification_report(y_val_true, y_val_pred))
+
 
 # Report for test data
 print("Prediction report for test data.")

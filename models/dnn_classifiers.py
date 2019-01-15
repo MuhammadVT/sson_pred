@@ -289,7 +289,7 @@ class ResNet:
 
         #############################
         # ResNet Units
-        n_filters = 8
+        n_filters = 16
         n_layers = 3   # Keep it as it is
         #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
@@ -352,9 +352,9 @@ class ResNet:
 
         # Flatten 2D data into 1D
         fc_layer = Flatten()(conv_layer)
-        #fc_layer = Dropout(0.5, seed=100)(fc_layer)
+        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
-#        # Add Dense layer 
+        # Add Dense layer 
 #        fc_layer = Dense(50, activation="relu")(fc_layer)
 #        fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
