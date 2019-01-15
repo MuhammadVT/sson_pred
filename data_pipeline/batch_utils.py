@@ -24,7 +24,8 @@ class DataUtils(object):
              onsetFillTimeRes=1, binTimeRes=30, nBins=2,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
             shuffleData=True, omnHistory=120,\
-            smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)]):
+            smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)],\
+            smlDownsample=True, smlUpsample=False):
         """
         set up the parameters
         NOTE shuffleBatchDates shuffles the data points
@@ -42,6 +43,8 @@ class DataUtils(object):
         self.omnNormParamFile = omnNormParamFile
         self.useSML = useSML
         self.smlDateRange = smlDateRange
+        self.smlDownsample = smlDownsample
+        self.smlUpsample = smlUpsample
         self.imfNormalize = imfNormalize
         self.omnDBRes = omnDBRes
         self.omnTrainParams = omnTrainParams
@@ -77,7 +80,9 @@ class DataUtils(object):
                      delTCutoff=onsetDelTCutoff, fillTimeRes=onsetFillTimeRes,\
                      trnValTestSplitData=trnValTestSplitData,\
                      trnSplit=trnSplit, valSplit=valSplit,\
-                     smlDateRange=self.smlDateRange)
+                     smlDateRange=self.smlDateRange,\
+                    smlDownsample=self.smlDownsample,\
+                    smlUpsample=self.smlUpsample)
             if self.useSML:
                 onsetDF = dataObj.create_sml_bins(saveBinData=saveBinData,\
                                      saveFile=onsetSaveFile)

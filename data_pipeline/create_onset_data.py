@@ -2,6 +2,7 @@ import pandas
 import datetime
 import feather
 import numpy
+from sklearn.utils import resample
 
 class OnsetData(object):
     """
@@ -13,7 +14,8 @@ class OnsetData(object):
                  imageFile="../data/image_data.feather",delTCutoff=2,\
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
                  trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15,\
-                 smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None):
+                 smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
+                smlDownsample=True, smlUpsample=False):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -57,6 +59,8 @@ class OnsetData(object):
         else:
             self.smlFname = smlFname
             self.smlDateRange = smlDateRange
+            self.smlDownsample = smlDownsample
+            self.smlUpsample = smlUpsample
 
     def _filter_data(self):
         """
@@ -232,7 +236,7 @@ class OnsetData(object):
             nonSSDtList = nonSSDtList[:nonSSDataCnt]
         return pandas.DataFrame(nonSSDtList, columns=["date"])
     
-    def create_sml_bins(self, saveBinData=True,\
+    def create_sml_bins(self, saveBinData=True,randomState=0,\
                  saveFile="../data/sml_binned_data_extra.feather"):
         """
         Create the bins based on SML index instead of
@@ -333,6 +337,49 @@ class OnsetData(object):
         # are not segregated at the end
         smlDataSet.sort_index(inplace=True)
         print(smlDataSet.head())
+        # if both self.smlUpsample and self.smlDownsample
+        # are set then choose one self.smlDownsample
+        if self.smlUpsample & self.smlDownsample:
+            self.smlUpsample = False
+        filterCols = [ col for col in smlDataSet\
+                         if col.startswith('bin') ]
+        smlDataSet = smlDataSet.apply( self.onset_binary, axis=1,\
+                         args=(filterCols,) )
+        # Downsample the data if the option is set
+        if self.smlDownsample:
+            print("Downsampling the data")
+            smLabs = smlDataSet["outBinary"].value_counts()
+            # downsample the other classes
+            # and make the count equal to the min 
+            dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmin() ] ]
+            for _ind in smLabs.index:
+                if _ind != smLabs.idxmin():
+                    # Downsample majority class
+                    dfMaj = smlDataSet[ smlDataSet["outBinary"] == _ind ]
+                    dfList.append( resample(dfMaj, 
+                                 replace=False, # sample without replacement
+                                 n_samples=smLabs[smLabs.idxmin()], # to match minority class
+                                 random_state=randomState) )# reproducible results
+            # Combine minority class with downsampled majority class
+            smlDataSet = pandas.concat(dfList)
+            print("new DF ---->", smlDataSet["outBinary"].value_counts())
+        if self.smlUpsample:
+            print("Upsampling the data")
+            smLabs = smlDataSet["outBinary"].value_counts()
+            # downsample the other classes
+            # and make the count equal to the min 
+            dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmax() ] ]
+            for _ind in smLabs.index:
+                if _ind != smLabs.idxmax():
+                    # Downsample majority class
+                    dfMin = smlDataSet[ smlDataSet["outBinary"] == _ind ]
+                    dfList.append( resample(dfMin, 
+                                 replace=False, # sample without replacement
+                                 n_samples=smLabs[smLabs.idxmax()], # to match minority class
+                                 random_state=randomState) )# reproducible results
+            # Combine minority class with downsampled majority class
+            smlDataSet = pandas.concat(dfList)
+            print("new DF ---->", smlDataSet["outBinary"].value_counts())
         # save the file to make future calc faster
         if saveBinData:
             # Note feather doesn't support datetime index
