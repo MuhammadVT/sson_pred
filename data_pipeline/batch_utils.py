@@ -153,9 +153,7 @@ class DataUtils(object):
         for _pr in predList:
             predCols += [ col for col in self.onsetDF\
                          if col.startswith(_pr) ]
-        outArr = self.onsetDF[\
-                    self.onsetDF.loc[dateList,:]\
-                    ][predCols].as_matrix()
+        outArr = self.onsetDF.loc[list(dateList)].loc[:, predCols].values
         return outArr.reshape( outArr.shape[0], 1, outArr.shape[1] )
     
     def omn_from_batch(self, dateList):
@@ -174,5 +172,5 @@ class DataUtils(object):
                     minutes=self.omnHistory) ).strftime(\
                     "%Y-%m-%d %H:%M:%S")
             omnBatchMatrix.append(\
-                self.omnDF.loc[ _et : _st ].as_matrix())
+                self.omnDF.loc[ _et : _st ].values)
         return numpy.array(omnBatchMatrix)
