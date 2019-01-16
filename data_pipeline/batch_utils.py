@@ -23,7 +23,7 @@ class DataUtils(object):
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
              onsetFillTimeRes=1, binTimeRes=30, nBins=2,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
-            shuffleData=True, omnHistory=120,\
+            shuffleData=False, omnHistory=120,\
             smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)],\
             smlDownsample=True, smlUpsample=False):
         """
@@ -131,7 +131,7 @@ class DataUtils(object):
                 numpy.random.seed(set_seed)
             numpy.random.shuffle(dataDateList)
         # divide the dates by batch size and create a dict of batches
-        nArrs = round(dataDateList.shape[0]/float(self.batch_size))
+        nArrs = int(round(dataDateList.shape[0]/float(self.batch_size)))
         dataDateList = numpy.array_split(dataDateList, nArrs)
         batchDict = {}
         for _nbat, _bat in enumerate(dataDateList):
@@ -154,7 +154,7 @@ class DataUtils(object):
             predCols += [ col for col in self.onsetDF\
                          if col.startswith(_pr) ]
         outArr = self.onsetDF[\
-                    self.onsetDF.index.isin(dateList)\
+                    self.onsetDF.loc[dateList,:]\
                     ][predCols].as_matrix()
         return outArr.reshape( outArr.shape[0], 1, outArr.shape[1] )
     

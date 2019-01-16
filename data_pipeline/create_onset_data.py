@@ -383,7 +383,6 @@ class OnsetData(object):
         # and this causes imbalance during training/validation/testing.
         # This is not a good thing for SML based bins (although this is what we
         # want for the POLAR/IMAGE datasets).
-        smlDataSet = smlDataSet.reindex( numpy.random.permutation(smlDataSet.index) )
 
         # if self.trnValTestSplitData:
         #     # sort the index before splitting
@@ -406,6 +405,7 @@ class OnsetData(object):
         #     smlDataSet = pandas.concat( [ smlDataSet.loc[numpy.sort(indsTrain)],\
         #                 smlDataSet.loc[numpy.sort(indsVal)],\
         #                  smlDataSet.loc[numpy.sort(indsTest)] ] )
+        smlDataSet.sort_index(inplace=True)
         print("new DF label counts---->", smlDataSet["outBinary"].value_counts())
         # save the file to make future calc faster
         if saveBinData:

@@ -43,14 +43,17 @@ class OmnData(object):
         # fill missing values in IMF
         # Now we need to find missing dates
         # get a list of dates we have and reindex
-        new_omn_index_arr = []
-        curr_time = self.start_date
-        while curr_time <= self.end_date:
-            new_omn_index_arr.append( curr_time )
-            curr_time += datetime.timedelta(minutes=self.db_time_resolution)
-        omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
-        omnDF = omnDF.replace(numpy.inf, numpy.nan)
-        omnDF = omnDF.set_index("datetime").reindex(new_omn_index_arr).reset_index()
+        # new_omn_index_arr = []
+        # curr_time = self.start_date
+        # while curr_time <= self.end_date:
+        #     new_omn_index_arr.append( curr_time )
+        #     curr_time += datetime.timedelta(minutes=self.db_time_resolution)
+        # omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
+        # omnDF = omnDF.replace(numpy.inf, numpy.nan)
+
+        omnDF = omnDF.set_index("datetime")#.reindex(new_omn_index_arr).reset_index()
+        omnDF = omnDF.resample( str(db_time_resolution) + "Min" ).ffill()
+        
         # Replace nan's with preceding value (forward filling)
         omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
         

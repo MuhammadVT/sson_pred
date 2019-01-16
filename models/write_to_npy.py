@@ -20,7 +20,7 @@ imageData=True
 omnHistory = 120#120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 5
+onsetFillTimeRes = 20
 omnDBRes = 1
 binTimeRes = 60#30
 nBins = 1
@@ -30,7 +30,7 @@ saveBinData = False
 onsetSaveFile = "../data/binned_data.feather"
 
 useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(1998,1,1) ]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 
