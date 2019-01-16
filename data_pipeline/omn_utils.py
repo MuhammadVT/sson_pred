@@ -52,7 +52,7 @@ class OmnData(object):
         # omnDF = omnDF.replace(numpy.inf, numpy.nan)
 
         omnDF = omnDF.set_index("datetime")#.reindex(new_omn_index_arr).reset_index()
-        omnDF = omnDF.resample( str(db_time_resolution) + "Min" ).ffill()
+        omnDF = omnDF.resample( str(self.db_time_resolution) + "Min" ).ffill()
         
         # Replace nan's with preceding value (forward filling)
         omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
