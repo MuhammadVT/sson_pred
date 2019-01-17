@@ -57,6 +57,7 @@ class OmnData(object):
             omnDF.loc[self.start_date] = numpy.nan
         if self.end_date not in omnDF.index:
             omnDF.loc[self.end_date] = numpy.nan
+        omnDF.sort_index(inplace=True)
         omnDF = omnDF.resample( str(self.db_time_resolution) + "Min" ).ffill().reset_index()
         
         # Replace nan's with preceding value (forward filling)
