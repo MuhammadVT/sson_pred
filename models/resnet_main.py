@@ -31,19 +31,31 @@ omnDBRes = 1
 
 batch_size = 64 * 10
 n_epochs = 10
-n_resnet_units = 1
+n_resnet_units = 3
 metrics = ["accuracy"]
 
 file_dir = "../data/"
 
 useSML = True
-smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,1,1)]
+smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+omnTrainParams = ["Bz", "Vx", "Np"]
+# since we have different omnTrainParams for different datasets
+# we'll create seperate folders for them for simplicity
+omnDir = "omn_"
+for _nom, _npm in enumerate(omnTrainParams):
+    omnDir += _npm
+    if _nom < len(omnTrainParams)-1:
+        omnDir += "_"
+    else:
+        omnDir += "/"
+
+
 
 if useSML:
     print("Using SML data")
-    input_file = "../data/input." +\
+    input_file = "../data/" + omnDir + "input." +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
                  "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -55,7 +67,7 @@ if useSML:
                  "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
                  "npy"
 
-    csv_file = "../data/sml_" +\
+    csv_file = "../data/" + omnDir + "sml_" +\
                "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -67,7 +79,7 @@ if useSML:
                "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
                "csv"
 
-    out_dir="./trained_models/ResNet/" +\
+    out_dir="./trained_models/ResNet/" + omnDir + \
             "sml.nBins_" + str(nBins) + "." +\
             "binTimeRes_" + str(binTimeRes) + "." +\
             "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -156,7 +168,7 @@ y_val_enc = enc.transform(y_val).toarray()
 y_enc = enc.transform(y).toarray()
 
 # Build a ResNet model
-optimizer=keras.optimizers.Adam(lr=0.0002)
+optimizer=keras.optimizers.Adam(lr=0.0001)
 input_shape = X.shape[1:]
 
 # Define the loss, loss_weights, and class_weights
