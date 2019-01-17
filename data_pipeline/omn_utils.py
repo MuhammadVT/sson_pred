@@ -48,10 +48,15 @@ class OmnData(object):
         # while curr_time <= self.end_date:
         #     new_omn_index_arr.append( curr_time )
         #     curr_time += datetime.timedelta(minutes=self.db_time_resolution)
-        # omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
-        # omnDF = omnDF.replace(numpy.inf, numpy.nan)
-
-        omnDF = omnDF.set_index("datetime")#.reindex(new_omn_index_arr).reset_index()
+        
+        omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
+        omnDF = omnDF.replace(numpy.inf, numpy.nan)
+        omnDF = omnDF.set_index("datetime")
+        # Add self.start_date to omnDF in case if it is missing
+        if self.start_date not in omnDF.index:
+            omnDF.loc[self.start_date] = numpy.nan
+        if self.end_date not in omnDF.index:
+            omnDF.loc[self.end_date] = numpy.nan
         omnDF = omnDF.resample( str(self.db_time_resolution) + "Min" ).ffill().reset_index()
         
         # Replace nan's with preceding value (forward filling)

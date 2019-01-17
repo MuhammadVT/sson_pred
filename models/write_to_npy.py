@@ -30,7 +30,7 @@ saveBinData = False
 onsetSaveFile = "../data/binned_data.feather"
 
 useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(1998,1,1) ]
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(1997,2,1) ]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 

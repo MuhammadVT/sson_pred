@@ -108,7 +108,7 @@ class DataUtils(object):
                             db_time_resolution=self.omnDBRes,\
                             omn_train_params = self.omnTrainParams)
         # set the datetime as index since we are working off of it
-        omnObj.omnDF = omnObj.omnDF.set_index(omnObj.omnDF["datetime"])
+        omnObj.omnDF = omnObj.omnDF.set_index("datetime")
         omnObj.omnDF = omnObj.omnDF[self.omnTrainParams]
         return omnObj.omnDF
 
