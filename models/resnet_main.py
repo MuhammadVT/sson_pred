@@ -51,8 +51,6 @@ for _nom, _npm in enumerate(omnTrainParams):
     else:
         omnDir += "/"
 
-
-
 if useSML:
     print("Using SML data")
     input_file = "../data/" + omnDir + "input." +\
@@ -85,10 +83,11 @@ if useSML:
             "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
             "omnHistory_" + str(omnHistory) + "." +\
             "omnDBRes_" + str(omnDBRes) + "." +\
+            "useSML_" + str(useSML) + "." +\
             dt.datetime.now().strftime("%Y%m%d.%H%M%S")
 
 else:  
-    input_file = "../data/input." +\
+    input_file = "../data/input." + omnDir +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
                  "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -101,7 +100,7 @@ else:
                  "imageData_" + str(imageData) + "." +\
                  "npy"
 
-    csv_file = "../data/" +\
+    csv_file = "../data/"  + omnDir +\
                "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -114,7 +113,7 @@ else:
                "imageData_" + str(imageData) + "." +\
                "csv"
 
-    out_dir="./trained_models/ResNet/" +\
+    out_dir="./trained_models/ResNet/"  + omnDir +\
             "nBins_" + str(nBins) + "." +\
             "binTimeRes_" + str(binTimeRes) + "." +\
             "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
