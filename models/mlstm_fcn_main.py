@@ -26,7 +26,7 @@ polarData = True
 imageData = True
 omnHistory = 120
 onsetDelTCutoff = 4
-onsetFillTimeRes = 1
+onsetFillTimeRes = 5
 omnDBRes = 1
 
 batch_size = 64 * 10
@@ -121,7 +121,7 @@ if not os.path.exists(out_dir):
 # Load the data
 print("loading the data...")
 X = np.load(input_file)
-df = pd.read_csv(output_file, index_col=0)
+df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
 # Do 5-min average to the input data
