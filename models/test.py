@@ -19,7 +19,7 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 120
+omnHistory = 180
 onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
@@ -32,7 +32,7 @@ metrics = ["accuracy"]
 
 
 test_epoch = 10
-model_time_str = "20190117.151751"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
+model_time_str = "20190118.115432"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
 
 
 file_dir = "../data/"
@@ -41,7 +41,7 @@ useSML = True
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
-omnTrainParams = ["Bz", "Vx", "Np"]
+omnTrainParams = ["By", "Bz", "Vx", "Np"]
 # since we have different omnTrainParams for different datasets
 # we'll create seperate folders for them for simplicity
 omnDir = "omn_"
@@ -137,13 +137,13 @@ test_model = keras.models.load_model(model_name)
 if not os.path.exists(out_dir):
     os.makedirs(out_dir, exist_ok=True)
 
-output_df_file = file_dir + "all_data." + output_fname
-output_df_test_file = file_dir + "test_data." + output_fname
+output_df_file = out_dir + "/all_data.pred.test"
+output_df_test_file = out_dir + "/test_data.pred.test"
 
 # Load the data
 print("loading the data...")
 X = np.load(input_file)
-df = pd.read_csv(output_file, index_col=0)
+df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
 npoints = X.shape[0]
@@ -191,7 +191,7 @@ print(classification_report(y_test_true, y_test_pred))
 df.loc[:, "pred_label"] = y_pred
 df_test = df.iloc[val_eindex:, :]
 df_test.loc[:, "pred_label"] = y_test_pred
-for i in y_pred_enc.shape[1]:
+for i in range(y_pred_enc.shape[1]):
     df.loc[:, "prob_"+str(i)] = y_pred_enc[:, i]
     df_test.loc[:, "prob_"+str(i)] = y_test_pred_enc[:, i]
 df.to_csv(output_df_file)
