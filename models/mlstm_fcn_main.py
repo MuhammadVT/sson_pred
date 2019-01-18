@@ -24,12 +24,12 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 180
-onsetDelTCutoff = 3
+omnHistory = 120
+onsetDelTCutoff = 4
 onsetFillTimeRes = 1
 omnDBRes = 1
 
-batch_size = 64 * 5
+batch_size = 64 * 10
 n_epochs = 30
 metrics = ["accuracy"]
 
@@ -55,52 +55,42 @@ for _nom, _npm in enumerate(omnTrainParams):
 
 if useSML:
     print("Using SML data")
-
     input_file = "../data/" + omnDir + "input." +\
-             "nBins_" + str(nBins) + "." +\
-             "binTimeRes_" + str(binTimeRes) + "." +\
-       "omnHistory_" + str(omnHistory) + "." +\
-       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-       "omnDBRes_" + str(omnDBRes) + "." +\
-       "imfNormalize_" + str(imfNormalize) + "." +\
-       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-       "npy"
-#output_file = "../data/output." +\
-#       "nBins_" + str(nBins) + "." +\
-#       "binTimeRes_" + str(binTimeRes) + "." +\
-#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-#       "shuffleData_" + str(shuffleData) + "." +\
-#       "npy"
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 "npy"
 
     csv_file = "../data/" + omnDir + "sml_" +\
-           "nBins_" + str(nBins) + "." +\
-           "binTimeRes_" + str(binTimeRes) + "." +\
-           "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-           "omnHistory_" + str(omnHistory) + "." +\
-           "omnDBRes_" + str(omnDBRes) + "." +\
-           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "csv"
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               "csv"
 else:  
     input_file = "../data/input." + omnDir +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
-             "omnHistory_" + str(omnHistory) + "." +\
-             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-             "omnDBRes_" + str(omnDBRes) + "." +\
-             "imfNormalize_" + str(imfNormalize) + "." +\
-             "shuffleData_" + str(shuffleData) + "." +\
-             "polarData_" + str(polarData) + "." +\
-             "imageData_" + str(imageData) + "." +\
-             "npy"
-    #output_file = "../data/output." +\
-    #         "nBins_" + str(nBins) + "." +\
-    #         "binTimeRes_" + str(binTimeRes) + "." +\
-    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-    #         "shuffleData_" + str(shuffleData) + "." +\
-    #         "npy"
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "polarData_" + str(polarData) + "." +\
+                 "imageData_" + str(imageData) + "." +\
+                 "npy"
 
     csv_file = "../data/"  + omnDir +\
                "nBins_" + str(nBins) + "." +\
@@ -109,9 +99,10 @@ else:
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-           "polarData_" + str(polarData) + "." +\
-           "imageData_" + str(imageData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
                "csv"
 
 #out_dir="./trained_models/MLSTM_FCN/20190104_113412/"
@@ -126,9 +117,6 @@ out_dir="./trained_models/MLSTM_FCN/"  + omnDir +\
 # create out_dir
 if not os.path.exists(out_dir):
     os.makedirs(out_dir, exist_ok=True)
-
-input_file = file_dir + input_fname
-output_file = file_dir + output_fname
 
 # Load the data
 print("loading the data...")
