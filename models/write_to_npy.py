@@ -11,7 +11,7 @@ omn_db_name = "omni_sw_imf.sqlite"
 omn_table_name = "imf_sw"
 omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 
-omnTrainParams = ["Bz", "Np", "By"]#["Bx", "By", "Bz", "Vx", "Np"]
+omnTrainParams = ["Bz"]#["Bx", "By", "Bz", "Vx", "Np"]
 imfNormalize = True
 omn_train = True
 shuffleData = False

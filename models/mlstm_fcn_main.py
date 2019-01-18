@@ -38,14 +38,25 @@ file_dir = "../data/"
 
 
 useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+omnTrainParams = ["Bz", "Vx", "Np"]
+# since we have different omnTrainParams for different datasets
+# we'll create seperate folders for them for simplicity
+
+omnDir = "omn_"
+for _nom, _npm in enumerate(omnTrainParams):
+    omnDir += _npm
+    if _nom < len(omnTrainParams)-1:
+        omnDir += "_"
+    else:
+        omnDir += "/"
 
 if useSML:
     print("Using SML data")
 
-    input_file = "../data/input." +\
+    input_file = "../data/" + omnDir + "input." +\
              "nBins_" + str(nBins) + "." +\
              "binTimeRes_" + str(binTimeRes) + "." +\
        "omnHistory_" + str(omnHistory) + "." +\
@@ -62,7 +73,7 @@ if useSML:
 #       "shuffleData_" + str(shuffleData) + "." +\
 #       "npy"
 
-    csv_file = "../data/sml_" +\
+    csv_file = "../data/" + omnDir + "sml_" +\
            "nBins_" + str(nBins) + "." +\
            "binTimeRes_" + str(binTimeRes) + "." +\
            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -73,7 +84,7 @@ if useSML:
             "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
            "csv"
 else:  
-    input_file = "../data/input." +\
+    input_file = "../data/input." + omnDir +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
              "omnHistory_" + str(omnHistory) + "." +\
@@ -91,7 +102,7 @@ else:
     #         "shuffleData_" + str(shuffleData) + "." +\
     #         "npy"
 
-    csv_file = "../data/" +\
+    csv_file = "../data/"  + omnDir +\
                "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
@@ -104,7 +115,7 @@ else:
                "csv"
 
 #out_dir="./trained_models/MLSTM_FCN/20190104_113412/"
-out_dir="./trained_models/MLSTM_FCN/" +\
+out_dir="./trained_models/MLSTM_FCN/"  + omnDir +\
         "nBins_" + str(nBins) + "." +\
         "binTimeRes_" + str(binTimeRes) + "." +\
         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
