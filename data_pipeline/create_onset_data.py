@@ -300,7 +300,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
                     smlClstDelT.append(-1.)
                 else:
                     smlClstDelT.append(_minDelT)
@@ -486,7 +486,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
 #                     polarClstOnsetTime.append(-1.)
                     polarClstDelT.append(-1.)
                 else:
@@ -532,7 +532,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
 #                     imageClstOnsetTime.append(-1.)
                     imageClstDelT.append(-1.)
                 else:
