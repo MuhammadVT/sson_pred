@@ -13,53 +13,130 @@ import os
 import glob
 import time
 
-nBins = 2
-binTimeRes = 30
+nBins = 1
+binTimeRes = 60
 imfNormalize = True
-shuffleData = False
+shuffleData = False 
+polarData = True
+imageData = True
 omnHistory = 120
-onsetDelTCutoff = 2
-onsetFillTimeRes = 1
+onsetDelTCutoff = 4
+onsetFillTimeRes = 5
 omnDBRes = 1
-batch_size = 32
 
-# Select the model to be tested
-#out_dir = "trained_models/ResNet_MultiOut/20181230_120722/"
-#out_dir="./trained_models/ResNet/20190104_113412/"    # good one for 1-bin prediction
-#out_dir="./trained_models/ResNet/20190104_155006/"     # good one for 2-bin prediction
-out_dir="./trained_models/ResNet/" +\
-        "nBins_" + str(nBins) + "." +\
-        "binTimeRes_" + str(binTimeRes) + "." +\
-        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-        "omnHistory_" + str(omnHistory) + "." +\
-        "omnDBRes_" + str(omnDBRes) + "." +\
-        "20190108.114941"
+batch_size = 64 * 10
+n_epochs = 10
+n_resnet_units = 3
+metrics = ["accuracy"]
 
-test_epoch = 110
-model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
-test_model = keras.models.load_model(model_name) 
 
-# Set file names for the input datapoints and the predicted outputs
+
+test_epoch = 10
+model_time_str = "20190117.151751"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
+
+
 file_dir = "../data/"
-input_fname = "input." +\
-              "nBins_" + str(nBins) + "." +\
-              "binTimeRes_" + str(binTimeRes) + "." +\
-              "omnHistory_" + str(omnHistory) + "." +\
-              "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-              "omnDBRes_" + str(omnDBRes) + "." +\
-              "imfNormalize_" + str(imfNormalize) + "." +\
-              "shuffleData_" + str(shuffleData) + "." +\
-              "npy"
-output_fname = "nBins_" + str(nBins) + "." +\
+
+useSML = True
+smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
+smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
+smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+omnTrainParams = ["Bz", "Vx", "Np"]
+# since we have different omnTrainParams for different datasets
+# we'll create seperate folders for them for simplicity
+omnDir = "omn_"
+for _nom, _npm in enumerate(omnTrainParams):
+    omnDir += _npm
+    if _nom < len(omnTrainParams)-1:
+        omnDir += "_"
+    else:
+        omnDir += "/"
+
+
+
+
+
+
+if useSML:
+    print("Using SML data")
+    input_file = "../data/" + omnDir + "input." +\
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 "npy"
+
+    csv_file = "../data/" + omnDir + "sml_" +\
+               "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
+               "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
                "csv"
-input_file = file_dir + input_fname
-output_file = file_dir + output_fname
+
+    out_dir="./trained_models/ResNet/" + omnDir + \
+            "sml.nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            "useSML_" + str(useSML) + "." +\
+            model_time_str
+
+else:  
+    input_file = "../data/input." + omnDir +\
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "polarData_" + str(polarData) + "." +\
+                 "imageData_" + str(imageData) + "." +\
+                 "npy"
+
+    csv_file = "../data/"  + omnDir +\
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
+               "csv"
+
+    out_dir="./trained_models/ResNet/"  + omnDir +\
+            "nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            model_time_str
+
+
+
+model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
+test_model = keras.models.load_model(model_name) 
+
+
+# create out_dir
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir, exist_ok=True)
+
 output_df_file = file_dir + "all_data." + output_fname
 output_df_test_file = file_dir + "test_data." + output_fname
 
