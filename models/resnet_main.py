@@ -29,18 +29,17 @@ onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
 
-batch_size = 64 * 10
-n_epochs = 10
+batch_size = 64 * 5
+n_epochs = 100
 n_resnet_units = 3
 metrics = ["accuracy"]
-
-file_dir = "../data/"
 
 useSML = True
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
-omnTrainParams = ["Bz", "Vx", "Np"]
+#omnTrainParams = ["Bz", "Vx", "Np"]
+omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 # since we have different omnTrainParams for different datasets
 # we'll create seperate folders for them for simplicity
 omnDir = "omn_"
@@ -131,10 +130,17 @@ X = np.load(input_file)
 df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
-# Do 5-min average to the input data
-#X = np.mean(X[:, :-1, :].reshape(X.shape[0], int((X.shape[1]-1)/5), 5, X.shape[-1]), axis=2)
-#X = X[::5, :-1, :]
-#y = y[::5, :]
+# Do x-min average to the input data
+x_min_avg = 10
+X_mean = np.mean(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+X_std = np.std(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+X_min = np.min(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+X_max = np.max(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+X = np.concatenate([X_mean, X_std, X_min, X_max], axis=2)
+# Skip every dtm_step
+dtm_step = 1
+X = X[::dtm_step, :, :]
+y = y[::dtm_step, :]
 
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
