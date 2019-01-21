@@ -1,9 +1,7 @@
-import warnings
-warnings.filterwarnings("ignore")
 import pred_act_cmpr
 import datetime
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 
 omnDBDir = "../data/sqlite3/"
 omnDbName = "omni_sw_imf.sqlite"

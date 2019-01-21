@@ -3,7 +3,7 @@ import pandas
 import numpy
 import event_plot
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 
 class PredSumry(object):
     """
@@ -150,7 +150,7 @@ class PredSumry(object):
         esObj = event_plot.EventSummary(predTimeRange,\
                 paramDBDir, omnDbName, omnTabName, aulDbName,\
                 aulTabName, smlDbName, smlTabName, nBins=self.nBins,\
-                figDir=figDir)
+                binTimeRes=self.binTimeRes, figDir=figDir)
         if binPlotType:
             print("generating binned plots with shading")
             for index, row in self.predDF.iterrows():

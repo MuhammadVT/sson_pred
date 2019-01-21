@@ -3,8 +3,9 @@ import pandas
 import numpy
 import seaborn as sns
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 from matplotlib.dates import DateFormatter
 import os
 import sys
