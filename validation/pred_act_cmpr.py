@@ -131,7 +131,7 @@ class PredSumry(object):
              binPlotType=False,plotTimeHist=120, plotFutureBins=2,\
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
              aulParams = ["au", "al"],smParams=["au", "al"],\
-             binTimeRes=30, paramTimeRange=None,\
+             paramTimeRange=None,\
              figDir="/home/bharat/Documents/data/ss_onset_dataset/sml_onset_plots/"):
         """
         Loop through each of the events in the prediction
@@ -174,8 +174,8 @@ class PredSumry(object):
                 onsetTimeDict = {}
                 for _n in range(self.nBins):
                     _cOnsetDts = self.ssOnsetDF.loc[ _dt +\
-                        datetime.timedelta(minutes=binTimeRes*(_n)) : _dt +\
-                         datetime.timedelta(minutes=binTimeRes*(_n+1))\
+                        datetime.timedelta(minutes=self.binTimeRes*(_n)) : _dt +\
+                         datetime.timedelta(minutes=self.binTimeRes*(_n+1))\
                             ].index.tolist()
                     if (_actBinLabs == 0) & (len(_cOnsetDts) >0):
                         print "SOMETHING VERY WRONG, FOUND" +\
