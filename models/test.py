@@ -19,7 +19,7 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 180
+omnHistory = 120
 onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
@@ -31,8 +31,8 @@ metrics = ["accuracy"]
 
 
 
-test_epoch = 10
-model_time_str = "20190118.115432"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
+test_epoch = 25
+model_time_str = "20190120.212614"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
 
 
 file_dir = "../data/"
@@ -41,7 +41,7 @@ useSML = True
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
-omnTrainParams = ["By", "Bz", "Vx", "Np"]
+omnTrainParams = ["Bz", "Vx", "Np"]
 # since we have different omnTrainParams for different datasets
 # we'll create seperate folders for them for simplicity
 omnDir = "omn_"

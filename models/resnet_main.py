@@ -30,7 +30,7 @@ onsetFillTimeRes = 5
 omnDBRes = 1
 
 batch_size = 64 * 10
-n_epochs = 10
+n_epochs = 50
 n_resnet_units = 3
 metrics = ["accuracy"]
 
