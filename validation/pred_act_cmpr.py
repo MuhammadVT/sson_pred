@@ -1,7 +1,6 @@
 import datetime
 import pandas
 import numpy
-import feather
 import event_plot
 import matplotlib
 matplotlib.use('Agg')
@@ -81,6 +80,7 @@ class PredSumry(object):
         """
         Load actual onset data from POLAR UVI and IMAGE satellites
         """
+        import feather
         polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
         imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
         # hemispheres to use!
@@ -157,7 +157,7 @@ class PredSumry(object):
                 _actBinLabs = row[actBinCols].tolist()
                 _prBinLabs = row[predBinCols].tolist()
                 _dt = row["date"]
-                print "plotting date--->", _dt
+                print("plotting date--->", _dt)
                 esObj.generate_bin_plot(_dt, _actBinLabs, _prBinLabs)
         else:
             # set the date axis as index
@@ -178,11 +178,11 @@ class PredSumry(object):
                          datetime.timedelta(minutes=self.binTimeRes*(_n+1))\
                             ].index.tolist()
                     if (_actBinLabs == 0) & (len(_cOnsetDts) >0):
-                        print "SOMETHING VERY WRONG, FOUND" +\
+                        print("SOMETHING VERY WRONG, FOUND" +\
                                   " A LABEL FOR NON-SS PERIOD--->",\
-                                   _dt, _cOnsetDts, _actBinLabs[_n]
+                                   _dt, _cOnsetDts, _actBinLabs[_n])
                     onsetTimeDict[_n] = _cOnsetDts
-                print "plotting date--->", _dt
+                print("plotting date--->", _dt)
                 esObj.generate_onset_plot(_dt, _actBinLabs, _prBinLabs,\
                                          onsetTimeDict, predLabProb=_probLabs)
             # first get the onset times by merging predDF and polar/imageDF

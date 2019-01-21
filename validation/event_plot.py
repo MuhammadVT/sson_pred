@@ -1,7 +1,6 @@
 import datetime
 import pandas
 import numpy
-import feather
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
