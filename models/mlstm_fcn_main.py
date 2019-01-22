@@ -30,7 +30,7 @@ onsetFillTimeRes = 5
 omnDBRes = 1
 
 batch_size = 64 * 10
-n_epochs = 10
+n_epochs = 30
 metrics = ["accuracy"]
 
 useSML = True
@@ -39,6 +39,7 @@ smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 #omnTrainParams = ["Bz", "Vx", "Np"]
 omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
+
 # since we have different omnTrainParams for different datasets
 # we'll create seperate folders for them for simplicity
 omnDir = "omn_"
@@ -74,7 +75,6 @@ if useSML:
                "shuffleData_" + str(shuffleData) + "." +\
                "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
                "csv"
-
     out_dir="./trained_models/MLSTM_FCN/" + omnDir + \
             "sml.nBins_" + str(nBins) + "." +\
             "binTimeRes_" + str(binTimeRes) + "." +\
@@ -118,7 +118,6 @@ else:
             "omnHistory_" + str(omnHistory) + "." +\
             "omnDBRes_" + str(omnDBRes) + "." +\
             dt.datetime.now().strftime("%Y%m%d.%H%M%S")
-
 
 # create out_dir
 if not os.path.exists(out_dir):

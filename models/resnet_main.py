@@ -19,7 +19,7 @@ import time
 skip_training = False
 
 nBins = 1
-binTimeRes = 60
+binTimeRes = 30
 imfNormalize = True
 shuffleData = False 
 polarData = True
@@ -130,8 +130,8 @@ X = np.load(input_file)
 df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
-# Limit the time history
-X = X[:, 61:, :]
+## Limit the time history
+#X = X[:, 61:, :]
 
 # Do x-min average to the input data
 #x_min_avg = 10

@@ -1,10 +1,9 @@
 import datetime
 import pandas
 import numpy
-import feather
 import event_plot
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 
 class PredSumry(object):
     """
@@ -15,10 +14,13 @@ class PredSumry(object):
     actual results. We'll also be able to have a sanity
     check during these events.
     """
-    def __init__(self, modelPredFname, binTimeRes=30, nBins=2,\
+    def __init__(self, modelPredFname, useSML=True, binTimeRes=30, nBins=2,\
                     northData=True, southData=False,\
                     polarFile="../data/polar_data.feather",\
-                    imageFile="../data/image_data.feather"):
+                    imageFile="../data/image_data.feather",\
+                    smlFname="../data/20190103-22-53-substorms.csv",\
+                    smlDateRange=[ datetime.datetime(1997,1,1),\
+                     datetime.datetime(2007,12,31) ]):
         """
         modelPredFname : file name to read the prediction results from.
                         NOTE : we expect the actual labels to be present
@@ -29,22 +31,42 @@ class PredSumry(object):
         self.modelPredFname = modelPredFname
         # load the model pred data labels
         self.predDF = self._load_model_pred_data(\
-                            modelPredFname, nBins)
+                            modelPredFname)
         print("loaded model predicted data")
-        self.ssOnsetDF = self._load_onset_data(northData,\
-                                     southData, polarFile, imageFile)
-        print("loaded onset data from polar/image")
+        if not useSML:
+            self.ssOnsetDF = self._load_onset_img_pol_data(northData,\
+                                         southData, polarFile, imageFile)
+            print("loaded onset data from polar/image")
+        else:
+            self.smlFname = smlFname
+            # Read data from the files
+            self.ssOnsetDF = pandas.read_csv(self.smlFname,\
+                                parse_dates=["Date_UTC"])
+            # rename the cols
+            self.ssOnsetDF.columns = [ "date", "mlat", "mlt" ]
+            # Use the given date range to limit onset predictions
+            if smlDateRange is not None:
+                self.ssOnsetDF = self.ssOnsetDF[\
+                        (self.ssOnsetDF["date"] >= smlDateRange[0]) &\
+                        (self.ssOnsetDF["date"] <= smlDateRange[1]) ]
+            
+            print("loaded onset data from SML")
 
 
-    def _load_model_pred_data(self, fileName, nBins):
+    def _load_model_pred_data(self, fileName):
         """
         Load the model predictions into a DF
         """
         # we need to carefully setup the column names
         colNames = ["date"]
-        for _nb in range(nBins):
+        for _nb in range(self.nBins):
             colNames += [ "bin_" + str(_nb) ]
-        colNames += [ "label", "pred_label" ] 
+        colNames += [ "label", "pred_label" ]
+        for _nb in range(self.nBins):
+            # there are 2 probs for each bin
+            # one zero prob and other 1 prob
+            colNames += [ "prob_type_0_b_" + str(_nb) ]
+            colNames += [ "prob_type_1_b_" + str(_nb) ]
         predDF = pandas.read_csv(fileName, names=colNames,\
                      header=0, parse_dates=["date"])
         # get the columns showing the bin predictions
@@ -54,10 +76,11 @@ class PredSumry(object):
                               axis=1 )
         return predDF
 
-    def _load_onset_data(self, northData, southData, polarFile, imageFile):
+    def _load_onset_img_pol_data(self, northData, southData, polarFile, imageFile):
         """
         Load actual onset data from POLAR UVI and IMAGE satellites
         """
+        import feather
         polarDF = feather.read_dataframe(polarFile)#pandas.read_feather(polarFile)
         imageDF = feather.read_dataframe(imageFile)#pandas.read_feather(imageFile)
         # hemispheres to use!
@@ -108,30 +131,33 @@ class PredSumry(object):
              binPlotType=False,plotTimeHist=120, plotFutureBins=2,\
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
              aulParams = ["au", "al"],smParams=["au", "al"],\
-             binTimeRes=30, nBins=2, paramTimeRange=None,\
-             figDir="/home/bharat/Documents/data/ss_onset_dataset/onset_plots/"):
+             paramTimeRange=None,\
+             figDir="/home/bharat/Documents/data/ss_onset_dataset/sml_onset_plots/"):
         """
         Loop through each of the events in the prediction
         files and make plots for each of the event dates.
         """
-        actBinCols = [ col for col in self.predDF\
-                         if col.startswith('bin') ]
-        predBinCols = [ col for col in self.predDF\
-                                 if col.startswith('pbin') ]
+        actBinCols = sorted([ col for col in self.predDF\
+                         if col.startswith('bin') ])
+        predBinCols = sorted([ col for col in self.predDF\
+                                 if col.startswith('pbin') ])
+        probPredLabs = sorted([ col for col in self.predDF\
+                                 if col.startswith('prob_') ])
         # get the time range to load the databases and initialize
         # the plot class!
         predTimeRange = [ self.predDF["date"].min(),\
                          self.predDF["date"].max() ]
         esObj = event_plot.EventSummary(predTimeRange,\
                 paramDBDir, omnDbName, omnTabName, aulDbName,\
-                aulTabName, smlDbName, smlTabName, nBins=2)
+                aulTabName, smlDbName, smlTabName, nBins=self.nBins,\
+                binTimeRes=self.binTimeRes, figDir=figDir)
         if binPlotType:
             print("generating binned plots with shading")
             for index, row in self.predDF.iterrows():
                 _actBinLabs = row[actBinCols].tolist()
                 _prBinLabs = row[predBinCols].tolist()
                 _dt = row["date"]
-                print "plotting date--->", _dt
+                print("plotting date--->", _dt)
                 esObj.generate_bin_plot(_dt, _actBinLabs, _prBinLabs)
         else:
             # set the date axis as index
@@ -142,21 +168,22 @@ class PredSumry(object):
             for ind, row in self.predDF.iterrows():
                 _actBinLabs = row[actBinCols].tolist()
                 _prBinLabs = row[predBinCols].tolist()
+                _probLabs = row[probPredLabs].to_dict()
                 _dt = row["date"]
-                print "_dt",_dt
                 # Now for each bin check if there is a corresponding onset
                 onsetTimeDict = {}
-                for _n in range(nBins):
+                for _n in range(self.nBins):
                     _cOnsetDts = self.ssOnsetDF.loc[ _dt +\
-                        datetime.timedelta(minutes=binTimeRes*(_n)) : _dt +\
-                         datetime.timedelta(minutes=binTimeRes*(_n+1))\
+                        datetime.timedelta(minutes=self.binTimeRes*(_n)) : _dt +\
+                         datetime.timedelta(minutes=self.binTimeRes*(_n+1))\
                             ].index.tolist()
                     if (_actBinLabs == 0) & (len(_cOnsetDts) >0):
-                        print "SOMETHING VERY WRONG, FOUND" +\
+                        print("SOMETHING VERY WRONG, FOUND" +\
                                   " A LABEL FOR NON-SS PERIOD--->",\
-                                   _dt, _cOnsetDts, _actBinLabs[_n]
+                                   _dt, _cOnsetDts, _actBinLabs[_n])
                     onsetTimeDict[_n] = _cOnsetDts
-                print "plotting date--->", _dt
-                esObj.generate_onset_plot(_dt, _actBinLabs, _prBinLabs, onsetTimeDict)
+                print("plotting date--->", _dt)
+                esObj.generate_onset_plot(_dt, _actBinLabs, _prBinLabs,\
+                                         onsetTimeDict, predLabProb=_probLabs)
             # first get the onset times by merging predDF and polar/imageDF
             print("generating prediction bins and actual onsets")
