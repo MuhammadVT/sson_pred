@@ -274,22 +274,21 @@ class ResNet:
         # Input layer
         input_layer = Input(self.input_shape, name="main_input")
 
-#        # CNN layers
-#        conv_layer = Conv1D(filters=8, kernel_size=7, strides=2, padding="valid")(input_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
-#        conv_layer = Activation(activation="relu")(conv_layer)
-#
-#        conv_layer = Conv1D(filters=8, kernel_size=7, strides=1, padding="valid")(conv_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
-#        conv_layer = Activation(activation="relu")(conv_layer)
-#        # Max pooling layer
-#        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+        # CNN layers
+        conv_layer = Conv1D(filters=16, kernel_size=10, strides=3, padding="valid")(input_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
 
-        conv_layer = input_layer
+        conv_layer = Conv1D(filters=16, kernel_size=7, strides=1, padding="valid")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
+        #conv_layer = input_layer
         #############################
         # ResNet Units
-        n_filters = 32
+        n_filters = 16
         n_layers = 3   # Keep it as it is
         #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
@@ -553,9 +552,9 @@ class MLSTM_FCN:
         input_layer_masked = Masking(mask_value=0.0)(input_layer_shuffle)
 
         # LSTM
-        lstm_layer = LSTM(8)(input_layer_masked)
+        lstm_layer = LSTM(32)(input_layer_masked)
         # Dropout
-        lstm_layer = Dropout(0.8, seed=100)(lstm_layer)
+        lstm_layer = Dropout(0.1, seed=100)(lstm_layer)
 
 
         # Add CNN layer + squeeze-excite block

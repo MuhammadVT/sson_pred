@@ -31,7 +31,7 @@ omnDBRes = 1
 
 batch_size = 64 * 5
 n_epochs = 100
-n_resnet_units = 3
+n_resnet_units = 2
 metrics = ["accuracy"]
 
 useSML = True
@@ -130,23 +130,27 @@ X = np.load(input_file)
 df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
+# Limit the time history
+X = X[:, 61:, :]
+
 # Do x-min average to the input data
-x_min_avg = 10
-X_mean = np.mean(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
-X_std = np.std(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
-X_min = np.min(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
-X_max = np.max(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
-X = np.concatenate([X_mean, X_std, X_min, X_max], axis=2)
-# Skip every dtm_step
-dtm_step = 1
-X = X[::dtm_step, :, :]
-y = y[::dtm_step, :]
+#x_min_avg = 10
+#X_mean = np.mean(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+#X_std = np.std(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+#X_min = np.min(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+#X_max = np.max(X[:, 1:, :].reshape(X.shape[0], int((X.shape[1]-1)/x_min_avg), x_min_avg, X.shape[-1]), axis=2)
+#X = np.concatenate([X_mean, X_std, X_min, X_max], axis=2)
+
+## Skip every dtm_step
+#dtm_step = 1
+#X = X[::dtm_step, :, :]
+#y = y[::dtm_step, :]
 
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.75
-val_size = 0.15
+train_size = 0.80
+val_size = 0.10
 test_size = 0.10
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
