@@ -10,12 +10,12 @@ class OnsetData(object):
     """
     def __init__(self, useSML=False, northData=True, southData=False,\
                  polarData=True, imageData=True, \
-                polarFile="../data/polar_data.feather",\
+                 polarFile="../data/polar_data.feather",\
                  imageFile="../data/image_data.feather",delTCutoff=2,\
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
-                 trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15,\
+                 trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
                  smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
-                smlDownsample=True, smlUpsample=False):
+                 smlDownsample=True, smlUpsample=False):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -435,9 +435,9 @@ class OnsetData(object):
         # index the date column of the DFs to make for quicker
         # data selection
         if self.polarDF is not None:
-            self.polarDF = self.polarDF.set_index(self.polarDF["date"])
+            self.polarDF = self.polarDF.set_index("date")
         if self.imageDF is not None:
-            self.imageDF = self.imageDF.set_index(self.imageDF["date"])
+            self.imageDF = self.imageDF.set_index("date")
         # Loop through each of the dates and check if
         # there are substorm onset values in the time range
         # to populate our output bins!
@@ -475,7 +475,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
 #                     polarClstOnsetTime.append(-1.)
                     polarClstDelT.append(-1.)
                 else:
@@ -521,7 +521,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
 #                     imageClstOnsetTime.append(-1.)
                     imageClstDelT.append(-1.)
                 else:

@@ -29,11 +29,8 @@ n_epochs = 10
 n_resnet_units = 3
 metrics = ["accuracy"]
 
-
-
 test_epoch = 25
 model_time_str = "20190120.212614"#datetime.datetime().strftime("%Y%m%d.%H%M%S")
-
 
 file_dir = "../data/"
 
@@ -51,11 +48,6 @@ for _nom, _npm in enumerate(omnTrainParams):
         omnDir += "_"
     else:
         omnDir += "/"
-
-
-
-
-
 
 if useSML:
     print("Using SML data")

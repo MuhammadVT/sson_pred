@@ -58,7 +58,7 @@ class DataUtils(object):
     def _load_onset_data(self, northData, southData,\
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
               onsetFillTimeRes, binTimeRes, nBins, saveBinData, onsetSaveFile,\
-              trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15):
+              trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15):
         """
         Load onset datadf, either the precomputed file
         or calculate it on the fly!
@@ -67,7 +67,7 @@ class DataUtils(object):
             print("loading precomputed onset data")
             onsetDF = feather.read_dataframe(self.onsetDataloadFile)
             # Note we need to reset the date column as index
-            onsetDF = onsetDF.set_index( onsetDF["date"] )
+            onsetDF = onsetDF.set_index("date")
             # drop the date column
             onsetDF.drop(columns=["date"], inplace=True)
         else:
