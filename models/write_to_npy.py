@@ -11,7 +11,8 @@ omn_db_name = "omni_sw_imf.sqlite"
 omn_table_name = "imf_sw"
 omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 
-omnTrainParams = ["Bz", "Np", "By"]#["Bx", "By", "Bz", "Vx", "Np"]
+#omnTrainParams = ["Bz", "Vx", "Np"]
+omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 imfNormalize = True
 omn_train = True
 shuffleData = False
@@ -20,17 +21,17 @@ imageData=True
 omnHistory = 120#120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 5
+onsetFillTimeRes = 1
 omnDBRes = 1
-binTimeRes = 60#30
+binTimeRes = 30
 nBins = 1
 predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 
 onsetSaveFile = "../data/binned_data.feather"
 
-useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ]
+useSML = False
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 

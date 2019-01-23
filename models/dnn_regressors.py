@@ -1,14 +1,13 @@
 # Fully Convolutional Neural Network (FCNN) with single output
-class FCNN:
-    def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
-                 loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
-                 out_dir="./trained_models/FCNN/"):
+class FCNN_Reg:
+    def __init__(self, input_shape, batch_size=32, n_epochs=100,
+                 loss="mean_squared_error", optimizer="adam", metrics=["mae"],
+                 out_dir="./trained_models/FCNN_Reg/"):
 
         # Add class attributes
         self.input_shape = input_shape
         self.batch_size = batch_size 
         self.n_epochs = n_epochs
-        self.n_classes = n_classes
         self.loss = loss
         self.optimizer = optimizer
         self.metrics = metrics 
@@ -29,62 +28,34 @@ class FCNN:
         # Input layer
         input_layer = Input(self.input_shape)
 
-        conv_layer = Conv1D(filters=16, kernel_size=3, strides=2, padding="valid")(input_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
-        # Max pooling layer
-        #conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
-        #Dropout
-        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
-
-        conv_layer = Conv1D(filters=32, kernel_size=3, strides=2, padding="valid")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(input_layer)
+        #conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
-#        #Dropout
-#        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
 
         conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
+        #conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         # Max pooling layer
-        #conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(conv_layer)
-        conv_layer = normalization.BatchNormalization()(conv_layer)
-        conv_layer = Activation(activation="relu")(conv_layer)
-#
-#        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="same")(conv_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
+#        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="valid")(conv_layer)
+#        #conv_layer = normalization.BatchNormalization()(conv_layer)
 #        conv_layer = Activation(activation="relu")(conv_layer)
-#        #Dropout
-#        #conv_layer = Dropout(0.2, seed=100)(conv_layer)
-#
-#        conv_layer = Conv1D(filters=32, kernel_size=3, strides=1, padding="same")(conv_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
-#        conv_layer = Activation(activation="relu")(conv_layer)
-
-        ## Global pooling layer
-        #gap_layer = pooling.GlobalAveragePooling1D()(conv_layer)
-
-        # Max pooling layer
+#        # Max pooling layer
 #        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
         # Flatten 2D data into 1D
         fc_layer = Flatten()(conv_layer)
-        fc_layer = Dropout(0.5, seed=100)(fc_layer)
+        fc_layer = Dropout(0.1, seed=100)(fc_layer)
 
         # Add Dense layer 
         fc_layer = Dense(50, activation="relu")(fc_layer)
-        fc_layer = Dropout(0.2, seed=100)(fc_layer)
-
-        # Add Dense layer 
-        fc_layer = Dense(10, activation="relu")(fc_layer)
+        fc_layer = Dropout(0.1, seed=100)(fc_layer)
 
         # Output layer
-        # Use softmax
-        output_layer = Dense(self.n_classes, activation="softmax")(fc_layer)
+        output_layer = Dense(1)(fc_layer)
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layer)
@@ -97,7 +68,7 @@ class FCNN:
                                       min_lr=0.00001)
 
         # Save the model at certain checkpoints 
-        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
+        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_mae_{val_mean_absolute_error:.2f}.hdf5"
         file_path = os.path.join(self.out_dir, fname)
         model_checkpoint = ModelCheckpoint(file_path, monitor='val_loss', save_best_only=False, period=5)
         
@@ -214,17 +185,15 @@ class FCNN_MultiOut:
         return model
 
 # ResNet Convolutional Neural Network (ResNet) with single output
-class ResNet:
-    def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
-                 n_resnet_units=3,
-                 loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
-                 out_dir="./trained_models/ResNet_MultiOut/"):
+class ResNet_Reg:
+    def __init__(self, input_shape, batch_size=32, n_epochs=100,
+                 n_resnet_units=3, loss="mean_absolute_error", optimizer="adam",
+                 metrics=["mae"], out_dir="./trained_models/ResNet_Reg/"):
 
         # Add class attributes
         self.input_shape = input_shape
         self.batch_size = batch_size 
         self.n_epochs = n_epochs
-        self.n_classes = n_classes
         self.n_resnet_units = n_resnet_units
         self.loss = loss
         self.optimizer = optimizer
@@ -275,17 +244,18 @@ class ResNet:
         input_layer = Input(self.input_shape, name="main_input")
 
         # CNN layers
-        conv_layer = Conv1D(filters=16, kernel_size=10, strides=3, padding="valid")(input_layer)
+        conv_layer = Conv1D(filters=8, kernel_size=3, strides=2, padding="valid")(input_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
 
-        conv_layer = Conv1D(filters=16, kernel_size=7, strides=1, padding="valid")(conv_layer)
+        conv_layer = Conv1D(filters=8, kernel_size=3, strides=1, padding="valid")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-        #conv_layer = input_layer
+        conv_layer = input_layer
+
         #############################
         # ResNet Units
         n_filters = 16
@@ -346,23 +316,16 @@ class ResNet:
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(resnet_unit_output)
 
-        # Global pooling layer
-        #fc_layer = pooling.GlobalAveragePooling1D()(resnet_unit_output)
-
         # Flatten 2D data into 1D
         fc_layer = Flatten()(conv_layer)
-        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+        #fc_layer = Dropout(0.1, seed=100)(fc_layer)
 
         # Add Dense layer 
-#        fc_layer = Dense(50, activation="relu")(fc_layer)
-#        fc_layer = Dropout(0.2, seed=100)(fc_layer)
-
-#        # Add Dense layer 
-#        fc_layer = Dense(10, activation="relu")(fc_layer)
+        fc_layer = Dense(50, activation="relu")(fc_layer)
+        #fc_layer = Dropout(0.1, seed=100)(fc_layer)
 
         # Output layer
-        # Use softmax
-        output_layer = Dense(self.n_classes, activation="softmax")(fc_layer)
+        output_layer = Dense(1)(fc_layer)
 
         # Put all the model components together
         model = Model(inputs=input_layer, outputs=output_layer)
@@ -375,9 +338,9 @@ class ResNet:
                                       min_lr=0.00001)
 
         # Save the model at certain checkpoints 
-        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
+        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_mae_{val_mean_absolute_error:.2f}.hdf5"
         file_path = os.path.join(self.out_dir, fname)
-        model_checkpoint = ModelCheckpoint(file_path, monitor='val_acc', save_best_only=False, period=5)
+        model_checkpoint = ModelCheckpoint(file_path, monitor='val_mean_absolute_error', save_best_only=False, period=5)
         
         self.callbacks = [reduce_lr,model_checkpoint]
 
@@ -626,8 +589,8 @@ def squeeze_excite_block(input):
     return se
 
 
-def train_model(model, x_train, y_train, x_val, y_val, class_weights=None,
-                batch_size=32, n_epochs=10, callbacks=None, shuffle=True):
+def train_model(model, x_train, y_train, x_val, y_val,
+                batch_size=1, n_epochs=10, callbacks=None, shuffle=True):
 
     from keras.backend import clear_session
     import datetime as dt
@@ -635,7 +598,7 @@ def train_model(model, x_train, y_train, x_val, y_val, class_weights=None,
     # Train the model
     stime = dt.datetime.now() 
     fit_history = model.fit(x_train, y_train, batch_size=batch_size, epochs=n_epochs, 
-                            validation_data=(x_val, y_val), class_weight=class_weights,
+                            validation_data=(x_val, y_val),
                             callbacks=callbacks, shuffle=shuffle)
     etime = dt.datetime.now() 
     training_time = (etime - stime).total_seconds()/60.    # minutes

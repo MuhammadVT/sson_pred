@@ -24,105 +24,109 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 180
-onsetDelTCutoff = 3
-onsetFillTimeRes = 1
+omnHistory = 120
+onsetDelTCutoff = 4
+onsetFillTimeRes = 5
 omnDBRes = 1
 
-batch_size = 64 * 5
+batch_size = 64 * 10
 n_epochs = 30
 metrics = ["accuracy"]
 
-file_dir = "../data/"
-
-
-
 useSML = True
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,1,1) ]
+smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
+#omnTrainParams = ["Bz", "Vx", "Np"]
+omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
+
+# since we have different omnTrainParams for different datasets
+# we'll create seperate folders for them for simplicity
+omnDir = "omn_"
+for _nom, _npm in enumerate(omnTrainParams):
+    omnDir += _npm
+    if _nom < len(omnTrainParams)-1:
+        omnDir += "_"
+    else:
+        omnDir += "/"
 
 if useSML:
     print("Using SML data")
-
-    input_file = "../data/input." +\
-             "nBins_" + str(nBins) + "." +\
-             "binTimeRes_" + str(binTimeRes) + "." +\
-       "omnHistory_" + str(omnHistory) + "." +\
-       "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-       "omnDBRes_" + str(omnDBRes) + "." +\
-       "imfNormalize_" + str(imfNormalize) + "." +\
-       "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-       "npy"
-#output_file = "../data/output." +\
-#       "nBins_" + str(nBins) + "." +\
-#       "binTimeRes_" + str(binTimeRes) + "." +\
-#       "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-#       "shuffleData_" + str(shuffleData) + "." +\
-#       "npy"
-
-    csv_file = "../data/sml_" +\
-           "nBins_" + str(nBins) + "." +\
-           "binTimeRes_" + str(binTimeRes) + "." +\
-           "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-           "omnHistory_" + str(omnHistory) + "." +\
-           "omnDBRes_" + str(omnDBRes) + "." +\
-           "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
-            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-           "csv"
-else:  
-    input_file = "../data/input." +\
+    input_file = "../data/" + omnDir + "input." +\
                  "nBins_" + str(nBins) + "." +\
                  "binTimeRes_" + str(binTimeRes) + "." +\
-             "omnHistory_" + str(omnHistory) + "." +\
-             "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
-             "omnDBRes_" + str(omnDBRes) + "." +\
-             "imfNormalize_" + str(imfNormalize) + "." +\
-             "shuffleData_" + str(shuffleData) + "." +\
-             "polarData_" + str(polarData) + "." +\
-             "imageData_" + str(imageData) + "." +\
-             "npy"
-    #output_file = "../data/output." +\
-    #         "nBins_" + str(nBins) + "." +\
-    #         "binTimeRes_" + str(binTimeRes) + "." +\
-    #         "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-    #         "shuffleData_" + str(shuffleData) + "." +\
-    #         "npy"
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 "npy"
 
-    csv_file = "../data/" +\
+    csv_file = "../data/" + omnDir + "sml_" +\
                "nBins_" + str(nBins) + "." +\
                "binTimeRes_" + str(binTimeRes) + "." +\
                "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
                "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
                "omnHistory_" + str(omnHistory) + "." +\
                "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
-           "polarData_" + str(polarData) + "." +\
-           "imageData_" + str(imageData) + "." +\
+               "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               "csv"
+    out_dir="./trained_models/MLSTM_FCN/" + omnDir + \
+            "sml.nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            "useSML_" + str(useSML) + "." +\
+            dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+
+else:  
+    input_file = "../data/input." + omnDir +\
+                 "nBins_" + str(nBins) + "." +\
+                 "binTimeRes_" + str(binTimeRes) + "." +\
+                 "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+                 "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+                 "omnHistory_" + str(omnHistory) + "." +\
+                 "omnDBRes_" + str(omnDBRes) + "." +\
+                 "imfNormalize_" + str(imfNormalize) + "." +\
+                 "shuffleData_" + str(shuffleData) + "." +\
+                 "polarData_" + str(polarData) + "." +\
+                 "imageData_" + str(imageData) + "." +\
+                 "npy"
+
+    csv_file = "../data/"  + omnDir +\
+               "nBins_" + str(nBins) + "." +\
+               "binTimeRes_" + str(binTimeRes) + "." +\
+               "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+               "onsetDelTCutoff_" + str(onsetDelTCutoff) + "." +\
+               "omnHistory_" + str(omnHistory) + "." +\
+               "omnDBRes_" + str(omnDBRes) + "." +\
+               "imfNormalize_" + str(imfNormalize) + "." +\
+               "shuffleData_" + str(shuffleData) + "." +\
+               "polarData_" + str(polarData) + "." +\
+               "imageData_" + str(imageData) + "." +\
                "csv"
 
-#out_dir="./trained_models/MLSTM_FCN/20190104_113412/"
-out_dir="./trained_models/MLSTM_FCN/" +\
-        "nBins_" + str(nBins) + "." +\
-        "binTimeRes_" + str(binTimeRes) + "." +\
-        "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
-        "omnHistory_" + str(omnHistory) + "." +\
-        "omnDBRes_" + str(omnDBRes) + "." +\
-  dt.datetime.now().strftime("%Y%m%d.%H%M%S")
+    out_dir="./trained_models/MLSTM_FCN/"  + omnDir +\
+            "nBins_" + str(nBins) + "." +\
+            "binTimeRes_" + str(binTimeRes) + "." +\
+            "onsetFillTimeRes_" + str(onsetFillTimeRes) + "." +\
+            "omnHistory_" + str(omnHistory) + "." +\
+            "omnDBRes_" + str(omnDBRes) + "." +\
+            dt.datetime.now().strftime("%Y%m%d.%H%M%S")
 
 # create out_dir
 if not os.path.exists(out_dir):
     os.makedirs(out_dir, exist_ok=True)
 
-input_file = file_dir + input_fname
-output_file = file_dir + output_fname
-
 # Load the data
 print("loading the data...")
 X = np.load(input_file)
-df = pd.read_csv(output_file, index_col=0)
+df = pd.read_csv(csv_file, index_col=0)
 y = df.loc[:, "label"].values.reshape(-1, 1)
 
 # Do 5-min average to the input data
@@ -208,21 +212,30 @@ if not skip_training:
 print("Evaluating the model...")
 test_epoch = n_epochs
 model_name = glob.glob(os.path.join(out_dir, "weights.epoch_" + str(test_epoch) + "*hdf5"))[0]
-test_model = keras.models.load_model(model_name) 
+test_model = keras.models.load_model(model_name)
 y_train_pred_enc = test_model.predict(x_train, batch_size=batch_size)
+y_val_pred_enc = test_model.predict(x_val, batch_size=batch_size)
 y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
 
 # The final activation layer uses softmax
-y_test_pred = np.argmax(y_test_pred_enc , axis=1)
 y_train_pred = np.argmax(y_train_pred_enc , axis=1)
-y_test_true = y_test
+y_val_pred = np.argmax(y_val_pred_enc , axis=1)
+y_test_pred = np.argmax(y_test_pred_enc , axis=1)
 y_train_true = y_train
+y_val_true = y_val
+y_test_true = y_test
 
-# Report for all input data
-print("Prediction report for train data.")
+# Report for train data
+print("Prediction report for train input data.")
 print(classification_report(y_train_true, y_train_pred))
+
+# Report for validation data
+print("Prediction report for validation input data.")
+print(classification_report(y_val_true, y_val_pred))
+
 
 # Report for test data
 print("Prediction report for test data.")
 print(classification_report(y_test_true, y_test_pred))
+
 

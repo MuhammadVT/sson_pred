@@ -10,12 +10,12 @@ class OnsetData(object):
     """
     def __init__(self, useSML=False, northData=True, southData=False,\
                  polarData=True, imageData=True, \
-                polarFile="../data/polar_data.feather",\
+                 polarFile="../data/polar_data.feather",\
                  imageFile="../data/image_data.feather",delTCutoff=2,\
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
-                 trnValTestSplitData=True, trnSplit=0.75, valSplit=0.15,\
+                 trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
                  smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
-                smlDownsample=True, smlUpsample=False):
+                 smlDownsample=True, smlUpsample=False):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -350,16 +350,30 @@ class OnsetData(object):
         if self.smlDownsample:
             print("Downsampling the data")
             smLabs = smlDataSet["outBinary"].value_counts()
-            # downsample the other classes
-            # and make the count equal to the min 
-            dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmin() ] ]
-            for _ind in smLabs.index:
-                if _ind != smLabs.idxmin():
-                    # Downsample majority class
-                    dfMaj = smlDataSet[ smlDataSet["outBinary"] == _ind ]
-                    dfList.append( resample(dfMaj, 
+            if self.nBins == 1:
+                # if we just have one bin
+                # downsample the other classes
+                # and make the count equal to the min 
+                dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmin() ] ]
+                for _ind in smLabs.index:
+                    if _ind != smLabs.idxmin():
+                        # Downsample majority class
+                        dfMaj = smlDataSet[ smlDataSet["outBinary"] == _ind ]
+                        dfList.append( resample(dfMaj, 
+                                     replace=False, # sample without replacement
+                                     n_samples=smLabs[smLabs.idxmin()], # to match minority class
+                                     random_state=randomState) )# reproducible results
+            else:
+                # if not we'll just downsample the 0's and make them equal 
+                # to anyother bin (which has atleast one 1).
+                nonZeroMax = smLabs[ smLabs.index > 0 ].max()
+                zeroCnt = smLabs[smLabs.index == 0].values[0]
+                if zeroCnt > nonZeroMax:
+                    dfList = [ smlDataSet[ smlDataSet["outBinary"] > 0 ] ]
+                    dfZero = smlDataSet[ smlDataSet["outBinary"] == 0 ]
+                    dfList.append( resample(dfZero, 
                                  replace=False, # sample without replacement
-                                 n_samples=smLabs[smLabs.idxmin()], # to match minority class
+                                 n_samples=nonZeroMax, # to match minority class
                                  random_state=randomState) )# reproducible results
             # Combine minority class with downsampled majority class
             smlDataSet = pandas.concat(dfList)
@@ -379,32 +393,7 @@ class OnsetData(object):
                                  random_state=randomState) )# reproducible results
             # Combine minority class with downsampled majority class
             smlDataSet = pandas.concat(dfList)
-        # Now shuffle tha dataframe, otherwise all the 1's, 0's are stacked
-        # and this causes imbalance during training/validation/testing.
-        # This is not a good thing for SML based bins (although this is what we
-        # want for the POLAR/IMAGE datasets).
-
-        # if self.trnValTestSplitData:
-        #     # sort the index before splitting
-        #     smlDataSet.sort_index(inplace=True)
-        #     print("Splitting the data into train, validation and test")
-        #     # get the counts in different labels
-        #     splitBins = smlDataSet["outBinary"].value_counts()
-        #     indsTrain = numpy.empty([0], dtype=smlDataSet.index.dtype)
-        #     indsVal = numpy.empty([0], dtype=smlDataSet.index.dtype)
-        #     indsTest = numpy.empty([0], dtype=smlDataSet.index.dtype)
-        #     for _dl in splitBins.index:
-        #         _currInds = smlDataSet[ smlDataSet["outBinary"] == _dl\
-        #                     ].index.get_values()
-        #         _split = numpy.split( _currInds, [int(self.trnSplit*_currInds.size),\
-        #                             int((self.trnSplit+self.valSplit)*_currInds.size)] )
-        #         indsTrain = numpy.concatenate( [indsTrain, _split[0]] )
-        #         indsVal = numpy.concatenate( [indsVal, _split[1]] )
-        #         indsTest = numpy.concatenate( [indsTest, _split[2]] )
-        #     # re-order the dataframe based on new splits
-        #     smlDataSet = pandas.concat( [ smlDataSet.loc[numpy.sort(indsTrain)],\
-        #                 smlDataSet.loc[numpy.sort(indsVal)],\
-        #                  smlDataSet.loc[numpy.sort(indsTest)] ] )
+        # Sort the df to shuffle it in a way!
         smlDataSet.sort_index(inplace=True)
         print("new DF label counts---->", smlDataSet["outBinary"].value_counts())
         # save the file to make future calc faster
@@ -446,9 +435,9 @@ class OnsetData(object):
         # index the date column of the DFs to make for quicker
         # data selection
         if self.polarDF is not None:
-            self.polarDF = self.polarDF.set_index(self.polarDF["date"])
+            self.polarDF = self.polarDF.set_index("date")
         if self.imageDF is not None:
-            self.imageDF = self.imageDF.set_index(self.imageDF["date"])
+            self.imageDF = self.imageDF.set_index("date")
         # Loop through each of the dates and check if
         # there are substorm onset values in the time range
         # to populate our output bins!

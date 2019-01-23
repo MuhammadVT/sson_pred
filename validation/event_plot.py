@@ -1,11 +1,11 @@
 import datetime
 import pandas
 import numpy
-import feather
 import seaborn as sns
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 from matplotlib.dates import DateFormatter
 import os
 import sys
@@ -219,7 +219,7 @@ class EventSummary(object):
         plt.close()
 
     def generate_onset_plot(self, eventDate, actualLab, predLab,\
-                      onsetTimeDict, figType="png"):
+                      onsetTimeDict, predLabProb=None, figType="png"):
         """
         Generate the plot.
         """
@@ -313,6 +313,20 @@ class EventSummary(object):
                         textYLoc = _ax.get_ylim()[1] - (\
                              abs(_ax.get_ylim()[1]) - _ax.get_ylim()[0] )/3
                         _ax.text(textXLoc, textYLoc, textOut)
+                    if _nax == len(axes) - 1:
+                        if predLabProb is not None:
+                            textXLoc = eventDate + datetime.timedelta(\
+                                minutes=(_nb+0.05)*self.binTimeRes) 
+                            textYLoc = _ax.get_ylim()[1] - (\
+                                 abs(_ax.get_ylim()[1]) - _ax.get_ylim()[0] )/2
+                            binProb0 = predLabProb[ "prob_type_0_b_"  + str(_nb) ]
+                            binProb1 = predLabProb[ "prob_type_1_b_"  + str(_nb) ]
+                            textOutProb = "P$_{" + str(0) + "}$" + ":" +\
+                                             str(round(binProb0,2)) +\
+                                            "\nP$_{" + str(1) + "}$" + ":" +\
+                                             str(round(binProb1,2))
+                            _ax.text(textXLoc, textYLoc, textOutProb,\
+                                         fontsize=10, color="firebrick")
         # get the figure name
         figName = "onset_binRes_" + str(self.binTimeRes) + \
                     "_nbins_" + str(self.nBins) + "_stack_event_" +\
