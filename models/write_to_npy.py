@@ -14,24 +14,27 @@ omn_norm_param_file = omn_dbdir + "omn_mean_std.npy"
 #omnTrainParams = ["Bz", "Vx", "Np"]
 omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 imfNormalize = True
-omn_train = True
+omn_train = False
 shuffleData = False
 polarData=True
 imageData=True
-omnHistory = 120#120
+omnHistory = 120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 1
+onsetFillTimeRes = 5
 omnDBRes = 1
-binTimeRes = 30
+binTimeRes = 90
 nBins = 1
 predList=["bin"] 
 loadPreComputedOnset = False
 saveBinData = False 
 onsetSaveFile = "../data/binned_data.feather"
 
-useSML = False
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
+useSML = True 
+smlDownsample=False
+#smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2008,1,1) ] #
+#smlDateRange = [ dt.datetime(2015,1,1), dt.datetime(2018,1,1) ] #
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 
@@ -98,7 +101,8 @@ batchObj = batch_utils.DataUtils(omn_dbdir,\
                     imageFile="../data/image_data.feather", onsetDelTCutoff=onsetDelTCutoff,\
                     onsetFillTimeRes=onsetFillTimeRes, binTimeRes=binTimeRes, nBins=nBins,\
                     saveBinData=saveBinData, onsetSaveFile=onsetSaveFile,\
-                    shuffleData=shuffleData, omnHistory=omnHistory, smlDateRange=smlDateRange)
+                    shuffleData=shuffleData, omnHistory=omnHistory, smlDateRange=smlDateRange,
+                    smlDownsample=smlDownsample)
 x = time.time()
 onsetData_list = []
 omnData_list = []
