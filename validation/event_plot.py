@@ -91,7 +91,8 @@ class EventSummary(object):
         Load omn data
         """
         # get the time range from onset data
-        omnStartDate = self.paramTimeRange[0]
+        omnStartDate = self.paramTimeRange[0] - datetime.timedelta(\
+                        minutes=self.plotTimeHist)
         omnEndDate = self.paramTimeRange[1]
         # create the obj and load data
         omnObj = omn_utils.OmnData(omnStartDate, omnEndDate, self.paramDBDir,\
