@@ -514,13 +514,13 @@ def main():
     import datetime as dt
     #stm = dt.datetime(1995, 12, 31)
     #etm = dt.datetime(2009, 1, 2)
-    stm = dt.datetime(2015, 1, 1)
+    stm = dt.datetime(2009, 1, 1)
     etm = dt.datetime(2019, 1, 2)
-    db_name = "omni_sw_imf.sqlite"
+    #db_name = "omni_sw_imf.sqlite"
     #db_name = "tmp.sqlite"
     #db_name = "omni_imf.sqlite"
     #db_name = "omni_sw.sqlite"
-    #db_name = "au_al_ae.sqlite"
+    db_name = "au_al_ae.sqlite"
     #db_name = "symh.sqlite"
     #db_name = "dst.sqlite"
     #db_name = "kp.sqlite"
@@ -535,10 +535,10 @@ def main():
     # create an object
     gmi = gmi_imf_to_db(stm, etm, db_name=db_name, base_location=base_location)
 
-    # store IMF and Solar Wind params into db
-    print "storing OMNI IMF and SW params to db"
-    gmi.imf_sw_to_db(resolution=resolution)
-    print "imf_sw is done"
+#    # store IMF and Solar Wind params into db
+#    print "storing OMNI IMF and SW params to db"
+#    gmi.imf_sw_to_db(resolution=resolution)
+#    print "imf_sw is done"
 
 #    # store IMF into db
 #    print "storing IMF to db"
@@ -550,10 +550,10 @@ def main():
 #    gmi.sw_to_db(resolution=resolution)
 #    print "SW is done"
 
-#    # store AU, AL, AE into db
-#    print "storing AU, AL, AE to db"
-#    gmi.aualae_to_db(resolution=resolution)
-#    print "AU, AL, AE is done"
+    # store AU, AL, AE into db
+    print "storing AU, AL, AE to db"
+    gmi.aualae_to_db(resolution=resolution)
+    print "AU, AL, AE is done"
 
 #    # store symh into db
 #    print "storing symh to db"
