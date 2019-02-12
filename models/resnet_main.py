@@ -38,7 +38,7 @@ onsetFillTimeRes = 5
 omnDBRes = 1
 
 batch_size = 64 * 10
-n_epochs = 100
+n_epochs = 50
 n_resnet_units = 2
 metrics = ["accuracy"]
 
@@ -46,6 +46,7 @@ useSML = True
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2000,1,1)]
+
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2004,1,1)]
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2008,1,1)]
 
@@ -53,7 +54,7 @@ smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 
-omnTrainParams_actual = ["By", "Bz", "Vx"]    # This is the one that goes into the actual training
+omnTrainParams_actual = ["Bx", "By", "Bz", "Vx", "Np"]    # This is the one that goes into the actual training
 param_col_dict = {"Bx":0, "By":1, "Bz":2, "Vx":3, "Np":4}
 input_cols = [param_col_dict[x] for x in omnTrainParams_actual]
 
@@ -205,10 +206,6 @@ y_train = y[:train_eindex, :]
 y_val = y[train_eindex:val_eindex, :]
 y_test = y[val_eindex:, :]
 
-
-import pdb
-pdb.set_trace()
-
 ## Shuffle the training data
 #idx_train = np.array(range(x_train.shape[0]))
 #np.random.shuffle(idx_train)
@@ -224,6 +221,10 @@ y_test_enc = enc.transform(y_test).toarray()
 y_val_enc = enc.transform(y_val).toarray()
 y_enc = enc.transform(y).toarray()
 
+
+#import pdb
+#pdb.set_trace()
+
 # Build a ResNet model
 optimizer=keras.optimizers.Adam(lr=0.00001)
 input_shape = X.shape[1:]
@@ -231,8 +232,40 @@ input_shape = X.shape[1:]
 # Define the loss, loss_weights, and class_weights
 loss=keras.losses.categorical_crossentropy
 
+#from keras import backend as K
+#def focal_loss(gamma=2, alpha=0.75):
+#    def focal_loss_fixed(y_true, y_pred):#with tensorflow
+#        eps = 1e-12
+#        y_pred=K.clip(y_pred,eps,1.-eps)#improve the stability of the focal loss and see issues 1 for more information
+#        pt_1 = K.tf.where(K.tf.equal(y_true, 1), y_pred, K.tf.ones_like(y_pred))
+#        pt_0 = K.tf.where(K.tf.equal(y_true, 0), y_pred, K.tf.zeros_like(y_pred))
+#        return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1))-K.sum((1-alpha) * K.pow( pt_0, gamma) * K.log(1. - pt_0))
+#    return focal_loss_fixed
+#
+#def focal_loss(y_true, y_pred):
+#
+#    eps = 1e-12
+#    gamma=2.; alpha=.25
+#    y_pred=K.clip(y_pred,eps,1.-eps)#improve the stability of the focal loss and see issues 1 for more information
+#    pt_1 = K.tf.where(K.tf.equal(y_true, 1), y_pred, K.tf.ones_like(y_pred))
+#    pt_0 = K.tf.where(K.tf.equal(y_true, 0), y_pred, K.tf.zeros_like(y_pred))
+#
+#    return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1))-K.sum((1-alpha) * K.pow( pt_0, gamma) * K.log(1. - pt_0))
+#    #return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
+#
+#
+##def focal_loss(gamma=2., alpha=.25):
+##    def focal_loss_fixed(y_true, y_pred):
+##        pt_1 = tf.where(tf.equal(y_true, 1), y_pred, tf.ones_like(y_pred))
+##        pt_0 = tf.where(tf.equal(y_true, 0), y_pred, tf.zeros_like(y_pred))
+##        return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1))-K.sum((1-alpha) * K.pow( pt_0, gamma) * K.log(1. - pt_0))
+##    return focal_loss_fixed
+
+#loss = [focal_loss(alpha=.25, gamma=2)]
+#loss = focal_loss
+
 #from sklearn import utils
-#class_weights = {0:1.0, 1:5.0}
+#class_weights = {0:0.1, 1:0.9}
 class_weights = None
 
 # Train the model
