@@ -15,7 +15,7 @@ class OnsetData(object):
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
                  trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
                  smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
-                 smlDownsample=True, smlUpsample=False):
+                 smlDownsample=True, smlUpsample=False, dwnSmplByUT=True):
         """
         setup some vars and load preliminary data.
         Most of the variables are self explanatory.
@@ -35,6 +35,7 @@ class OnsetData(object):
         self.trnValTestSplitData = trnValTestSplitData
         self.trnSplit = trnSplit
         self.valSplit = valSplit
+        self.dwnSmplByUT = dwnSmplByUT
         if not useSML:
             self.polarDF = None
             self.imageDF = None
@@ -300,7 +301,7 @@ class OnsetData(object):
             if len(_cOnsetList) > 0:
                 _minDelT = (min(_cOnsetList) - _cpDate).total_seconds()/60.
                 # if diff is less than a minute, ignore
-                if _minDelT <= 1.:
+                if _minDelT <= 0.:
                     smlClstDelT.append(-1.)
                 else:
                     smlClstDelT.append(_minDelT)
@@ -348,35 +349,72 @@ class OnsetData(object):
         # Downsample the data if the option is set
         print("original DF label counts---->", smlDataSet["outBinary"].value_counts())
         if self.smlDownsample:
-            print("Downsampling the data")
-            smLabs = smlDataSet["outBinary"].value_counts()
-            if self.nBins == 1:
-                # if we just have one bin
-                # downsample the other classes
-                # and make the count equal to the min 
-                dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmin() ] ]
-                for _ind in smLabs.index:
-                    if _ind != smLabs.idxmin():
-                        # Downsample majority class
-                        dfMaj = smlDataSet[ smlDataSet["outBinary"] == _ind ]
-                        dfList.append( resample(dfMaj, 
-                                     replace=False, # sample without replacement
-                                     n_samples=smLabs[smLabs.idxmin()], # to match minority class
-                                     random_state=randomState) )# reproducible results
+            if self.dwnSmplByUT:
+                print("Downsampling the data into bins by UT hour")
+                smlDataSet['hour'] = pandas.DatetimeIndex(\
+                                        smlDataSet.index).hour
+                uniqHours = smlDataSet["hour"].unique()
+                smlDataSetList = []
+                for _uut in uniqHours:
+                    currUTSML = smlDataSet[ smlDataSet["hour"] == _uut ]
+                    smLabs = currUTSML["outBinary"].value_counts()
+                    if self.nBins == 1:
+                        # if we just have one bin
+                        # downsample the other classes
+                        # and make the count equal to the min 
+                        dfList = [ currUTSML[ currUTSML["outBinary"] == smLabs.idxmin() ] ]
+                        for _ind in smLabs.index:
+                            if _ind != smLabs.idxmin():
+                                # Downsample majority class
+                                dfMaj = currUTSML[ currUTSML["outBinary"] == _ind ]
+                                dfList.append( resample(dfMaj, 
+                                             replace=False, # sample without replacement
+                                             n_samples=smLabs[smLabs.idxmin()], # match min class
+                                             random_state=randomState) )# reproducible results
+                    else:
+                        # if not we'll just downsample the 0's and make them equal 
+                        # to anyother bin (which has atleast one 1).
+                        nonZeroMax = smLabs[ smLabs.index > 0 ].max()
+                        zeroCnt = smLabs[smLabs.index == 0].values[0]
+                        if zeroCnt > nonZeroMax:
+                            dfList = [ currUTSML[ currUTSML["outBinary"] > 0 ] ]
+                            dfZero = currUTSML[ currUTSML["outBinary"] == 0 ]
+                            dfList.append( resample(dfZero, 
+                                         replace=False, # sample without replacement
+                                         n_samples=nonZeroMax, # to match minority class
+                                         random_state=randomState) )# reproducible results
+                    smlDataSetList.append( pandas.concat(dfList) )
+                smlDataSet = pandas.concat( smlDataSetList )
             else:
-                # if not we'll just downsample the 0's and make them equal 
-                # to anyother bin (which has atleast one 1).
-                nonZeroMax = smLabs[ smLabs.index > 0 ].max()
-                zeroCnt = smLabs[smLabs.index == 0].values[0]
-                if zeroCnt > nonZeroMax:
-                    dfList = [ smlDataSet[ smlDataSet["outBinary"] > 0 ] ]
-                    dfZero = smlDataSet[ smlDataSet["outBinary"] == 0 ]
-                    dfList.append( resample(dfZero, 
-                                 replace=False, # sample without replacement
-                                 n_samples=nonZeroMax, # to match minority class
-                                 random_state=randomState) )# reproducible results
-            # Combine minority class with downsampled majority class
-            smlDataSet = pandas.concat(dfList)
+                print("Downsampling the data without UT bins")
+                smLabs = smlDataSet["outBinary"].value_counts()
+                if self.nBins == 1:
+                    # if we just have one bin
+                    # downsample the other classes
+                    # and make the count equal to the min 
+                    dfList = [ smlDataSet[ smlDataSet["outBinary"] == smLabs.idxmin() ] ]
+                    for _ind in smLabs.index:
+                        if _ind != smLabs.idxmin():
+                            # Downsample majority class
+                            dfMaj = smlDataSet[ smlDataSet["outBinary"] == _ind ]
+                            dfList.append( resample(dfMaj, 
+                                         replace=False, # sample without replacement
+                                         n_samples=smLabs[smLabs.idxmin()], # to match minority class
+                                         random_state=randomState) )# reproducible results
+                else:
+                    # if not we'll just downsample the 0's and make them equal 
+                    # to anyother bin (which has atleast one 1).
+                    nonZeroMax = smLabs[ smLabs.index > 0 ].max()
+                    zeroCnt = smLabs[smLabs.index == 0].values[0]
+                    if zeroCnt > nonZeroMax:
+                        dfList = [ smlDataSet[ smlDataSet["outBinary"] > 0 ] ]
+                        dfZero = smlDataSet[ smlDataSet["outBinary"] == 0 ]
+                        dfList.append( resample(dfZero, 
+                                     replace=False, # sample without replacement
+                                     n_samples=nonZeroMax, # to match minority class
+                                     random_state=randomState) )# reproducible results
+                # Combine minority class with downsampled majority class
+                smlDataSet = pandas.concat(dfList)
         if self.smlUpsample:
             print("Upsampling the data")
             smLabs = smlDataSet["outBinary"].value_counts()
