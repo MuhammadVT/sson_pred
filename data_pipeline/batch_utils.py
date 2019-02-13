@@ -12,10 +12,12 @@ class DataUtils(object):
     on the fly, we'll pre-calculate them
     and store them in a dict
     """
-    
     def __init__(self, omnDBDir, omnDbName, omnTabName, omnTrain, \
             omnNormParamFile, useSML=False, imfNormalize=True, omnDBRes=1,\
              omnTrainParams = [ "By", "Bz", "Bx", "Vx", "Np" ],\
+             sml_train=True, sml_norm_file=None,\
+             smlDbName=None, sml_normalize=True, smlTabName=None, \
+             include_omn=True, include_sml=False, sml_train_params = [ "au", "al" ],\
              batch_size=64, loadPreComputedOnset=True,\
              onsetDataloadFile="../data/binned_data.feather",\
              northData=True, southData=False, polarData=True,\
@@ -49,6 +51,15 @@ class DataUtils(object):
         self.omnDBRes = omnDBRes
         self.omnTrainParams = omnTrainParams
         self.omnHistory = omnHistory
+        self.sml_train = sml_train
+        self.sml_norm_file = sml_norm_file
+        self.smlDbName = smlDbName
+        self.sml_normalize = sml_normalize
+        self.smlTabName = smlTabName
+        self.include_omn = include_omn
+        self.include_sml = include_sml
+        self.sml_train_params = sml_train_params
+        # Load the data
         self.onsetDF = self._load_onset_data( northData, southData,\
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
               onsetFillTimeRes, binTimeRes, nBins, saveBinData, onsetSaveFile)
@@ -68,8 +79,9 @@ class DataUtils(object):
             onsetDF = feather.read_dataframe(self.onsetDataloadFile)
             # Note we need to reset the date column as index
             onsetDF = onsetDF.set_index("date")
-            # drop the date column
-            onsetDF.drop(columns=["date"], inplace=True)
+            if "date" in onsetDF.columns:
+                # drop the date column
+                onsetDF.drop(columns=["date"], inplace=True)
         else:
             print("creating onset data")
             dataObj = create_onset_data.OnsetData(useSML=self.useSML,\
@@ -106,10 +118,18 @@ class DataUtils(object):
                            self.omnTrain, self.omnNormParamFile,\
                             imf_normalize=self.imfNormalize,\
                             db_time_resolution=self.omnDBRes,\
-                            omn_train_params = self.omnTrainParams)
+                            omn_train_params = self.omnTrainParams,\
+                            sml_train=self.sml_train,\
+                            sml_norm_file=self.sml_norm_file,\
+                            smlDbName=self.smlDbName,\
+                            sml_normalize=self.sml_normalize,\
+                            smlTabName=self.smlTabName,\
+                            include_omn=self.include_omn,\
+                            include_sml=self.include_sml,\
+                            sml_train_params=self.sml_train_params)
         # set the datetime as index since we are working off of it
         omnObj.omnDF = omnObj.omnDF.set_index("datetime")
-        omnObj.omnDF = omnObj.omnDF[self.omnTrainParams]
+        omnObj.omnDF = omnObj.omnDF[self.omnTrainParams + self.sml_train_params]
         return omnObj.omnDF
 
     def _get_batchDict(self, shuffleData, set_seed=0):
