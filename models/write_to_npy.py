@@ -23,7 +23,7 @@ batch_size = 1
 onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
-binTimeRes = 90
+binTimeRes = 30
 nBins = 1
 predList=["bin"] 
 loadPreComputedOnset = False
@@ -31,10 +31,13 @@ saveBinData = False
 onsetSaveFile = "../data/binned_data.feather"
 
 useSML = True 
-smlDownsample=False
+smlDownsample=True
+
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2008,1,1) ] #
+#smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2008,1,1) ] #
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2018,1,3) ] #
 #smlDateRange = [ dt.datetime(2015,1,1), dt.datetime(2018,1,1) ] #
+
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 

@@ -10,11 +10,16 @@ import numpy as np
 import datetime as dt
 import sqlite3
 
-pred_file = "../models/trained_models/ResNet/omn_Bx_By_Bz_Vx_Np/"+\
-	    "sml.nBins_1.binTimeRes_30.onsetFillTimeRes_5.omnHistory_120.omnDBRes_1.useSML_True.20190124.151816/"+\
+#pred_file = "../models/trained_models/ResNet/omn_Bx_By_Bz_Vx_Np/"+\
+#	    "sml.nBins_1.binTimeRes_30.onsetFillTimeRes_5.omnHistory_120.omnDBRes_1.useSML_True.20190124.151816/"+\
+#	    "test_data_pred.csv"
+#	    #"all_data_pred.csv"
+#	    #"test_data_pred_nosampling.csv"
+
+pred_file = "../models/trained_models/RF/"+\
 	    "test_data_pred.csv"
 	    #"all_data_pred.csv"
-	    #"test_data_pred_nosampling.csv"
+
 
 binTimeRes = 30
 onsetFillTimeRes = 5
@@ -83,6 +88,6 @@ ax.set_xticklabels(xlabels)
 ax.set_xlabel("Geomagentic Disturbance Level")
 plt.tick_params(axis='x', which='major', labelsize=12)
 
-fig.savefig("./tmp_test_al.png", dpi=200, bbox_inches="tight")
+fig.savefig("./RF_test_al.png", dpi=200, bbox_inches="tight")
 #fig.savefig("./tmp_al.png", dpi=200, bbox_inches="tight")
 
