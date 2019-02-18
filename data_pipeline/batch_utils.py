@@ -49,7 +49,13 @@ class DataUtils(object):
         self.smlUpsample = smlUpsample
         self.imfNormalize = imfNormalize
         self.omnDBRes = omnDBRes
-        self.omnTrainParams = omnTrainParams
+        if include_omn:
+            self.omnTrainParams = omnTrainParams
+        else:
+            if include_sml:
+                self.omnTrainParams = []
+            else:
+                self.omnTrainParams = omnTrainParams
         self.omnHistory = omnHistory
         self.sml_train = sml_train
         self.sml_norm_file = sml_norm_file
@@ -58,7 +64,10 @@ class DataUtils(object):
         self.smlTabName = smlTabName
         self.include_omn = include_omn
         self.include_sml = include_sml
-        self.sml_train_params = sml_train_params
+        if include_sml:
+            self.sml_train_params = sml_train_params
+        else:
+            self.sml_train_params = []
         # Load the data
         self.onsetDF = self._load_onset_data( northData, southData,\
               polarData, imageData, polarFile, imageFile, onsetDelTCutoff,\
