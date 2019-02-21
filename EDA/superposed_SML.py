@@ -13,7 +13,7 @@ sml_onset_file =  "../data/" +\
 
 before_onset = 1 * 60     # minutes
 after_onset = 1 * 60     # minutes
-onset_gap_minlim = 120    # minutes
+onset_gap_minlim = 20    # minutes
 
 sdate = dt.datetime(1997, 1, 1)
 edate = dt.datetime(2017, 12, 30)
@@ -78,8 +78,11 @@ for i, ax in enumerate(axes):
 axes[0].set_title("Superposed Substorm Onsets (" + str(len(ALs)) + " Events)", )
 axes[-1].set_xlabel("Relative Time [Minutes]")
 
-axes[0].set_ylim([-2000, 50])
 axes[1].set_ylim([-50, 1000])
+if onset_gap_minlim <= 30: 
+    axes[0].set_ylim([-3000, 50])
+else:
+    axes[0].set_ylim([-2000, 50])
 
 fig_name = "superposed_SMUL.onset_sep_" + str(onset_gap_minlim) + "." +\
            sdate.strftime("%Y%m%d") + "_" + edate.strftime("%Y%m%d") 

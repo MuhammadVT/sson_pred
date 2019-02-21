@@ -4,15 +4,22 @@ from matplotlib.ticker import MultipleLocator
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 plt.style.use("fivethirtyeight")
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
-add_UT = False
-use_stat_features = True
-#use_stat_features = False
+threeD_plot = False 
+if threeD_plot:
+    threeD_txt = "_3D"
+else:
+    threeD_txt = ""
 
-omnHistory = 180
+add_UT = False
+#use_stat_features = True
+use_stat_features = False
+
+omnHistory = 120
 # Select parameters of interest
 omnTrainParams_actual = ["Bx", "By", "Bz", "Vx", "Np"]    # This is the one that goes into the actual training
 param_col_dict = {"Bx":0, "By":1, "Bz":2, "Vx":3, "Np":4, "UT_sine":5, "UT_cosine":6}
@@ -20,14 +27,23 @@ input_cols = [param_col_dict[x] for x in omnTrainParams_actual]
 
 # Set input file names
 file_dir = "../data/omn_Bx_By_Bz_Vx_Np/"
+#input_file = file_dir +\
+#	     "input.nBins_1.binTimeRes_30.onsetFillTimeRes_5.onsetDelTCutoff_2."+\
+#	     "omnHistory_120.omnDBRes_1.imfNormalize_True.shuffleData_False." +\
+#	     "dateRange_19970101_20180101.npy"
+#csv_file = file_dir +\
+#	   "sml_nBins_1.binTimeRes_30.onsetFillTimeRes_5.onsetDelTCutoff_2."+\
+#	   "omnHistory_120.omnDBRes_1.imfNormalize_True.shuffleData_False."+\
+#	   "dateRange_19970101_20180101.csv"
+
 input_file = file_dir +\
-	     "input.nBins_1.binTimeRes_60.onsetFillTimeRes_30.onsetDelTCutoff_4."+\
-	     "omnHistory_180.omnDBRes_1.imfNormalize_True.shuffleData_False." +\
-	     "dateRange_19970101_20171229.npy"
+             "input.nBins_1.binTimeRes_60.onsetFillTimeRes_5.onsetDelTCutoff_4."+\
+             "omnHistory_120.omnDBRes_1.imfNormalize_True.shuffleData_False." +\
+             "dateRange_19970101_20180101.iso.npy"
 csv_file = file_dir +\
-	   "sml_nBins_1.binTimeRes_60.onsetFillTimeRes_30.onsetDelTCutoff_4."+\
-	   "omnHistory_180.omnDBRes_1.imfNormalize_True.shuffleData_False."+\
-	   "dateRange_19970101_20171229.csv"
+           "sml_nBins_1.binTimeRes_60.onsetFillTimeRes_5.onsetDelTCutoff_4."+\
+           "omnHistory_120.omnDBRes_1.imfNormalize_True.shuffleData_False."+\
+           "dateRange_19970101_20180101.iso.csv"
 
 # Load the data
 print("Loading the data...")
@@ -99,22 +115,33 @@ fig.savefig("./plots/" + fname, dpi=200, bbox_inches="tight")
 
 #############################################
 # Plot the data in transformed coords
-fig, ax = plt.subplots()
-idx_0 = np.where(y==0)
-idx_1 = np.where(y==1)
-ax.scatter(Xn[idx_0, 0], Xn[idx_0, 1], s=1., alpha=1.0, label="Non-Substorm")
-ax.scatter(Xn[idx_1, 0], Xn[idx_1, 1], s=1., alpha=0.3, label="Substorm")
-ax.set_xlabel("P1")
-ax.set_ylabel("P2")
-ax.legend(markerscale=5)
+idx_0 = np.where(y==0)[0]
+idx_1 = np.where(y==1)[0]
+if threeD_plot:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d") 
+    ax.scatter(Xn[idx_0, 0], Xn[idx_0, 1], Xn[idx_0, 2], marker="o", s=1., alpha=1.0, label="Non-Substorm")
+    ax.scatter(Xn[idx_1, 0], Xn[idx_1, 1], Xn[idx_0, 2], marker="*",  s=1., alpha=0.3, label="Substorm")
+else:
+    fig, ax = plt.subplots()
+    ax.scatter(Xn[idx_0, 0], Xn[idx_0, 1], s=1., alpha=1.0, label="Non-Substorm")
+    ax.scatter(Xn[idx_1, 0], Xn[idx_1, 1], s=1., alpha=0.3, label="Substorm")
+    ax.set_xlabel("P1")
+    ax.set_ylabel("P2")
+    ax.legend(markerscale=5)
+
 if use_stat_features:
     ax.set_xlim([-8,8])
     ax.set_ylim([-8,8])
-    fname = "pca_stat_features.png"
+    if threeD_plot:
+        ax.set_zlim([-8,8])
+    fname = "pca_stat_features" + threeD_txt + ".png"
 else:
     ax.set_xlim([-60,60])
     ax.set_ylim([-60,60])
-    fname = "pca_raw_features.png"
+    if threeD_plot:
+        ax.set_zlim([-8,8])
+    fname = "p1_vs_p2_raw_features" + threeD_txt + ".png"
 
 fig.savefig("./plots/" + fname, dpi=200, bbox_inches="tight")
 #############################################
