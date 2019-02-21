@@ -54,7 +54,7 @@ y = df.loc[:, "label"].values.reshape(-1, 1)
 # Select certain columns
 X = X[:, :, input_cols]
 
-## Limit the number of data points
+# Limit the number of data points
 #npoints = 1000
 #X = X[:npoints, :, :]
 #y = y[:npoints, :]
@@ -69,8 +69,7 @@ if use_stat_features:
     X = np.concatenate([X_mean, X_std, X_min, X_max], axis=1)
 else:
     # Flatten X
-    X = X.reshape((X.shape[0], -1))
-
+    X = X.reshape((X.shape[0], -1), order="F")
 
 if add_UT:
     # Add UT time features
