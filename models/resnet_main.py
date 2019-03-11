@@ -26,26 +26,35 @@ if transfer_weights:
     weight_dir = "./trained_models/ResNet/omn_Bx_By_Bz_Vx_Np/" +\
                  "sml.nBins_1.binTimeRes_30.onsetFillTimeRes_5.omnHistory_120.omnDBRes_1.useSML_True.20190122.154340/"
 
+save_pred = True
+
 nBins = 1
-binTimeRes = 30
+binTimeRes = 60
 imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
 omnHistory = 120
-onsetDelTCutoff = 2
-onsetFillTimeRes = 5
+onsetDelTCutoff = 4
+onsetFillTimeRes = 30
 omnDBRes = 1
 
-batch_size = 64 * 10
-n_epochs = 50
+batch_size = 16 * 2 * 1
+n_epochs = 100
 n_resnet_units = 2
 metrics = ["accuracy"]
 
+#txt = "deltm."
+txt = "iso."
+#txt = ""
+
 useSML = True 
-#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
-#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2000,1,1)]
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]    # Downsampled
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]       # Downsampled
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,3)]       # Downsampled by UT
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2017,12,30)]       # Includes SML, SMU. Downsampled by UT
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2017,12,29)]       # isolated substorms (sep=120min). Includes SML, SMU. Downsampled by UT
 
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2004,1,1)]
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2008,1,1)]
@@ -55,7 +64,10 @@ smlEndStr = smlDateRange[1].strftime("%Y%m%d")
 omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 
 omnTrainParams_actual = ["Bx", "By", "Bz", "Vx", "Np"]    # This is the one that goes into the actual training
-param_col_dict = {"Bx":0, "By":1, "Bz":2, "Vx":3, "Np":4}
+#omnTrainParams_actual = ["Bx", "By", "Bz", "Vx", "Np", "au", "al"]    # This is the one that goes into the actual training
+#omnTrainParams_actual = ["By", "Bz", "Vx", "Np", "al"]    # This is the one that goes into the actual training
+#omnTrainParams_actual = ["au", "al"]    # This is the one that goes into the actual training
+param_col_dict = {"Bx":0, "By":1, "Bz":2, "Vx":3, "Np":4, "au":5, "al":6}
 input_cols = [param_col_dict[x] for x in omnTrainParams_actual]
 
 # since we have different omnTrainParams for different datasets
@@ -88,6 +100,7 @@ if useSML:
                  "imfNormalize_" + str(imfNormalize) + "." +\
                  "shuffleData_" + str(shuffleData) + "." +\
                  "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 txt +\
                  "npy"
 
     csv_file = "../data/" + omnDir + "sml_" +\
@@ -100,6 +113,7 @@ if useSML:
                "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
                "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               txt +\
                "csv"
 
     out_dir="./trained_models/ResNet/" + omnDir_actual + \
@@ -159,24 +173,52 @@ y = df.loc[:, "label"].values.reshape(-1, 1)
 # Select certain columns
 X = X[:, :, input_cols]
 
-# Add UT time features
-dlm = np.array([np.timedelta64(i-omnHistory, "m") for i in range(omnHistory+1)])
-dlms = np.tile(dlm, (X.shape[0], 1))
-dtms = np.tile(df.index.values.reshape((-1, 1)), (1, omnHistory+1))
-dtms = dtms + dlms
-minutes = (dtms - dtms.astype("datetime64[D]")).astype("timedelta64[m]").astype(int)
-minutes = minutes.reshape((minutes.shape[0], omnHistory+1, 1))
-# Encode UT minutes using sine and cosine functions
-minutes_sine = np.sin(2*np.pi/(60*24) * minutes)
-minutes_cosine = np.cos(2*np.pi/(60*24) * minutes)
-#months = (dtms - dtms.astype("datetime64[D]")).astype("timedelta64[m]").astype(int)
-X = np.concatenate([X, minutes_sine, minutes_cosine], axis=2)
+########################
+## Limit the UT time range
+#ut_range = [5, 12]
+#idx_ut = np.where((df.index.hour.values>= 6) & (df.index.hour.values<=12))[0]
+#df = df.iloc[idx_ut, :]
+#X = X[idx_ut, :, :]
+#y = y[idx_ut, :]
+########################
 
 #import pdb
 #pdb.set_trace()
 
+########################
+## Add UT time features
+#dlm = np.array([np.timedelta64(i-omnHistory, "m") for i in range(omnHistory+1)])
+#dlms = np.tile(dlm, (X.shape[0], 1))
+#dtms = np.tile(df.index.values.reshape((-1, 1)), (1, omnHistory+1))
+#dtms = dtms + dlms
+#minutes = (dtms - dtms.astype("datetime64[D]")).astype("timedelta64[m]").astype(int)
+#minutes = minutes.reshape((minutes.shape[0], omnHistory+1, 1))
+## Encode UT minutes using sine and cosine functions
+#minutes_sine = np.sin(2*np.pi/(60*24) * minutes)
+#minutes_cosine = np.cos(2*np.pi/(60*24) * minutes)
+#X = np.concatenate([X, minutes_sine, minutes_cosine], axis=2)
+#
+## Add Month features
+#months = (dtms.astype("datetime64[M]") - dtms.astype("datetime64[Y]")).astype("timedelta64[M]").astype(int) + 1
+#months = months.reshape((months.shape[0], omnHistory+1, 1))
+## Encode months using sine and cosine functions
+#months_sine = np.sin(2*np.pi/12 * months)
+#months_cosine = np.cos(2*np.pi/12 * months)
+#X = np.concatenate([X, months_sine, months_cosine], axis=2)
+#######################
+
+#########################
+## Add del_minutes feature
+#deltm = df.del_minutes.values
+#deltms = np.tile(deltm.reshape(-1, 1, 1), (1, X.shape[1], 1))
+#X = np.concatenate([X, deltms], axis=2)
+#########################
+
+########################
 ## Limit the time history
-#X = X[:, 61:, :]
+X = X[:, 61:, :]
+#X = X[:, 121:, :]
+########################
 
 ## Do x-min average to the input data
 #x_min_avg = 30
@@ -220,10 +262,6 @@ y_train_enc = enc.transform(y_train).toarray()
 y_test_enc = enc.transform(y_test).toarray()
 y_val_enc = enc.transform(y_val).toarray()
 y_enc = enc.transform(y).toarray()
-
-
-#import pdb
-#pdb.set_trace()
 
 # Build a ResNet model
 optimizer=keras.optimizers.Adam(lr=0.00001)
@@ -334,11 +372,13 @@ test_model = keras.models.load_model(model_name)
 y_train_pred_enc = test_model.predict(x_train, batch_size=batch_size)
 y_val_pred_enc = test_model.predict(x_val, batch_size=batch_size)
 y_test_pred_enc = test_model.predict(x_test, batch_size=batch_size)
+y_pred_enc = test_model.predict(X, batch_size=batch_size)
 
 # The final activation layer uses softmax
 y_train_pred = np.argmax(y_train_pred_enc , axis=1)
 y_val_pred = np.argmax(y_val_pred_enc , axis=1)
 y_test_pred = np.argmax(y_test_pred_enc , axis=1)
+y_pred = np.argmax(y_pred_enc , axis=1)
 y_train_true = y_train
 y_val_true = y_val
 y_test_true = y_test
@@ -354,4 +394,22 @@ print(classification_report(y_val_true, y_val_pred))
 # Report for test data
 print("Prediction report for test data.")
 print(classification_report(y_test_true, y_test_pred))
+
+if save_pred:
+    # Save the predicted outputs
+    #out_dir = "./trained_models/MLP_iso"
+    model_txt = "resnet_
+    output_df_file = out_dir + "/" + model_txt + "all_data_pred.csv"
+    output_df_test_file = out_dir + "/" + model_txt + "test_data_pred.csv"
+
+    df.loc[:, "pred_label"] = y_pred
+    df_test = df.iloc[val_eindex:, :]
+    df_test.loc[:, "pred_label"] = y_test_pred
+    for i in range(y_pred_enc.shape[1]):
+        df.loc[:, "prob_"+str(i)] = y_pred_enc[:, i]
+        df_test.loc[:, "prob_"+str(i)] = y_test_pred_enc[:, i]
+    
+    df.to_csv(output_df_file)
+    df_test.to_csv(output_df_test_file)
+
 
