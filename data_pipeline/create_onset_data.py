@@ -14,7 +14,7 @@ class OnsetData(object):
                  imageFile="../data/image_data.feather",delTCutoff=2,\
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
                  trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
-                 smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
+                 smlFname="../data/20190103-22-53-substorms_onset_sep_120min.csv",smlDateRange=None,\
                  smlDownsample=True, smlUpsample=False, dwnSmplByUT=True):
         """
         setup some vars and load preliminary data.
@@ -266,6 +266,7 @@ class OnsetData(object):
         smlClstOnsetTime = []
         smlClstDelT = []
         smlDateList = []
+        smlMultiSS = []
         _cpDate = smlDTStart
         _printYear = _cpDate.year - 1 # for pritning purposes
         while _cpDate <= smlDTEnd:
@@ -285,10 +286,16 @@ class OnsetData(object):
             # get the difference between current time and the nearest
             # one's found in the DF
             # we'll ignore the time if the difference is less than 1 minute
+            # initialize a variable for counting multiple ss onsets
+            _multiSS = 0
             for _cto in sorted(_cOnsetList):
                 _dt = (_cto - _cpDate).total_seconds()/60.
                 for _nb in range(self.nBins):
                     if (_dt >= (_nb*self.binTimeRes) + 1) & (_dt <= (_nb+1)*self.binTimeRes):
+                        # we need to find if there are multiple ss in any bin. 
+                        # If yes, we'll count them and store in a seperate var
+                        if _tmpBinVlas[_nb] == 1:
+                            _multiSS += 1
                         _tmpBinVlas[_nb] = 1
                         _tmpLatVlas[_nb] = smlDF.loc[_cto]["mlat"]/90.
                         _tmpMLTVlas[_nb] = smlDF.loc[_cto]["mlt"]/(15*24.)
@@ -296,6 +303,7 @@ class OnsetData(object):
             smlMlatList.append(_tmpLatVlas)
             smlMLTList.append(_tmpMLTVlas)
             smlDateList.append(_cpDate)
+            smlMultiSS.append(_multiSS)
             # we'll add another col where we find the shortest time
             # to ss onset
             if len(_cOnsetList) > 0:
@@ -321,6 +329,7 @@ class OnsetData(object):
         #         polDataSet["closest_time"] = smlClstOnsetTime
         smlDataSet["del_minutes"] = smlClstDelT
         smlDataSet["data_label"] = "S"
+        smlDataSet["multi_ss"] = smlMultiSS
 
         smlDataSet = smlDataSet.set_index(\
                     pandas.to_datetime(smlDateList))
@@ -331,7 +340,7 @@ class OnsetData(object):
                      if col.startswith('mlat') ]
         mltCols = [ col for col in smlDataSet\
                      if col.startswith('mlt') ]
-        otrCols = [ "del_minutes", "data_label" ]
+        otrCols = [ "del_minutes", "data_label", "multi_ss" ]
         selCols = binCols + mlatCols + mltCols + otrCols
         smlDataSet = smlDataSet[selCols]
         # sort the index to make sure non-ss intervals
