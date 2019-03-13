@@ -14,7 +14,7 @@ class OnsetData(object):
                  imageFile="../data/image_data.feather",delTCutoff=2,\
                  fillTimeRes=1, binTimeRes=30, nBins=2, \
                  trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
-                 smlFname="../data/20190103-22-53-substorms.csv",smlDateRange=None,\
+                 smlFname="../data/20190103-22-53-substorms_onset_sep_120min.csv",smlDateRange=None,\
                  smlDownsample=True, smlUpsample=False, dwnSmplByUT=True):
         """
         setup some vars and load preliminary data.

@@ -20,23 +20,25 @@ shuffleData = False
 polarData = True
 imageData = True
 omnHistory = 120
-onsetDelTCutoff = 2
+onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
 
 batch_size = 64 * 1
 metrics = ["accuracy"]
 
-test_epoch = 50
+test_epoch = 200
 #model_time_str = "20190124.151816"
-model_time_str = "20190211.164133"
+#model_time_str = "20190211.164133"
+model_time_str = "20190212.130134"
 
 file_dir = "../data/"
 
 useSML = True
 #smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2007,12,31)]
 #smlDateRange = [dt.datetime(2015,1,1), dt.datetime(2018,1,1)]
-smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
+#smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
+smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,3)]
 
 smlStrtStr = smlDateRange[0].strftime("%Y%m%d")
 smlEndStr = smlDateRange[1].strftime("%Y%m%d")
