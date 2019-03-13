@@ -1,6 +1,6 @@
 import pandas
 import datetime
-import feather
+# import feather
 import numpy
 from sklearn.utils import resample
 
@@ -237,8 +237,8 @@ class OnsetData(object):
             nonSSDtList = nonSSDtList[:nonSSDataCnt]
         return pandas.DataFrame(nonSSDtList, columns=["date"])
     
-    def create_sml_bins(self, saveBinData=True,randomState=0,\
-                 saveFile="../data/sml_binned_data_extra.feather"):
+    def create_sml_bins(self, saveBinData=False,randomState=0,\
+                 saveFile="../data/sml_binned_data_extra.csv"):
         """
         Create the bins based on SML index instead of
         POLAR UVI and IMAGE datasets. This is an alternative
@@ -450,15 +450,15 @@ class OnsetData(object):
             # we read the file back!
             # sort by dates
             smlDataSet["date"] = smlDataSet.index
-            smlDataSet.reset_index(drop=True).to_feather(saveFile)
+            smlDataSet.reset_index(drop=True).to_csv(saveFile)
         return smlDataSet
 
     def create_output_bins(self,\
                  aulDBdir="../data/sqlite3/", \
                  aulDBName="smu_sml_sme.sqlite",\
                  aulTabName="smusmlsme", alSSCutoff = -25, \
-                 aeSSCutoff = 50, minDelT = 5, saveBinData=True,\
-                 saveFile="../data/binned_data_extra.feather",\
+                 aeSSCutoff = 50, minDelT = 5, saveBinData=False,\
+                 saveFile="../data/binned_data_extra.csv",\
                  getNonSSInt=False, noSSbinRatio=1):
         """
         For each of the dates in the polar and image lists
@@ -733,6 +733,6 @@ class OnsetData(object):
             # we read the file back!
             # sort by dates
             ssBinDF["date"] = ssBinDF.index
-            ssBinDF.reset_index(drop=True).to_feather(saveFile)
+            ssBinDF.reset_index(drop=True).to_csv(saveFile)
         return ssBinDF
 
