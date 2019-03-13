@@ -23,7 +23,7 @@ class DataUtils(object):
              northData=True, southData=False, polarData=True,\
              imageData=True, polarFile="../data/polar_data.feather",\
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
-             onsetFillTimeRes=1, binTimeRes=30, nBins=2,\
+             onsetFillTimeRes=1, binTimeRes=60, nBins=1,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
             shuffleData=False, omnHistory=120,\
             smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)],\

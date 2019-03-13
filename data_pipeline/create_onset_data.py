@@ -12,9 +12,9 @@ class OnsetData(object):
                  polarData=True, imageData=True, \
                  polarFile="../data/polar_data.feather",\
                  imageFile="../data/image_data.feather",delTCutoff=2,\
-                 fillTimeRes=1, binTimeRes=30, nBins=2, \
+                 fillTimeRes=1, binTimeRes=60, nBins=1, \
                  trnValTestSplitData=False, trnSplit=0.75, valSplit=0.15,\
-                 smlFname="../data/20190103-22-53-substorms_onset_sep_120min.csv",smlDateRange=None,\
+                 smlFname="../data/filtered-20190103-22-53-substorms.csv",smlDateRange=None,\
                  smlDownsample=True, smlUpsample=False, dwnSmplByUT=True):
         """
         setup some vars and load preliminary data.
@@ -256,6 +256,10 @@ class OnsetData(object):
         else:
             smlDTStart = self.smlDateRange[0]
             smlDTEnd = self.smlDateRange[1]
+            # Limit SML data to the range
+            smlDF = smlDF[ (smlDF["datetime"] >= smlDTStart) &\
+                            (smlDF["datetime"] <= smlDTEnd) \
+                            ].reset_index(drop=True)
         # for quicker search set datetime as index
         smlDF.set_index( pandas.to_datetime(\
                         smlDF["datetime"]), inplace=True )
