@@ -15,14 +15,14 @@ include_omn = True
 #omnTrainParams = ["Bz", "Vx", "Np"]
 omnTrainParams = ["Bx", "By", "Bz", "Vx", "Np"]
 imfNormalize = True
-omn_train = False
+omn_train = True
 shuffleData = False
 polarData=True
 imageData=True
 omnHistory = 180
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 30
+onsetFillTimeRes = 5
 omnDBRes = 1
 binTimeRes = 60
 nBins = 1
@@ -32,7 +32,7 @@ saveBinData = False
 onsetSaveFile = "../data/binned_data.feather"
 
 useSML = True 
-include_sml = True
+include_sml = False
 sml_normalize = True
 sml_train = False
 sml_train_params = ["au", "al"]
@@ -44,10 +44,10 @@ smlDownsample=True
 
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2008,1,1) ] #
-#smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2018,1,3) ] #
+smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2018,1,1) ] #
 #smlDateRange = [ dt.datetime(2015,1,1), dt.datetime(2018,1,1) ] #
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2017,12,30) ] #
-smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2017,12,29) ] #
+#smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2017,12,29) ] #
 
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(1997,3,1) ] #
 
