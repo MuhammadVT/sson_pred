@@ -1,3 +1,88 @@
+# Fully Connected Multilayer Perceptron (MLP) with single output
+class MLP:
+    def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
+                 loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"],
+                 out_dir="./trained_models/MLP/"):
+
+        # Add class attributes
+        self.input_shape = input_shape
+        self.batch_size = batch_size 
+        self.n_epochs = n_epochs
+        self.n_classes = n_classes
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metrics = metrics 
+        self.out_dir = out_dir
+
+        # Creat a MLP model
+        self.model = self.creat_model()
+
+    def creat_model(self):
+
+        from keras.layers import Input, Conv1D, Dense, Flatten
+        from keras.layers import normalization, Activation, pooling
+        from keras.models import Model 
+        from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+        from keras.layers.core import Dropout
+        import os
+
+        # Input layer
+        input_layer = Input(self.input_shape)
+        fc_layer = input_layer 
+
+        # Add Dense layer 
+        fc_layer = Dense(100, activation="relu")(fc_layer)
+        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+
+        # Add Dense layer 
+        fc_layer = Dense(50, activation="relu")(fc_layer)
+        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+
+######################
+#        # Add Dense layer 
+#        fc_layer = Dense(100, activation="relu")(fc_layer)
+#        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+#
+#        # Add Dense layer 
+#        fc_layer = Dense(100, activation="relu")(fc_layer)
+#        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+#
+#        # Add Dense layer 
+#        fc_layer = Dense(100, activation="relu")(fc_layer)
+#        fc_layer = Dropout(0.2, seed=100)(fc_layer)
+######################
+
+        # Add Dense layer 
+        fc_layer = Dense(50, activation="relu")(fc_layer)
+
+        # Output layer
+        # Use softmax
+        output_layer = Dense(self.n_classes, activation="softmax")(fc_layer)
+
+        # Put all the model components together
+        model = Model(inputs=input_layer, outputs=output_layer)
+
+        # configure the model
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
+
+        # Reduce the learning rate if plateau occurs on the loss curve
+        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, 
+                                      min_lr=0.00001)
+
+        # Save the model at certain checkpoints 
+        fname = "weights.epoch_{epoch:02d}.val_loss_{val_loss:.2f}.val_acc_{val_acc:.2f}.hdf5"
+        file_path = os.path.join(self.out_dir, fname)
+        model_checkpoint = ModelCheckpoint(file_path, monitor='val_loss', save_best_only=False, period=5)
+        
+#        # For TensorBoard visualization
+#        log_dir = os.path(out_dir, "logs")
+#        TensorBoard(log_dir=log_dir, batch_size=self.batch_size, update_freq='epoch')
+
+        self.callbacks = [reduce_lr,model_checkpoint]
+
+        return model
+
+
 # Fully Convolutional Neural Network (FCNN) with single output
 class FCNN:
     def __init__(self, input_shape, batch_size=32, n_epochs=100, n_classes=2,
@@ -274,21 +359,23 @@ class ResNet:
         # Input layer
         input_layer = Input(self.input_shape, name="main_input")
 
-#        # CNN layers
-#        conv_layer = Conv1D(filters=16, kernel_size=10, strides=3, padding="valid")(input_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
-#        conv_layer = Activation(activation="relu")(conv_layer)
-#
-#        conv_layer = Conv1D(filters=16, kernel_size=7, strides=1, padding="valid")(conv_layer)
-#        conv_layer = normalization.BatchNormalization()(conv_layer)
-#        conv_layer = Activation(activation="relu")(conv_layer)
-#        # Max pooling layer
-#        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+        # CNN layers
+        conv_layer = Conv1D(filters=16*2, kernel_size=5, strides=1, padding="valid")(input_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
 
-        conv_layer = input_layer
+        conv_layer = Conv1D(filters=16*2, kernel_size=3, strides=1, padding="valid")(conv_layer)
+        conv_layer = normalization.BatchNormalization()(conv_layer)
+        conv_layer = Activation(activation="relu")(conv_layer)
+        # Max pooling layer
+        conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
+
+
+        #conv_layer = input_layer
+
         #############################
         # ResNet Units
-        n_filters = 16
+        n_filters = 16 * 2
         n_layers = 3   # Keep it as it is
         #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
