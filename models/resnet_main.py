@@ -27,6 +27,7 @@ if transfer_weights:
                  "sml.nBins_1.binTimeRes_30.onsetFillTimeRes_5.omnHistory_120.omnDBRes_1.useSML_True.20190122.154340/"
 
 save_pred = True
+model_txt = "resnet_"
 
 nBins = 1
 binTimeRes = 60
@@ -34,19 +35,19 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 120
+omnHistory = 180
 onsetDelTCutoff = 4
-onsetFillTimeRes = 30
+onsetFillTimeRes = 5
 omnDBRes = 1
 
-batch_size = 16 * 2 * 1
+batch_size = 16 * 4 * 5
 n_epochs = 100
 n_resnet_units = 2
 metrics = ["accuracy"]
 
 #txt = "deltm."
-txt = "iso."
-#txt = ""
+#txt = "iso."
+txt = ""
 
 useSML = True 
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
@@ -216,8 +217,8 @@ X = X[:, :, input_cols]
 
 ########################
 ## Limit the time history
-X = X[:, 61:, :]
-#X = X[:, 121:, :]
+X = X[:, 60:, :]
+#X = X[:, 120:, :]
 ########################
 
 ## Do x-min average to the input data
@@ -236,8 +237,8 @@ X = X[:, 61:, :]
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.70
-val_size = 0.15
+train_size = 0.75
+val_size = 0.10
 test_size = 0.15
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
@@ -398,18 +399,28 @@ print(classification_report(y_test_true, y_test_pred))
 if save_pred:
     # Save the predicted outputs
     #out_dir = "./trained_models/MLP_iso"
-    model_txt = "resnet_
     output_df_file = out_dir + "/" + model_txt + "all_data_pred.csv"
+    output_df_train_file = out_dir + "/" + model_txt + "train_data_pred.csv"
+    output_df_val_file = out_dir + "/" + model_txt + "val_data_pred.csv"
     output_df_test_file = out_dir + "/" + model_txt + "test_data_pred.csv"
 
     df.loc[:, "pred_label"] = y_pred
+    df_train = df.iloc[:train_eindex, :]
+    df_val = df.iloc[train_eindex:val_eindex, :]
     df_test = df.iloc[val_eindex:, :]
+    df_train.loc[:, "pred_label"] = y_train_pred
+    df_val.loc[:, "pred_label"] = y_val_pred
     df_test.loc[:, "pred_label"] = y_test_pred
+
     for i in range(y_pred_enc.shape[1]):
         df.loc[:, "prob_"+str(i)] = y_pred_enc[:, i]
+        df_train.loc[:, "prob_"+str(i)] = y_train_pred_enc[:, i]
+        df_val.loc[:, "prob_"+str(i)] = y_val_pred_enc[:, i]
         df_test.loc[:, "prob_"+str(i)] = y_test_pred_enc[:, i]
     
     df.to_csv(output_df_file)
+    df_train.to_csv(output_df_train_file)
+    df_val.to_csv(output_df_val_file)
     df_test.to_csv(output_df_test_file)
 
 

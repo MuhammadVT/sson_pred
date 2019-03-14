@@ -360,13 +360,14 @@ class ResNet:
         input_layer = Input(self.input_shape, name="main_input")
 
         # CNN layers
-        conv_layer = Conv1D(filters=16*2, kernel_size=5, strides=1, padding="valid")(input_layer)
+        conv_layer = Conv1D(filters=16*1, kernel_size=5, strides=1, padding="valid")(input_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
 
-        conv_layer = Conv1D(filters=16*2, kernel_size=3, strides=1, padding="valid")(conv_layer)
+        conv_layer = Conv1D(filters=16*1, kernel_size=3, strides=1, padding="valid")(conv_layer)
         conv_layer = normalization.BatchNormalization()(conv_layer)
         conv_layer = Activation(activation="relu")(conv_layer)
+
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
@@ -375,7 +376,7 @@ class ResNet:
 
         #############################
         # ResNet Units
-        n_filters = 16 * 2
+        n_filters = 16 * 1
         n_layers = 3   # Keep it as it is
         #kernel_sizes = [7, 5, 3]   # #elements has to be eqaul to n_layers
         kernel_sizes = [3, 3, 3]   # #elements has to be eqaul to n_layers
@@ -442,8 +443,8 @@ class ResNet:
         fc_layer = Dropout(0.2, seed=100)(fc_layer)
 
         # Add Dense layer 
-        fc_layer = Dense(50, activation="relu")(fc_layer)
-        #fc_layer = Dropout(0.1, seed=100)(fc_layer)
+        fc_layer = Dense(100, activation="relu")(fc_layer)
+        fc_layer = Dropout(0.1, seed=100)(fc_layer)
 
         # Output layer
         # Use softmax
