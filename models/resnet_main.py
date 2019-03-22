@@ -36,6 +36,7 @@ shuffleData = False
 polarData = True
 imageData = True
 omnHistory = 180
+omnHistory_actual = 180
 onsetDelTCutoff = 4
 onsetFillTimeRes = 5
 omnDBRes = 1
@@ -217,7 +218,9 @@ X = X[:, :, input_cols]
 
 ########################
 ## Limit the time history
-X = X[:, 60:, :]
+X = X[:, -omnHistory_actual-1:, :]
+import pdb
+pdb.set_trace()
 #X = X[:, 120:, :]
 ########################
 
