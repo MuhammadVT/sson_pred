@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings('ignore')
 import datetime
 import pandas
 import numpy
@@ -108,13 +110,16 @@ class EventSummary(object):
         """
         Load AUL data
         """
+        indStartDate = self.paramTimeRange[0] - datetime.timedelta(\
+                        minutes=self.plotTimeHist)
+        indEndDate = self.paramTimeRange[1]
         conn = sqlite3.connect(self.paramDBDir + dbName,
                        detect_types = sqlite3.PARSE_DECLTYPES)
         # load data to a dataframe
         command = "SELECT * FROM {tb} " +\
                   "WHERE datetime BETWEEN '{stm}' and '{etm}'"
-        command = command.format(tb=tabName, stm=self.paramTimeRange[0],\
-                                  etm=self.paramTimeRange[1])
+        command = command.format(tb=tabName, stm=indStartDate,\
+                                  etm=indEndDate)
         return pandas.read_sql(command, conn)
     
     def generate_bin_plot(self, eventDate, actualLab, predLab,\
@@ -220,7 +225,7 @@ class EventSummary(object):
         plt.close()
 
     def generate_onset_plot(self, eventDate, actualLab, predLab,\
-                      onsetTimeDict, predLabProb=None, figType="png"):
+                      onsetTimeDict, predLabProb=None, figType="pdf"):
         """
         Generate the plot.
         """
@@ -258,8 +263,8 @@ class EventSummary(object):
             currAulDF = self.aulDF[ \
                 (self.aulDF["datetime"] >= plotTimeRange[0]) &\
                 (self.aulDF["datetime"] <= plotTimeRange[1]) ]
-            axes[axCnt].plot( currAulDF["datetime"].values,\
-                          currAulDF[_aup].values, linewidth=2 )
+            axes[axCnt].plot( list(currAulDF["datetime"].values),\
+                          list(currAulDF[_aup].values), linewidth=2 )
             axes[axCnt].set_ylabel("AU/AL", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         axCnt += 1

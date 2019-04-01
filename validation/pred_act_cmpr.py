@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings('ignore')
 import datetime
 import pandas
 import numpy
@@ -18,9 +20,8 @@ class PredSumry(object):
                     northData=True, southData=False,\
                     polarFile="../data/polar_data.feather",\
                     imageFile="../data/image_data.feather",\
-                    smlFname="../data/20190103-22-53-substorms.csv",\
-                    smlDateRange=[ datetime.datetime(1997,1,1),\
-                     datetime.datetime(2007,12,31) ]):
+                    smlFname="../data/filtered-20190103-22-53-substorms.csv",\
+                    smlDateRange=None):
         """
         modelPredFname : file name to read the prediction results from.
                         NOTE : we expect the actual labels to be present
@@ -61,7 +62,8 @@ class PredSumry(object):
         colNames = ["date"]
         for _nb in range(self.nBins):
             colNames += [ "bin_" + str(_nb) ]
-        colNames += [ "label", "pred_label" ]
+        #[ "label", "pred_label" ]
+        colNames += ["label", "del_minutes","pred_label"]
         for _nb in range(self.nBins):
             # there are 2 probs for each bin
             # one zero prob and other 1 prob
