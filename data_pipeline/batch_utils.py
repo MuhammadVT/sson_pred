@@ -18,7 +18,7 @@ class DataUtils(object):
              sml_train=True, sml_norm_file=None,\
              smlDbName=None, sml_normalize=True, smlTabName=None, \
              include_omn=True, include_sml=False, sml_train_params = [ "au", "al" ],\
-             batch_size=64, loadPreComputedOnset=True,\
+             batch_size=64, loadPreComputedOnset=False,\
              onsetDataloadFile="../data/binned_data.feather",\
              northData=True, southData=False, polarData=True,\
              imageData=True, polarFile="../data/polar_data.feather",\
@@ -200,6 +200,26 @@ class DataUtils(object):
             _et = (_cd - datetime.timedelta(\
                     minutes=self.omnHistory) ).strftime(\
                     "%Y-%m-%d %H:%M:%S")
-            omnBatchMatrix.append(\
-                self.omnDF.loc[ _et : _st ].values)
-        return numpy.array(omnBatchMatrix)
+            # Now get the omni df we want
+            _currOmnDF = self.omnDF.loc[ _et : _st ]
+            # we need to forward/backward fill
+            # check how many nan's are present
+            # if its not more than 10 (minutes) then
+            # ffil, otherwise drop the datapoint
+            # Note we are only counting the rows
+            _cntNans = _currOmnDF.isnull().any(axis=1).sum()
+            if ( (_cntNans > 0) & (_cntNans <= 10) ):
+                # Replace nan's with preceding value (forward filling)
+                _currOmnDF = _currOmnDF.fillna(method='ffill').fillna(method='bfill')
+                omnBatchMatrix.append(\
+                        _currOmnDF.values)
+                return numpy.array(omnBatchMatrix)
+            else:
+                # if there is more than 10 minutes of nan's
+                # discard the point!
+                return None
+
+
+
+            
+        

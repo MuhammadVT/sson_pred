@@ -143,15 +143,13 @@ class OmnData(object):
         omnDF = omnDF.resample( str(self.db_time_resolution) + "Min" ).ffill().reset_index()
         
         # Replace nan's with preceding value (forward filling)
-        omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
+        # omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
         
         if (self.imf_normalize == True):
             print ('normalizing the IMF data ...')
             if(self.omn_train == True):
                 #Once the data is loaded, we normalize the columns based on its respective mean and std (z-score)
-                
                 #Storing the current mean and std which will be used to normalize the test data (in get_prediction file)
-
                 mean_std_values = (omnDF[self.omn_train_params].mean(), omnDF[self.omn_train_params].std())
                 print("mean and std values...")
                 print(mean_std_values)    

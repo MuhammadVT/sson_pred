@@ -134,9 +134,10 @@ for _bat in batchObj.batchDict.keys():
     dtm = batchObj.batchDict[_bat][0]
     onsetData = batchObj.onset_from_batch(batchObj.batchDict[_bat], predList=predList)
     omnData = batchObj.omn_from_batch(batchObj.batchDict[_bat])
-    onsetData_list.append(onsetData[0])
-    omnData_list.append(omnData)
-    dtms.append(dtm)
+    if omnData is not None:
+        onsetData_list.append(onsetData[0])
+        omnData_list.append(omnData)
+        dtms.append(dtm)
 y = time.time() 
 print("inOmn calc--->", y-x)
 
