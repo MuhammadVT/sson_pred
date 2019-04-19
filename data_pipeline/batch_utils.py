@@ -210,7 +210,9 @@ class DataUtils(object):
             _cntNans = _currOmnDF.isnull().any(axis=1).sum()
             if ( (_cntNans > 0) & (_cntNans <= 10) ):
                 # Replace nan's with preceding value (forward filling)
-                _currOmnDF = _currOmnDF.fillna(method='ffill').fillna(method='bfill')
+                # _currOmnDF = _currOmnDF.fillna(method='ffill').fillna(method='bfill')
+                # we'll interpolate the dataframe in a linear fashion
+                _currOmnDF.interpolate(method='linear', limit_direction='both', inplace=True)
                 omnBatchMatrix.append(\
                         _currOmnDF.values)
                 return numpy.array(omnBatchMatrix)
