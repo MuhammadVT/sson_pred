@@ -56,6 +56,7 @@ predDict["triggerTime"] = []
 nUnknown = 0
 nFalse = 0
 nTrue = 0
+nTrue2 = 0
 # if predDateRange is None:
 for _index, _row in ssOnsetDF.iterrows():
     # get the corresponding omni data
@@ -143,6 +144,7 @@ for _index, _row in ssOnsetDF.iterrows():
         nFalse += 1
         continue
     else:
+        nTrue2 += 1
         if _slopeClstOnset > _slopeClstHighestChng:
             _selDF = _triggerDFClstOnset
             _bzOnsetVal = _selDF[ _selDF["datetime"] == _lyonsTriggerTimeClstOnset]["Bz"].tolist()[0]
@@ -154,7 +156,7 @@ for _index, _row in ssOnsetDF.iterrows():
         _selDF["delOnsetBz"] = _selDF["Bz"] - _bzOnsetVal
         _sel3MinBz = _selDF[ _selDF.index.min() + datetime.timedelta(minutes=1) : _selDF.index.min() + datetime.timedelta(minutes=3) ]
         _sel3to10MinBz = _selDF[ _selDF.index.min() + datetime.timedelta(minutes=4) : _selDF.index.min() + datetime.timedelta(minutes=10) ]
-        if ( (_sel3MinBz["Bz"].min() >= 0.15) & (_sel3to10MinBz["Bz"].min() >= 0.45) ):
+        if ( (_sel3MinBz["delOnsetBz"].min() >= 0.15) & (_sel3to10MinBz["delOnsetBz"].min() >= 0.45) ):
             # criteria1 succesful! we get a trigger
             predDict["date"].append( _row["date"] )
             predDict["prediction"].append( "T" )
@@ -171,4 +173,5 @@ print("nFalse-->", nFalse)
 print("nUnknown-->", nUnknown)
 print("%Pred-->",nTrue*1./(nTrue+nFalse))
 print("%failed-->",nFalse*1./(nTrue+nFalse))
+print("nTrue2--->", nTrue2)
 
