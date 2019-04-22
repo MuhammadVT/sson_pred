@@ -120,9 +120,9 @@ class DataUtils(object):
         """
         # get the time range from onset data
         omnStartDate = self.onsetDF.index.min() - datetime.timedelta(\
-                                                minutes=self.omnHistory)
+                                                minutes=(self.omnHistory+self.omn_time_delay+10))
         omnEndDate = self.onsetDF.index.max() + datetime.timedelta(\
-                                                minutes=20)
+                                                minutes=10)
         # create the obj and load data
         omnObj = omn_utils.OmnData(omnStartDate, omnEndDate, self.omnDBDir,\
                            self.omnDbName, self.omnTabName,\
