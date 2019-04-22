@@ -25,7 +25,7 @@ class DataUtils(object):
              imageFile="../data/image_data.feather", onsetDelTCutoff=2,\
              onsetFillTimeRes=1, binTimeRes=60, nBins=1,\
             saveBinData=False, onsetSaveFile="../data/binned_data.feather",\
-            shuffleData=False, omnHistory=120,\
+            shuffleData=False, omnHistory=120, omn_time_delay=0,\
             smlDateRange=[datetime.datetime(1997,1,1),datetime.datetime(2000,1,1)],\
             smlDownsample=True, smlUpsample=False):
         """
@@ -49,6 +49,7 @@ class DataUtils(object):
         self.smlUpsample = smlUpsample
         self.imfNormalize = imfNormalize
         self.omnDBRes = omnDBRes
+        self.omn_time_delay = omn_time_delay
         if include_omn:
             self.omnTrainParams = omnTrainParams
         else:
@@ -119,8 +120,9 @@ class DataUtils(object):
         """
         # get the time range from onset data
         omnStartDate = self.onsetDF.index.min() - datetime.timedelta(\
-                                                minutes=self.omnHistory)
-        omnEndDate = self.onsetDF.index.max()
+                                                minutes=(self.omnHistory+self.omn_time_delay+10))
+        omnEndDate = self.onsetDF.index.max() + datetime.timedelta(\
+                                                minutes=10)
         # create the obj and load data
         omnObj = omn_utils.OmnData(omnStartDate, omnEndDate, self.omnDBDir,\
                            self.omnDbName, self.omnTabName,\
@@ -135,7 +137,8 @@ class DataUtils(object):
                             smlTabName=self.smlTabName,\
                             include_omn=self.include_omn,\
                             include_sml=self.include_sml,\
-                            sml_train_params=self.sml_train_params)
+                            sml_train_params=self.sml_train_params,\
+                            omn_time_delay=self.omn_time_delay)
         # set the datetime as index since we are working off of it
         omnObj.omnDF = omnObj.omnDF.set_index("datetime")
         omnObj.omnDF = omnObj.omnDF[self.omnTrainParams + self.sml_train_params]
