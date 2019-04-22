@@ -463,7 +463,7 @@ class OnsetData(object):
                  aulTabName="smusmlsme", alSSCutoff = -25, \
                  aeSSCutoff = 50, minDelT = 5, saveBinData=False,\
                  saveFile="../data/binned_data_extra.csv",\
-                 getNonSSInt=False, noSSbinRatio=1):
+                 getNonSSInt=False, noSSbinRatio=2):
         """
         For each of the dates in the polar and image lists
         create corresponding output bins!

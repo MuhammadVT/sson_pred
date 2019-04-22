@@ -19,10 +19,10 @@ omn_train = True
 shuffleData = False
 polarData=True
 imageData=True
-omnHistory = 180
+omnHistory = 120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 5
+onsetFillTimeRes = 30
 omnDBRes = 1
 binTimeRes = 60
 nBins = 1
@@ -39,6 +39,8 @@ sml_train_params = ["au", "al"]
 sml_db_name = "smu_sml_sme.sqlite"
 sml_table_name = "smusmlsme"
 sml_norm_param_file = omn_dbdir + "sml_mean_std.npy"
+
+txt = "_interpolated"
 
 smlDownsample=True
 
@@ -66,6 +68,7 @@ if useSML:
                  "imfNormalize_" + str(imfNormalize) + "." +\
                  "shuffleData_" + str(shuffleData) + "." +\
                  "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 txt + "." +\
                  "npy"
 
     csv_file = "../data/sml_" +\
@@ -78,6 +81,7 @@ if useSML:
                "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
                "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               txt + "." +\
                "csv"
 else:  
     input_file = "../data/input." +\
@@ -91,6 +95,7 @@ else:
                  "shuffleData_" + str(shuffleData) + "." +\
                  "polarData_" + str(polarData) + "." +\
                  "imageData_" + str(imageData) + "." +\
+                 txt + "." +\
                  "npy"
 
     csv_file = "../data/" +\
@@ -104,6 +109,7 @@ else:
                "shuffleData_" + str(shuffleData) + "." +\
                "polarData_" + str(polarData) + "." +\
                "imageData_" + str(imageData) + "." +\
+               txt + "." +\
                "csv"
 
 batchObj = batch_utils.DataUtils(omn_dbdir,\
