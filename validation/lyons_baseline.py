@@ -51,7 +51,7 @@ omnTimeDelay = 10 #minutes
 # onset data
 smlFname="../data/filtered-20190103-22-53-substorms.csv"
 # some plotting vars
-predDateRange = [datetime.datetime(1996,1,1), datetime.datetime(2006,1,1)]#None
+predDateRange = [datetime.datetime(1996,1,1), datetime.datetime(2018,1,1)]#None
 
 # load onset data
 ssOnsetDF = pandas.read_csv(smlFname,\
@@ -139,7 +139,7 @@ for _index, _row in ssOnsetDF.iterrows():
     #           a little tricky, instead of taking exact onset time
     #            we'll take times +/- 15 minutes near the onset
     #           and see if we can find any rapid Bz northward turning
-    _stOnset = _row["date"] - datetime.timedelta(minutes=10)
+    _stOnset = _row["date"] - datetime.timedelta(minutes=15)
     _etOnset = _row["date"] + datetime.timedelta(minutes=15)
     _omniNearOnset = omnDF_tmp[ _stOnset : _etOnset ].reset_index()
     _omniNearOnset["delTOnset"] = (_omniNearOnset["datetime"] - _row["date"]).astype('timedelta64[m]')
