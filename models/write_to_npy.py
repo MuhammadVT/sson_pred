@@ -19,10 +19,10 @@ omn_train = True
 shuffleData = False
 polarData=True
 imageData=True
-omnHistory = 180
+omnHistory = 120
 batch_size = 1
 onsetDelTCutoff = 4
-onsetFillTimeRes = 5
+onsetFillTimeRes = 30
 omnDBRes = 1
 binTimeRes = 60
 nBins = 1
@@ -40,7 +40,11 @@ sml_db_name = "smu_sml_sme.sqlite"
 sml_table_name = "smusmlsme"
 sml_norm_param_file = omn_dbdir + "sml_mean_std.npy"
 
-smlDownsample=True
+omn_time_delay = 10
+txt = "interp_20." + "delay_" + str(omn_time_delay) + "."
+
+#smlDownsample=True
+smlDownsample=False
 
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2007,12,31) ] #
 #smlDateRange = [ dt.datetime(1997,1,1), dt.datetime(2008,1,1) ] #
@@ -66,6 +70,7 @@ if useSML:
                  "imfNormalize_" + str(imfNormalize) + "." +\
                  "shuffleData_" + str(shuffleData) + "." +\
                  "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+                 txt +\
                  "npy"
 
     csv_file = "../data/sml_" +\
@@ -78,6 +83,7 @@ if useSML:
                "imfNormalize_" + str(imfNormalize) + "." +\
                "shuffleData_" + str(shuffleData) + "." +\
                "dateRange_" + smlStrtStr + "_" + smlEndStr + "." +\
+               txt +\
                "csv"
 else:  
     input_file = "../data/input." +\
@@ -91,6 +97,7 @@ else:
                  "shuffleData_" + str(shuffleData) + "." +\
                  "polarData_" + str(polarData) + "." +\
                  "imageData_" + str(imageData) + "." +\
+                 txt +\
                  "npy"
 
     csv_file = "../data/" +\
@@ -104,6 +111,7 @@ else:
                "shuffleData_" + str(shuffleData) + "." +\
                "polarData_" + str(polarData) + "." +\
                "imageData_" + str(imageData) + "." +\
+               txt +\
                "csv"
 
 batchObj = batch_utils.DataUtils(omn_dbdir,\
@@ -123,7 +131,7 @@ batchObj = batch_utils.DataUtils(omn_dbdir,\
                     onsetFillTimeRes=onsetFillTimeRes, binTimeRes=binTimeRes, nBins=nBins,\
                     saveBinData=saveBinData, onsetSaveFile=onsetSaveFile,\
                     shuffleData=shuffleData, omnHistory=omnHistory, smlDateRange=smlDateRange,
-                    smlDownsample=smlDownsample)
+                    smlDownsample=smlDownsample, omn_time_delay=omn_time_delay)
 x = time.time()
 onsetData_list = []
 omnData_list = []

@@ -35,20 +35,20 @@ imfNormalize = True
 shuffleData = False 
 polarData = True
 imageData = True
-omnHistory = 180
-omnHistory_actual = 180
+omnHistory = 120
+omnHistory_actual = 120
 onsetDelTCutoff = 4
-onsetFillTimeRes = 5
+onsetFillTimeRes = 30
 omnDBRes = 1
 
-batch_size = 16 * 4 * 5
+batch_size = 16 * 4 * 1
 n_epochs = 100
 n_resnet_units = 2
 metrics = ["accuracy"]
 
 #txt = "deltm."
 #txt = "iso."
-txt = ""
+txt = "interp_15.delay_10."
 
 useSML = True 
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
@@ -219,8 +219,8 @@ X = X[:, :, input_cols]
 ########################
 ## Limit the time history
 X = X[:, -omnHistory_actual-1:, :]
-import pdb
-pdb.set_trace()
+#import pdb
+#pdb.set_trace()
 #X = X[:, 120:, :]
 ########################
 
@@ -240,8 +240,8 @@ pdb.set_trace()
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.75
-val_size = 0.10
+train_size = 0.70
+val_size = 0.15
 test_size = 0.15
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
@@ -251,6 +251,58 @@ x_test = X[val_eindex:, :]
 y_train = y[:train_eindex, :]
 y_val = y[train_eindex:val_eindex, :]
 y_test = y[val_eindex:, :]
+
+df_train = df.iloc[:train_eindex, :]
+df_val = df.iloc[train_eindex:val_eindex, :]
+df_test = df.iloc[val_eindex:, :]
+
+##################################
+# Balance the two classes in train data
+ss_idx = np.where(df_train.label.values == 1)[0]
+nonss_idx = np.where(df_train.label.values == 0)[0]
+np.random.seed(1)
+nonss_idx = np.random.choice(nonss_idx, len(ss_idx), replace=False)
+event_idx = np.concatenate([ss_idx, nonss_idx])
+#np.random.shuffle(event_idx)
+# Keep the order of data points the same as before balancing
+event_idx.sort()
+df_train = df_train.iloc[event_idx, :]
+# Select for certain rows and columns
+x_train = x_train[event_idx]
+y_train = y_train[event_idx]
+
+# Balance the two classes in val data
+ss_idx = np.where(df_val.label.values == 1)[0]
+nonss_idx = np.where(df_val.label.values == 0)[0]
+np.random.seed(1)
+nonss_idx = np.random.choice(nonss_idx, len(ss_idx), replace=False)
+event_idx = np.concatenate([ss_idx, nonss_idx])
+#np.random.shuffle(event_idx)
+# Keep the order of data points the same as before balancing
+event_idx.sort()
+df_val = df_val.iloc[event_idx, :]
+# Select for certain rows and columns
+x_val = x_val[event_idx]
+y_val = y_val[event_idx]
+
+# Balance the two classes in test data
+ss_idx = np.where(df_test.label.values == 1)[0]
+nonss_idx = np.where(df_test.label.values == 0)[0]
+np.random.seed(1)
+nonss_idx = np.random.choice(nonss_idx, len(ss_idx), replace=False)
+event_idx = np.concatenate([ss_idx, nonss_idx])
+#np.random.shuffle(event_idx)
+# Keep the order of data points the same as before balancing
+event_idx.sort()
+df_test = df_test.iloc[event_idx, :]
+# Select for certain rows and columns
+x_test = x_test[event_idx]
+y_test = y_test[event_idx]
+
+df = pd.concat([df_train, df_val, df_test])
+X = np.concatenate([x_train, x_val, x_test])
+y = np.concatenate([y_train, y_val, y_test])
+##################################
 
 ## Shuffle the training data
 #idx_train = np.array(range(x_train.shape[0]))
@@ -408,9 +460,9 @@ if save_pred:
     output_df_test_file = out_dir + "/" + model_txt + "test_data_pred.csv"
 
     df.loc[:, "pred_label"] = y_pred
-    df_train = df.iloc[:train_eindex, :]
-    df_val = df.iloc[train_eindex:val_eindex, :]
-    df_test = df.iloc[val_eindex:, :]
+#    df_train = df.iloc[:train_eindex, :]
+#    df_val = df.iloc[train_eindex:val_eindex, :]
+#    df_test = df.iloc[val_eindex:, :]
     df_train.loc[:, "pred_label"] = y_train_pred
     df_val.loc[:, "pred_label"] = y_val_pred
     df_test.loc[:, "pred_label"] = y_test_pred
