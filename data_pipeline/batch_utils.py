@@ -211,7 +211,7 @@ class DataUtils(object):
             # ffil, otherwise drop the datapoint
             # Note we are only counting the rows
             _cntNans = _currOmnDF.isnull().any(axis=1).sum()
-            if ( (_cntNans > 0) & (_cntNans <= 10) ):
+            if ( (_cntNans > 0) & (_cntNans <= 20) ):
                 # Replace nan's with preceding value (forward filling)
                 # _currOmnDF = _currOmnDF.fillna(method='ffill').fillna(method='bfill')
                 # we'll interpolate the dataframe in a linear fashion

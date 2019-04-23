@@ -48,7 +48,7 @@ metrics = ["accuracy"]
 
 #txt = "deltm."
 #txt = "iso."
-txt = "_interpolated."
+txt = "interp_15.delay_10."
 
 useSML = True 
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
@@ -240,8 +240,8 @@ X = X[:, -omnHistory_actual-1:, :]
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.75
-val_size = 0.10
+train_size = 0.70
+val_size = 0.15
 test_size = 0.15
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
@@ -286,8 +286,8 @@ x_val = x_val[event_idx]
 y_val = y_val[event_idx]
 
 # Balance the two classes in test data
-ss_idx = np.where(df_test.label.testues == 1)[0]
-nonss_idx = np.where(df_test.label.testues == 0)[0]
+ss_idx = np.where(df_test.label.values == 1)[0]
+nonss_idx = np.where(df_test.label.values == 0)[0]
 np.random.seed(1)
 nonss_idx = np.random.choice(nonss_idx, len(ss_idx), replace=False)
 event_idx = np.concatenate([ss_idx, nonss_idx])
@@ -299,8 +299,6 @@ df_test = df_test.iloc[event_idx, :]
 x_test = x_test[event_idx]
 y_test = y_test[event_idx]
 
-import pdb
-pdb.set_trace()
 df = pd.concat([df_train, df_val, df_test])
 X = np.concatenate([x_train, x_val, x_test])
 y = np.concatenate([y_train, y_val, y_test])
