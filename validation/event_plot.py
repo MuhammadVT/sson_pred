@@ -312,9 +312,9 @@ class EventSummary(object):
                         else:
                             currCol = self.shadeColDict["FN"]
                             textOut = "FN"
-                    if not trueNegative:
-                        _ax.axvspan(binStart, binEnd, alpha=0.5,\
-                                 color=currCol)
+                    # if not trueNegative:
+                    _ax.axvspan(binStart, binEnd, alpha=0.5,\
+                             color=currCol)
                     for _ot in onsetTimeDict[_nb]:
                         _ax.axvline(x=_ot, color='r',\
                                  linestyle='--', linewidth=2)
