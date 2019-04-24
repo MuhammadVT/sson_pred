@@ -30,7 +30,7 @@ class EventSummary(object):
              omnTabName, aulDbName, aulTabName, smlDbName, smlTabName,\
              plotTimeHist=120, plotFutureBins=2,\
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
-             aulParams = ["au", "al"],smParams=["au", "al"],\
+             aulParams = [],smParams=["al"],\
              binTimeRes=30, nBins=2,\
              figDir="/home/bharat/Documents/data/ss_onset_dataset/onset_plots/"):
         """
@@ -203,8 +203,8 @@ class EventSummary(object):
                         else:
                             currCol = self.shadeColDict["FN"]
                             textOut = "FN"
-                    if not trueNegative:
-                        _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
+                    #if not trueNegative:
+                    _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
                     if _nax == 0 :
                         textXLoc = eventDate + datetime.timedelta(\
                                 minutes=(_nb+0.5)*self.binTimeRes) 
