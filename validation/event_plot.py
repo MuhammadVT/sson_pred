@@ -242,9 +242,11 @@ class EventSummary(object):
         ax = f.add_subplot(1,1,1)
         # get the number of panels
         
-        nPanels = len(self.omnParams) +\
-                    len(self.aulParams)/2 + len(self.smParams)/2
-
+        nPanels = len(self.omnParams)
+        if len(self.aulParams) > 0:
+            nPanels += 1
+        if len(self.smParams) > 0:
+            nPanels += 1
         fig, axes = plt.subplots(nrows=int(nPanels), ncols=1, sharex=True)
         # axis formatting
         dtLabFmt = DateFormatter('%H:%M')
@@ -279,7 +281,8 @@ class EventSummary(object):
                           currSmDF[_smp].values, linewidth=2 )
             axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
-        axCnt += 1
+        if len(self.smParams) > 0:
+            axCnt += 1
         # mark the actual onset time  and shade the region 
         # based on pred onset.
         # shade the region based on the type (TP/TN/FP/FN)
