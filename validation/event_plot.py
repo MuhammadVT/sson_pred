@@ -268,7 +268,8 @@ class EventSummary(object):
                           list(currAulDF[_aup].values), linewidth=2 )
             axes[axCnt].set_ylabel("AU/AL", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
-        axCnt += 1
+        if len(self.aulParams) > 0:
+            axCnt += 1
         # plot supermag indices
         for _smp in self.smParams:
             currSmDF = self.smDF[ \
