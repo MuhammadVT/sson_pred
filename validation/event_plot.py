@@ -241,8 +241,10 @@ class EventSummary(object):
         f = plt.figure(figsize=(12, 8))
         ax = f.add_subplot(1,1,1)
         # get the number of panels
+        
         nPanels = len(self.omnParams) +\
-                    len(self.aulParams)-1 + len(self.smParams)-1
+                    len(self.aulParams)/2 + len(self.smParams)/2
+
         fig, axes = plt.subplots(nrows=nPanels, ncols=1,\
                                  figsize=(8,8), sharex=True)
         # axis formatting
