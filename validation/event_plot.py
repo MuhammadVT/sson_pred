@@ -245,8 +245,7 @@ class EventSummary(object):
         nPanels = len(self.omnParams) +\
                     len(self.aulParams)/2 + len(self.smParams)/2
 
-        fig, axes = plt.subplots(nrows=nPanels, ncols=1,\
-                                 figsize=(8,8), sharex=True)
+        fig, axes = plt.subplots(nrows=int(nPanels), ncols=1, sharex=True)
         # axis formatting
         dtLabFmt = DateFormatter('%H:%M')
         axCnt = 0
