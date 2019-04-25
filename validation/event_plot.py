@@ -83,10 +83,10 @@ class EventSummary(object):
         # set colors for shading regions of True positives, 
         # True Negatives, False positives and negatives.
         self.shadeColDict = {}
-        self.shadeColDict["TP"] = "#2d6d66"
-        self.shadeColDict["TN"] = "#1a476f"
-        self.shadeColDict["FP"] = "#90353b"
-        self.shadeColDict["FN"] = "#e30e00"
+        self.shadeColDict["TP"] = "#008fd5"
+        self.shadeColDict["TN"] = "#6d904f"
+        self.shadeColDict["FP"] = "#fc4f30"
+        self.shadeColDict["FN"] = "#e5ae38"
 
     def _load_omn_data(self, omnDbName, omnTabName):
         """
@@ -204,7 +204,7 @@ class EventSummary(object):
                             currCol = self.shadeColDict["FN"]
                             textOut = "FN"
                     #if not trueNegative:
-                    _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
+                    _ax.axvspan(binStart, binEnd, alpha=0.4, color=currCol)
                     if _nax == 0 :
                         textXLoc = eventDate + datetime.timedelta(\
                                 minutes=(_nb+0.5)*self.binTimeRes) 
@@ -258,7 +258,7 @@ class EventSummary(object):
                 (self.omnDF["datetime"] <= plotTimeRange[1]) ]
             axes[axCnt].plot( currOmnDF["datetime"].values,\
                           currOmnDF[_op].values, linewidth=2 )
-            axes[axCnt].set_ylabel(_op, fontsize=14)
+            axes[axCnt].set_ylabel(_op, fontsize=12)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
             axCnt += 1
         # plot auroral indices
@@ -268,7 +268,7 @@ class EventSummary(object):
                 (self.aulDF["datetime"] <= plotTimeRange[1]) ]
             axes[axCnt].plot( list(currAulDF["datetime"].values),\
                           list(currAulDF[_aup].values), linewidth=2 )
-            axes[axCnt].set_ylabel("AU/AL", fontsize=14)
+            axes[axCnt].set_ylabel("AU/AL", fontsize=12)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         if len(self.aulParams) > 0:
             axCnt += 1
@@ -279,7 +279,7 @@ class EventSummary(object):
                 (self.smDF["datetime"] <= plotTimeRange[1]) ]
             axes[axCnt].plot( currSmDF["datetime"].values,\
                           currSmDF[_smp].values, linewidth=2 )
-            axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
+            axes[axCnt].set_ylabel("SML", fontsize=12)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
         if len(self.smParams) > 0:
             axCnt += 1
