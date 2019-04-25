@@ -30,7 +30,7 @@ class EventSummary(object):
              omnTabName, aulDbName, aulTabName, smlDbName, smlTabName,\
              plotTimeHist=120, plotFutureBins=2,\
              omnParams = ["By", "Bz", "Bx", "Vx", "Np"], \
-             aulParams = ["au", "al"],smParams=["au", "al"],\
+             aulParams = [],smParams=["al"],\
              binTimeRes=30, nBins=2,\
              figDir="/home/bharat/Documents/data/ss_onset_dataset/onset_plots/"):
         """
@@ -203,8 +203,8 @@ class EventSummary(object):
                         else:
                             currCol = self.shadeColDict["FN"]
                             textOut = "FN"
-                    if not trueNegative:
-                        _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
+                    #if not trueNegative:
+                    _ax.axvspan(binStart, binEnd, alpha=0.5, color=currCol)
                     if _nax == 0 :
                         textXLoc = eventDate + datetime.timedelta(\
                                 minutes=(_nb+0.5)*self.binTimeRes) 
@@ -241,10 +241,13 @@ class EventSummary(object):
         f = plt.figure(figsize=(12, 8))
         ax = f.add_subplot(1,1,1)
         # get the number of panels
-        nPanels = len(self.omnParams) +\
-                    len(self.aulParams)-1 + len(self.smParams)-1
-        fig, axes = plt.subplots(nrows=nPanels, ncols=1,\
-                                 figsize=(8,8), sharex=True)
+        
+        nPanels = len(self.omnParams)
+        if len(self.aulParams) > 0:
+            nPanels += 1
+        if len(self.smParams) > 0:
+            nPanels += 1
+        fig, axes = plt.subplots(nrows=int(nPanels), ncols=1, sharex=True)
         # axis formatting
         dtLabFmt = DateFormatter('%H:%M')
         axCnt = 0
@@ -267,7 +270,8 @@ class EventSummary(object):
                           list(currAulDF[_aup].values), linewidth=2 )
             axes[axCnt].set_ylabel("AU/AL", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
-        axCnt += 1
+        if len(self.aulParams) > 0:
+            axCnt += 1
         # plot supermag indices
         for _smp in self.smParams:
             currSmDF = self.smDF[ \
@@ -277,7 +281,8 @@ class EventSummary(object):
                           currSmDF[_smp].values, linewidth=2 )
             axes[axCnt].set_ylabel("SMU/SML", fontsize=14)
             axes[axCnt].xaxis.set_major_formatter(dtLabFmt)
-        axCnt += 1
+        if len(self.smParams) > 0:
+            axCnt += 1
         # mark the actual onset time  and shade the region 
         # based on pred onset.
         # shade the region based on the type (TP/TN/FP/FN)
@@ -307,9 +312,9 @@ class EventSummary(object):
                         else:
                             currCol = self.shadeColDict["FN"]
                             textOut = "FN"
-                    if not trueNegative:
-                        _ax.axvspan(binStart, binEnd, alpha=0.5,\
-                                 color=currCol)
+                    # if not trueNegative:
+                    _ax.axvspan(binStart, binEnd, alpha=0.5,\
+                             color=currCol)
                     for _ot in onsetTimeDict[_nb]:
                         _ax.axvline(x=_ot, color='r',\
                                  linestyle='--', linewidth=2)
