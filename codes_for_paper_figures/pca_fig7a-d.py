@@ -144,7 +144,7 @@ print("singular_values:", pca.singular_values_)
 #############################################
 # Plot the % explained variance
 #fig, ax = plt.subplots()
-fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10,8))
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8,6))
 fig.subplots_adjust(hspace=0.4, wspace=0.4)
 panel_labels = ["(a)", "(b)", "(c)", "(d)"]
 ax = axes[0,0]

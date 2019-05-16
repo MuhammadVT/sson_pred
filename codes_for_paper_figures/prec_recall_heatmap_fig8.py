@@ -25,7 +25,7 @@ prDF.head()
 
 plt.style.use("fivethirtyeight")
 fig, axes = plt.subplots(nrows=1, ncols=1,\
-                    figsize=(10,8), sharex=True)
+                    figsize=(8,10), sharex=True)
 sns.heatmap(prDF, annot=True, cmap="GnBu") #Blues, #BuPu, #GnBu, #PuBu
 fig.tight_layout()
 fig.savefig("../plots/paper-figures/fig_8.png", bbox_inches="tight")

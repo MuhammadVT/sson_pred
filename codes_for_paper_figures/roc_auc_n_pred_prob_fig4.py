@@ -95,11 +95,11 @@ bins = numpy.arange(-0.1,1.1, 0.1)[:-1]
 # plot label 0
 pltDF = predDF[ predDF["label"] == 0]
 hist, binEdges = numpy.histogram( pltDF["prob_1"].values,bins=bins )
-ax.plot( binEdges[1:], hist, linewidth=3.0)
+ax.plot( binEdges[1:], hist, linewidth=3.0, color="#339966")
 # plot label 1
 pltDF = predDF[ predDF["label"] == 1]
 hist, binEdges = numpy.histogram( pltDF["prob_1"].values,bins=bins )
-ax.plot( binEdges[1:], hist , linewidth=3.0)
+ax.plot( binEdges[1:], hist , linewidth=3.0, color="#e60073")
 # plot the 0.5 mark to seperate TPs, FPs, TNs and FNs
 ax.axvline(x=0.5, color="k", linestyle="--", linewidth=2.)
 ax.annotate("(b)", xy=(0.9, 0.9), xycoords="axes fraction", fontweight='bold')
@@ -109,5 +109,5 @@ ax.set_ylabel('Counts')
 
 #predDF[ (predDF["pred_type"] == "FP") & (predDF["prob_1"] >= 0.6) ].head()
 
-fig.savefig("../plots/paper-figures/roc_auc_n_pred_prob_overlap.png", bbox_inches="tight")
+fig.savefig("../plots/paper-figures/fig_4.png", bbox_inches="tight")
 

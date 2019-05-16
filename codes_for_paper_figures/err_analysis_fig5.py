@@ -121,7 +121,8 @@ predDF = predDF.apply( get_sml_vars, axis=1 )
 #pdb.set_trace()
 
 # Bin by AL
-alBins = range(-700,100,100)
+#alBins = range(-700,100,100)
+alBins = [-800, -500, -400, -300, -200, -100, 0]
 # get the min al in the next 30 min
 oldColNames = predDF.columns.tolist()
 predDF = pandas.concat( [ predDF, \

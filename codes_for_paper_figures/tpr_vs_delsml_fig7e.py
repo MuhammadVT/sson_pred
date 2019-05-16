@@ -316,7 +316,7 @@ def plot_tpr_fnr_by_delSML(pred_files, df_sml, df_onset, colors, labels,
     delSML_thresholds = [0, -50, -100, -150, -200, -250, -300, -350, -400, -450, -500, -550, -600, -650, -700]
     delSMLratio_thresholds = [1, 2, 3, 4, 5]
     thresholds = delSML_thresholds
-    fig, ax = plt.subplots(figsize=(10,8))
+    fig, ax = plt.subplots(figsize=(8,6))
     for i, fl in enumerate(pred_files):
         df = pd.read_csv(fl, index_col=0, parse_dates=["datetime"])
         df1 = df.loc[df.label==1, :]
@@ -338,7 +338,7 @@ def plot_tpr_fnr_by_delSML(pred_files, df_sml, df_onset, colors, labels,
     ax.annotate("(e)", xy=(0.05, 0.95), xycoords="axes fraction", fontweight="bold")
 
     fig.savefig("../plots/paper-figures/" + fname1, dpi=200, bbox_inches="tight")
-    fig.savefig("../plots/paper-figures/" + fname1[:-4] + ".pdf", format="pdf", bbox_inches="tight")
+    #fig.savefig("../plots/paper-figures/" + fname1[:-4] + ".pdf", format="pdf", bbox_inches="tight")
 
     return
 
