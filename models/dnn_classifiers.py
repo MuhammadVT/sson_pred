@@ -371,7 +371,6 @@ class ResNet:
         # Max pooling layer
         conv_layer = pooling.MaxPooling1D(pool_size=2)(conv_layer)
 
-
 #        conv_layer = input_layer
 
         #############################

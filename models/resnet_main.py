@@ -26,7 +26,7 @@ if transfer_weights:
     weight_dir = "./trained_models/ResNet/omn_Bx_By_Bz_Vx_Np/" +\
                  "sml.nBins_1.binTimeRes_30.onsetFillTimeRes_5.omnHistory_120.omnDBRes_1.useSML_True.20190122.154340/"
 
-save_pred = True
+save_pred = False
 model_txt = "resnet_"
 
 nBins = 1
@@ -42,13 +42,13 @@ onsetFillTimeRes = 30
 omnDBRes = 1
 
 batch_size = 16 * 4 * 1
-n_epochs = 100
+n_epochs = 200
 n_resnet_units = 2
 metrics = ["accuracy"]
 
 #txt = "deltm."
 #txt = "iso."
-txt = "interp_15.delay_10."
+txt = "interp_20.delay_10."
 
 useSML = True 
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
@@ -240,9 +240,9 @@ X = X[:, -omnHistory_actual-1:, :]
 npoints = X.shape[0]
 n_classes = np.unique(y).shape[0]
 
-train_size = 0.70
-val_size = 0.15
-test_size = 0.15
+train_size = 0.60
+val_size = 0.22
+test_size = 0.18
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
 x_train = X[:train_eindex, :]

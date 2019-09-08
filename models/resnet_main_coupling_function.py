@@ -41,14 +41,14 @@ onsetDelTCutoff = 4
 onsetFillTimeRes = 30
 omnDBRes = 1
 
-batch_size = 16 * 4 * 10
-n_epochs = 10
+batch_size = 16 * 4 * 1
+n_epochs = 200
 n_resnet_units = 2
 metrics = ["accuracy"]
 
 #txt = "deltm."
 #txt = "iso."
-txt = "interp_15.delay_10."
+txt = "interp_20.delay_10."
 
 useSML = True 
 smlDateRange = [dt.datetime(1997,1,1), dt.datetime(2018,1,1)]
@@ -178,9 +178,9 @@ X = X[:, :, input_cols]
 ##########################################################################
 # Split the data (before class balancing)
 npoints = X.shape[0]
-train_size = 0.65
-val_size = 0.20
-test_size = 0.15
+train_size = 0.60
+val_size = 0.22
+test_size = 0.18
 train_eindex = int(npoints * train_size)
 val_eindex = train_eindex + int(npoints * val_size)
 x_train = X[:train_eindex, :]
