@@ -1,3 +1,5 @@
+![](https://github.com/MuhammadVT/ECE5554_final_project/blob/master/CIPS_presentation_final_blank_background/Slide1.PNG)
+
 # Deep Learning for Time Series Prediction of Substorm Onset
 
 This is the repository for our paper titled ["A deep learning based approach to forecast the onset of magnetic substorms"](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019SW002251) published in [Space Weather](https://agupubs.onlinelibrary.wiley.com/journal/15427390).
