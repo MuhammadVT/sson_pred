@@ -11,9 +11,9 @@ import sqlite3
 sml_onset_file =  "../data/" +\
                   "20190103-22-53-substorms.csv"
 
-before_onset = 1 * 60     # minutes
+before_onset = 1 * 120     # minutes
 after_onset = 1 * 60     # minutes
-onset_gap_minlim = 20    # minutes
+onset_gap_minlim = 10    # minutes
 
 sdate = dt.datetime(1997, 1, 1)
 edate = dt.datetime(2017, 12, 30)
@@ -60,7 +60,7 @@ for i, dtm in enumerate(onset_dtms[:-1]):
             ALs.append(df_tmp.al.values)
             AUs.append(df_tmp.au.values)
 
-fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(8,8))
+fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(10,8))
 fig.subplots_adjust(wspace=0.4)
 
 idxs = [ALs, AUs]
@@ -87,7 +87,4 @@ else:
 fig_name = "superposed_SMUL.onset_sep_" + str(onset_gap_minlim) + "." +\
            sdate.strftime("%Y%m%d") + "_" + edate.strftime("%Y%m%d") 
 fig.savefig("./" + fig_name + ".png", dpi=200, bbox_inches="tight")
-
-
-
 
