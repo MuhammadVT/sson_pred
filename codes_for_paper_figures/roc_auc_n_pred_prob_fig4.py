@@ -47,7 +47,8 @@ ax.plot([0, fpr[binLab][idx_05]], [tpr[binLab][idx_05], tpr[binLab][idx_05]], co
 ax.scatter(fpr[binLab][idx_05], tpr[binLab][idx_05], color="k", marker="x", s=100, linewidth=3.0)
 
 ax.set_xlabel('False Positive Rate')
-ax.set_ylabel('True Positive Rate')
+#ax.set_ylabel('True Positive Rate')
+ax.set_ylabel('Recall')
 ax.set_title('Receiver operating characteristic curve', fontsize=14)
 ax.legend(loc="lower right")
 
