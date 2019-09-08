@@ -85,9 +85,13 @@ predDict["triggerTime"] = []
 nUnknown = 0
 nFalse = 0
 nTrue = 0
+<<<<<<< HEAD
+nTrue2 = 0
+=======
 timeBeforeOnset = 29
 timeAfterOnset = 25
 nOmnPnts = timeBeforeOnset + timeAfterOnset + 1
+>>>>>>> 5494777a101355553dceaca30dbae292e4908cc5
 # if predDateRange is None:
 for _index, _row in ssOnsetDF.iterrows():
     print("Checking Onset at " + _row["date"].strftime("%Y-%m-%d %H:%M:%S"))
@@ -201,4 +205,5 @@ print("nFalse-->", nFalse)
 print("nUnknown-->", nUnknown)
 print("%Pred-->",nTrue*1./(nTrue+nFalse))
 print("%failed-->",nFalse*1./(nTrue+nFalse))
+print("nTrue2--->", nTrue2)
 

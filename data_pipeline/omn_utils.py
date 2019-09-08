@@ -13,7 +13,7 @@ class OmnData(object):
                 sml_train=True, sml_norm_file=None, imf_normalize=True,\
                 smlDbName=None, sml_normalize=True, smlTabName=None, db_time_resolution=1, \
                 include_omn=True, omn_train_params = [ "By", "Bz", "Bx", "Vx", "Np" ],\
-                include_sml=False, sml_train_params = [ "au", "al" ] ):
+                include_sml=False, sml_train_params = [ "au", "al" ], omn_time_delay=0 ):
         """
         setup some vars
         """
@@ -32,6 +32,7 @@ class OmnData(object):
         self.paramDBDir = omn_dbdir
         self.sml_normalize = sml_normalize
         self.sml_norm_file = sml_norm_file
+        self.omn_time_delay = omn_time_delay
         # if both omn and sml are set to false 
         # set include omn to true! you need some input
         # right!
@@ -133,6 +134,8 @@ class OmnData(object):
         
         omnDF = omnDF[ self.omn_train_params + [ "datetime" ] ]
         omnDF = omnDF.replace(numpy.inf, numpy.nan)
+        # add a time delay
+        omnDF["datetime"] = omnDF["datetime"] + datetime.timedelta(minutes=self.omn_time_delay)
         omnDF = omnDF.set_index("datetime")
         # Add self.start_date to omnDF in case if it is missing
         if self.start_date not in omnDF.index:
@@ -141,17 +144,14 @@ class OmnData(object):
             omnDF.loc[self.end_date] = numpy.nan
         omnDF.sort_index(inplace=True)
         omnDF = omnDF.resample( str(self.db_time_resolution) + "Min" ).ffill().reset_index()
-        
         # Replace nan's with preceding value (forward filling)
-        omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
+        # omnDF = omnDF.fillna(method='ffill').fillna(method='bfill')
         
         if (self.imf_normalize == True):
             print ('normalizing the IMF data ...')
             if(self.omn_train == True):
                 #Once the data is loaded, we normalize the columns based on its respective mean and std (z-score)
-                
                 #Storing the current mean and std which will be used to normalize the test data (in get_prediction file)
-
                 mean_std_values = (omnDF[self.omn_train_params].mean(), omnDF[self.omn_train_params].std())
                 print("mean and std values...")
                 print(mean_std_values)    
