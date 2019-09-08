@@ -82,7 +82,8 @@ def plot_roc(pred_files, colors, labels, fname="roc_curves.png"):
         ax.scatter(fpr[idx_05], tpr[idx_05], color=color, marker="*", s=50)
 
     ax.set_xlabel("False Positive Rate")
-    ax.set_ylabel("True Positive Rate")
+    #ax.set_ylabel("True Positive Rate")
+    ax.set_ylabel("Recall")
     ax.legend(fontsize="small", loc="lower right")
     fig.savefig("../plots/" + fname, dpi=200, bbox_inches="tight")
 
@@ -331,7 +332,8 @@ def plot_tpr_fnr_by_delSML(pred_files, df_sml, df_onset, colors, labels,
         ax.plot(thresholds, delSML_tpr, color=colors[i], label=model_labels[i], linewidth=1.5)
         
     ax.set_ylim([0.5, 1])
-    ax.set_ylabel("True Positive Rate")
+    #ax.set_ylabel("True Positive Rate")
+    ax.set_ylabel("Recall")
     #ax.legend(fontsize="small", loc="best")
     #ax.set_title("Substorms (" + str(df_onset.shape[0]) + " Events)")
     ax.set_xlabel(r"$\Delta SML$ Threshold") 
