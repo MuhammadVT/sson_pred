@@ -1,11 +1,13 @@
-![](https://github.com/MuhammadVT/sson_pred/tree/master/demo/plots/resnet_cnn.png)
-
 # Deep Learning for Time Series Prediction of Substorm Onset
 
 This is the repository for our paper titled ["A deep learning based approach to forecast the onset of magnetic substorms"](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019SW002251) published in [Space Weather](https://agupubs.onlinelibrary.wiley.com/journal/15427390).
 
+![](https://github.com/MuhammadVT/sson_pred/blob/master/demo/plots/dl_models.png)
+
 ## Problem Statement
 Use 120-minute time history of solar wind bulk speed (Vx), proton number density (Np), and interplanetary magnetic field (IMF) components (Bx, By, Bz) to predict the occurrence probability of substorm onset.
+
+![](https://github.com/MuhammadVT/sson_pred/blob/master/demo/plots/S-M-I.png)
 
 ## Demo for this project
 A short summary of this work can be found [here](https://github.com/MuhammadVT/sson_pred/blob/master/demo/prediction_of_Aurora_brightening.ipynb).
